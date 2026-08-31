@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model sys_module {
+  module_id         Int               @id @default(autoincrement())
+  module_key        String?           @db.VarChar(255)
+  module_name       String?           @db.VarChar(255)
+  module_status     Boolean           @default(true)
+  module_created_by String?           @db.VarChar(25)
+  module_updated_by String?           @db.VarChar(25)
+  module_created_at DateTime          @default(now())
+  module_updated_at DateTime          @updatedAt
+  module_archived    Boolean           @default(false)
+  module_deleted    Boolean           @default(false)
+  module_role_map   module_role_map[]
+}
+
+model roles {
+  role_id         Int               @id @default(autoincrement())
+  role_key        String?           @db.VarChar(255)
+  role_name       String?           @db.VarChar(255)
+  role_status     Boolean           @default(true)
+  role_created_by String?           @db.VarChar(25)
+  role_updated_by String?           @db.VarChar(25)
+  role_created_at DateTime          @default(now())
+  role_updated_at DateTime          @updatedAt
+  role_archived    Boolean           @default(false)
+  role_deleted    Boolean           @default(false)
+  module_role_map module_role_map[]
+  users           users[]
+}
+
+model module_role_map {
+  mrm_id            Int        @id @default(autoincrement())
+  mrm_module_id     Int
+  mrm_module        sys_module @relation(fields: [mrm_module_id], references: [module_id])
+  mrm_role_id       Int
+  mrm_role_relation roles      @relation(fields: [mrm_role_id], references: [role_id])
+  mrm_read          Boolean    @default(false)
+  mrm_write         Boolean    @default(false)
+  mrm_status        Boolean    @default(true)
+  mrm_created_by    String?    @db.VarChar(25)
+  mrm_updated_by    String?    @db.VarChar(25)
+  mrm_created_at    DateTime   @default(now())
+  mrm_updated_at    DateTime   @updatedAt
+  mrm_archived       Boolean    @default(false)
+  mrm_deleted       Boolean    @default(false)
+}
+
+model users {
+  user_id            Int      @id @default(autoincrement())
+  user_email         String   @unique @db.VarChar(255)
+  user_mobile        String   @unique
+  user_password      String   @db.VarChar(255)
+  user_first_name    String   @db.VarChar(255)
+  user_last_name     String   @db.VarChar(255)
+  user_role_id       Int?
+  user_role_relation roles?   @relation(fields: [user_role_id], references: [role_id])
+  user_status        Boolean  @default(true)
+  user_created_by    String?  @db.VarChar(25)
+  user_updated_by    String?  @db.VarChar(25)
+  user_created_at    DateTime @default(now())
+  user_updated_at    DateTime @updatedAt
+  user_archived       Boolean  @default(false)
+  user_deleted       Boolean  @default(false)
+}

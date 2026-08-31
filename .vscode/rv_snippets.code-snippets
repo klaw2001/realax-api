@@ -1,0 +1,263 @@
+{
+	"error-log": {
+		"prefix": [
+			"log-error"
+		],
+		"body": [
+			"logger.consoleErrorLog(req.originalUrl, 'Error in functionName', error)"
+		],
+		"description": "Error log"
+	},
+	"info-log": {
+		"prefix": [
+			"log-info"
+		],
+		"body": [
+			"logger.consoleInfoLog(req.originalUrl, 'LogMessage')"
+			role_id: true,
+		],
+		"description": "Error log"
+	},
+	"controller-file": {
+		"prefix": [
+			"controller-file"
+		],
+		"body": [
+			"import { Request, Response } from 'express'",
+			"import { sendResponse } from '@core/services/ResponseService'",
+			"import statusType from '@core/enum/statusTypes'",
+			"import logger from '@core/services/LoggingService'",
+			"",
+			"export async function $0${1:Function}(req: Request, res: Response) {",
+			"",
+			"\ttry {",
+			"",
+			"\t\t${4:}",
+			"",
+			"\t\treturn sendResponse(res, true, null, '${2:success}')",
+			"\t} catch (error) {",
+			"\t\tlogger.consoleErrorLog(req.originalUrl, 'Error in $0${1:Function}', error)",
+			"\t\treturn sendResponse(res, false, null, 'Error ${3:}', statusType.DB_ERROR)",
+			"\t}",
+			"}"
+		],
+		"description": "Controller File"
+	},
+	"controller": {
+		"prefix": [
+			"controller"
+		],
+		"body": [
+			"export async function $0${1:Function}(req: Request, res: Response) {",
+			"",
+			"\ttry {",
+			"",
+			"\t\t${4:}",
+			"",
+			"\t\treturn sendResponse(res, true, null, '${2:success}')",
+			"\t} catch (error) {",
+			"\t\tlogger.consoleErrorLog(req.originalUrl, 'Error in $0${1:Function}', error)",
+			"\t\treturn sendResponse(res, false, null, 'Error ${3:}', statusType.DB_ERROR)",
+			"\t}",
+			"}"
+		],
+		"description": "Empty Controller"
+	},
+	"router-file": {
+		"prefix": [
+			"router-file"
+		],
+		"body": [
+			"import express from 'express'",
+			"const router = express.Router()",
+			"",
+			"import * as Controller from './Controller'",
+			"",
+			"",
+			"",
+			"export default router"
+		],
+		"description": "Router File"
+	},
+	"route": {
+		"prefix": [
+			"route"
+		],
+		"body": [
+			"router.route('/').()"
+		],
+		"description": "Empty route."
+	},
+	"no-record": {
+		"prefix": [
+			"no-record"
+		],
+		"body": [
+			"if(data.length < 1) {",
+			"\t\treturn sendResponse(res, false, null, 'No Record Found')",
+			"}"
+		],
+		"description": "No record"
+	},
+	"if-not": {
+		"prefix": [
+			"if-not"
+		],
+		"body": [
+			"if (!param) {",
+			"\tconsole.log('Wrong params provided')",
+			"\t\treturn sendResponse(res, false, null, 'Wrong Params Provided', statusType.BAD_REQUEST)",
+			"}",
+		],
+		"description": "Empty if-not."
+	},
+	"return-res": {
+		"prefix": [
+			"return-res"
+		],
+		"body": [
+			"return sendResponse(res, false, null, 'Message')",
+		],
+		"description": "return response"
+	},
+	"updated-at": {
+		"prefix": [
+			"updated-at"
+		],
+		"body": [
+			"updated_at: moment().format(MYSQL_MOMENT_DATETIME_FORMAT)"
+		],
+		"description": "updated_at column"
+	},
+	".where": {
+		"prefix": [
+			".where"
+		],
+		"body": [
+			".where({",
+			"\tis_active: 'Y'",
+			"})"
+		],
+		"description": "where clause with is active"
+	},
+	"getObjOrNull": {
+		"prefix": [
+			"get-obj-or-null"
+		],
+		"body": [
+			"getObjOrNull(req.body),",
+		],
+		"description": "getObjOrNull"
+	},
+	"user-id": {
+		"prefix": [
+			"user-id"
+		],
+		"body": [
+			"const { user_id } = req.userInfo",
+		],
+		"description": "user_id from token"
+	},
+	"req-params": {
+		"prefix": [
+			"req-params"
+		],
+		"body": [
+			"const {  } = req.params",
+		],
+		"description": "destructure req.params"
+	},
+	"req-body": {
+		"prefix": [
+			"req-body"
+		],
+		"body": [
+			"const {  } = req.body",
+		],
+		"description": "destructure req.body"
+	},
+	"req-query": {
+		"prefix": [
+			"req-query"
+		],
+		"body": [
+			"const {  } = req.query",
+		],
+		"description": "destructure req.query"
+	},
+	"query-flags": {
+		"prefix": [
+			"query-flags"
+		],
+		"body": [
+			"const { search, status, archived, deleted, limit, offset } = req.query",
+		],
+		"description": "query flags"
+	},
+	"create-send-notification-email": {
+		"prefix": [
+			"create-send-notification"
+		],
+		"body": [
+			"let text = ``",
+			"createAndSendNotificationWithMail(",
+			"\tnull, //Notification creator id",
+			"\t{",
+			"\t\tnotification_id: null,",
+			"\t\tnotification_name: ``,",
+			"\t\tnotification_heading: text,",
+			"\t\tnotification_text: ``,",
+			"\t\tnotification_image: ``",
+			"\t},",
+			"\tuser_ids,",
+			"\t{",
+			"\t\tsubject: ``,",
+			"\t\ttext: text",
+			"})"
+		],
+		"description": "create send notification with email"
+	},
+	"model-prisma": {
+		"prefix": [
+			"model-prisma"
+		],
+		"body": [
+			"model ${1:ModelName} {",
+			"\t${2:prefix}_id\tInt\t@id @default(autoincrement())",
+			"\t",
+			"\t${2:prefix}_status       Boolean  @default(true)",
+			"\t${2:prefix}_created_by   String?  @db.VarChar(25)",
+			"\t${2:prefix}_updated_by   String?  @db.VarChar(25)",
+			"\t${2:prefix}_created_at   DateTime @default(now())",
+			"\t${2:prefix}_updated_at   DateTime @updatedAt @default(now())",
+			"\t${2:prefix}_archived      Boolean  @default(false)",
+			"\t${2:prefix}_deleted       Boolean  @default(false)",
+			"",
+			"\t@@index([${2:prefix}_status], map: \"${2:prefix}_status_index\")",
+			"}"
+		],
+		"description": "prisma model"
+	},
+	"string-prisma": {
+		"prefix": [
+			"string-prisma"
+		],
+		"body": [
+			" String?   @db.VarChar(255)"
+		],
+		"description": "prisma string"
+	},
+	"index-prisma": {
+		"prefix": "index-prisma",
+		"body": "\t@@index([_status], map: '$0${1:ModelName}_status')",
+	},
+	"relation-prisma": {
+		"prefix": [
+			"relation-prisma"
+		],
+		"body": [
+			"${1:relation_name} ${2:ModelName} @relation(fields: [${3:col_name}], references: [${4:col_name}])"
+		],
+		"description": "prisma relation"
+	}
+}
