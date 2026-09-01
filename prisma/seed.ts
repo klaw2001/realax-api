@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs'
 import { PrismaClient, TransactionType, TransactionStatus, PartyRole } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -10,6 +11,11 @@ const TRANSACTION_ID = 'seed_transaction_0001'
 const PARTY_ID = 'seed_party_0001'
 
 const AGENT_EMAIL = 'darren@realax.test'
+
+// Local development credential for the one seeded agent. Override with
+// SEED_AGENT_PASSWORD before seeding anything that is not a throwaway database
+// — this default is in version control and is therefore public.
+const AGENT_PASSWORD = process.env.SEED_AGENT_PASSWORD || 'realax-dev-password'
 
 async function seedRealax() {
     // One brokerage. The preset table proper is filled out in Phase 1.1, where
@@ -25,13 +31,17 @@ async function seedRealax() {
         }
     })
 
-    // One agent, attached to that brokerage.
+    // One agent, attached to that brokerage. Same bcrypt cost factor as
+    // `auth.service.ts` uses for a real password change.
+    const passwordHash = await bcrypt.hash(AGENT_PASSWORD, 12)
+
     const agent = await prisma.agent.upsert({
         where: { email: AGENT_EMAIL },
-        update: { brokerageId: brokerage.id },
+        update: { brokerageId: brokerage.id, passwordHash },
         create: {
             email: AGENT_EMAIL,
             name: 'Darren Fischer',
+            passwordHash,
             recoNumber: '4812277',
             phone: '416-555-0188',
             brokerageId: brokerage.id
@@ -106,6 +116,7 @@ async function seedRealax() {
     console.log('seeded agent      :', agent.id, agent.email)
     console.log('seeded property   :', property.id, property.address)
     console.log('seeded transaction:', transaction.id, transaction.type, transaction.status)
+    console.log('login with       :', AGENT_EMAIL, '/', AGENT_PASSWORD)
 }
 
 async function main() {

@@ -11,7 +11,32 @@
     }
   ],
   "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "realax.sid"
+      }
+    },
     "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Stable machine-readable code. Branch on this, not on `message`.",
+            "example": "unauthorized"
+          },
+          "message": {
+            "type": "string",
+            "example": "Authentication required"
+          }
+        },
+        "required": [
+          "error",
+          "message"
+        ]
+      },
       "HealthResponse": {
         "type": "object",
         "properties": {
@@ -42,6 +67,104 @@
           "uptimeSeconds",
           "timestamp"
         ]
+      },
+      "Agent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "darren@realax.test"
+          },
+          "name": {
+            "type": "string",
+            "example": "Darren Fischer"
+          },
+          "recoNumber": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "4812277"
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0188"
+          },
+          "brokerageId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "seed_brokerage_0001"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-01T09:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "recoNumber",
+          "phone",
+          "brokerageId",
+          "createdAt"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "darren@realax.test"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "example": "correct horse battery staple"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "SessionResponse": {
+        "type": "object",
+        "properties": {
+          "agent": {
+            "$ref": "#/components/schemas/Agent"
+          }
+        },
+        "required": [
+          "agent"
+        ]
+      },
+      "LogoutResponse": {
+        "type": "object",
+        "properties": {
+          "loggedOut": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "example": true
+          }
+        },
+        "required": [
+          "loggedOut"
+        ]
       }
     },
     "parameters": {}
@@ -61,6 +184,114 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Start a session",
+        "description": "Unauthenticated. On success sets an httpOnly session cookie; the response body carries no token. Agent accounts only — there are no roles and no brokerage admin.",
+        "tags": [
+          "auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Email or password is wrong",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "End the current session",
+        "description": "Unauthenticated by design — calling it without a session is a no-op that still returns 200, so a client clearing stale state never has to handle a 401.",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Session destroyed if one existed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "summary": "The agent owning the current session",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session. The frontend route guard calls this: a 401 is the signal to redirect to the login page.",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "The authenticated agent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session, or the session refers to an agent that no longer exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }

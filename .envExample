@@ -18,3 +18,6 @@ FRONTEND_BASEURL="http://localhost:8080"
 
 EMAIL_ID="atharv.andewar@enpointe.io"
 EMAIL_PASSWD="xxxxxxxxxx"
+# Signs the session cookie (build plan 0.3). Generate with:
+#   node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+SESSION_SECRET="change-me-at-least-32-characters-long-000000"

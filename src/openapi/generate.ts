@@ -7,7 +7,9 @@ import { registry } from '@/openapi/registry'
 
 // Side-effect imports: every schema module registers itself on import. Add new
 // ones here — a schema that is not imported is not in the contract.
+import '@/schemas/common'
 import '@/schemas/health'
+import '@/schemas/agent'
 
 const OUTPUT = path.resolve(process.cwd(), 'openapi.json')
 

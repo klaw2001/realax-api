@@ -28,12 +28,29 @@ model Agent {
   id           String        @id @default(cuid())
   email        String        @unique
   name         String
+  // bcrypt digest. Nullable because the column is added to a table that
+  // already holds seeded rows, and because an agent created by an import
+  // legitimately has no password until one is set — such an agent simply
+  // cannot log in. Never selected into an API response.
+  passwordHash String?
   recoNumber   String?
   phone        String?
   brokerageId  String?
   brokerage    Brokerage?    @relation(fields: [brokerageId], references: [id])
   transactions Transaction[]
   createdAt    DateTime      @default(now())
+}
+
+// Server-side session records for `express-session` via
+// `@quixo3/prisma-session-store`. The cookie carries only a signed session id;
+// the agent id never leaves the server. Phase 0.5 may move this store to Redis
+// — that is a one-line change in `src/app.ts`, and this table is the fallback
+// until it happens.
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
 }
 
 model Brokerage {
