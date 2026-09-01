@@ -1,0 +1,764 @@
+{
+  "form": "320",
+  "source": "(Ontario) 320 - Confirmation of Co-operation and Representation.pdf",
+  "sourceSha256": "d6f07c5ea13c20d6935e7162b8206841d2c40c7f88ffe137c64d55827c92cdf8",
+  "generator": "tools/extract_template.py",
+  "coordinateSpace": "pdf-user-space-origin-bottom-left",
+  "units": "pt",
+  "extraction": {
+    "minRunLength": 4,
+    "leaderChars": ".․·_",
+    "lineTolerance": 2.0,
+    "runBreakFactor": 2.5
+  },
+  "pageCount": 2,
+  "pages": [
+    {
+      "page": 1,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    },
+    {
+      "page": 2,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    }
+  ],
+  "blankCount": 36,
+  "blanks": [
+    {
+      "id": "320-p1-b001",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        72.9,
+        679.96,
+        570.63,
+        687.96
+      ],
+      "baseline": 681.72,
+      "width": 497.73,
+      "fontSize": 8.0,
+      "runLength": 202,
+      "label": "BUYER",
+      "labelAfter": "",
+      "lineText": "BUYER",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "320-p1-b002",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        72.8,
+        662.96,
+        570.52,
+        670.96
+      ],
+      "baseline": 664.72,
+      "width": 497.73,
+      "fontSize": 8.0,
+      "runLength": 202,
+      "label": "SELLER",
+      "labelAfter": "",
+      "lineText": "SELLER",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "320-p1-b003",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        196.96,
+        645.96,
+        571.49,
+        653.96
+      ],
+      "baseline": 647.72,
+      "width": 374.53,
+      "fontSize": 8.0,
+      "runLength": 152,
+      "label": "For the transaction on the property known as",
+      "labelAfter": "",
+      "lineText": "For the transaction on the property known as",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "320-p1-b004",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        58.5,
+        430.96,
+        571.01,
+        438.96
+      ],
+      "baseline": 432.72,
+      "width": 512.51,
+      "fontSize": 8.0,
+      "runLength": 208,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "320-p1-b005",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        58.5,
+        417.96,
+        571.01,
+        425.96
+      ],
+      "baseline": 419.72,
+      "width": 512.51,
+      "fontSize": 8.0,
+      "runLength": 208,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "320-p1-b006",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        58.5,
+        350.46,
+        571.01,
+        358.46
+      ],
+      "baseline": 352.22,
+      "width": 512.51,
+      "fontSize": 8.0,
+      "runLength": 208,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "320-p1-b007",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        58.5,
+        337.46,
+        571.01,
+        345.46
+      ],
+      "baseline": 339.22,
+      "width": 512.51,
+      "fontSize": 8.0,
+      "runLength": 208,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "320-p1-b008",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        271.19,
+        197.96,
+        335.25,
+        205.96
+      ],
+      "baseline": 199.72,
+      "width": 64.06,
+      "fontSize": 8.0,
+      "runLength": 26,
+      "label": "in the amount of …………………………",
+      "labelAfter": "to be paid from the amount paid by the Seller to the Seller Brokerage",
+      "lineText": "in the amount of ………………………… to be paid from the amount paid by the Seller to the Seller Brokerage",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "320-p1-b009",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        135.0,
+        163.46,
+        571.13,
+        171.46
+      ],
+      "baseline": 165.22,
+      "width": 436.13,
+      "fontSize": 8.0,
+      "runLength": 177,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "320-p1-b010",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        135.0,
+        150.46,
+        571.13,
+        158.46
+      ],
+      "baseline": 152.22,
+      "width": 436.13,
+      "fontSize": 8.0,
+      "runLength": 177,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "320-p1-b011",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        58.5,
+        124.96,
+        571.01,
+        132.96
+      ],
+      "baseline": 126.72,
+      "width": 512.51,
+      "fontSize": 8.0,
+      "runLength": 208,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "320-p1-b012",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        58.5,
+        111.96,
+        571.01,
+        119.96
+      ],
+      "baseline": 113.72,
+      "width": 512.51,
+      "fontSize": 8.0,
+      "runLength": 208,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "320-p2-b013",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        40.5,
+        609.83,
+        296.76,
+        617.83
+      ],
+      "baseline": 611.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "runLength": 104,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 2
+    },
+    {
+      "id": "320-p2-b014",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        309.4,
+        609.83,
+        565.66,
+        617.83
+      ],
+      "baseline": 611.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "runLength": 104,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 1,
+      "runsOnLine": 2
+    },
+    {
+      "id": "320-p2-b015",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        40.5,
+        585.83,
+        296.76,
+        593.83
+      ],
+      "baseline": 587.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "runLength": 104,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 2
+    },
+    {
+      "id": "320-p2-b016",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        309.4,
+        585.83,
+        565.66,
+        593.83
+      ],
+      "baseline": 587.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "runLength": 104,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 1,
+      "runsOnLine": 2
+    },
+    {
+      "id": "320-p2-b017",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        56.82,
+        564.83,
+        157.84,
+        572.83
+      ],
+      "baseline": 566.59,
+      "width": 101.02,
+      "fontSize": 8.0,
+      "runLength": 41,
+      "label": "Tel",
+      "labelAfter": "Fax: Tel.: Fax",
+      "lineText": "Tel.: Fax: Tel.: Fax",
+      "runIndexOnLine": 0,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b018",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        177.66,
+        564.83,
+        295.93,
+        572.83
+      ],
+      "baseline": 566.59,
+      "width": 118.27,
+      "fontSize": 8.0,
+      "runLength": 48,
+      "label": "Tel.: Fax",
+      "labelAfter": "Tel.: Fax",
+      "lineText": "Tel.: Fax: Tel.: Fax",
+      "runIndexOnLine": 1,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b019",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        325.72,
+        564.83,
+        426.74,
+        572.83
+      ],
+      "baseline": 566.59,
+      "width": 101.02,
+      "fontSize": 8.0,
+      "runLength": 41,
+      "label": "Tel.: Fax: Tel",
+      "labelAfter": "Fax",
+      "lineText": "Tel.: Fax: Tel.: Fax",
+      "runIndexOnLine": 2,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b020",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        446.56,
+        564.83,
+        564.83,
+        572.83
+      ],
+      "baseline": 566.59,
+      "width": 118.27,
+      "fontSize": 8.0,
+      "runLength": 48,
+      "label": "Tel.: Fax: Tel.: Fax",
+      "labelAfter": "",
+      "lineText": "Tel.: Fax: Tel.: Fax",
+      "runIndexOnLine": 3,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b021",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        40.5,
+        543.83,
+        296.76,
+        551.83
+      ],
+      "baseline": 545.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "runLength": 104,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 2
+    },
+    {
+      "id": "320-p2-b022",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        309.4,
+        543.83,
+        565.66,
+        551.83
+      ],
+      "baseline": 545.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "runLength": 104,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 1,
+      "runsOnLine": 2
+    },
+    {
+      "id": "320-p2-b023",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        40.5,
+        522.83,
+        210.52,
+        530.83
+      ],
+      "baseline": 524.59,
+      "width": 170.02,
+      "fontSize": 8.0,
+      "runLength": 69,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b024",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        217.91,
+        522.83,
+        296.76,
+        530.83
+      ],
+      "baseline": 524.59,
+      "width": 78.85,
+      "fontSize": 8.0,
+      "runLength": 32,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 1,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b025",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        309.4,
+        522.83,
+        479.42,
+        530.83
+      ],
+      "baseline": 524.59,
+      "width": 170.02,
+      "fontSize": 8.0,
+      "runLength": 69,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 2,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b026",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        486.81,
+        522.83,
+        565.66,
+        530.83
+      ],
+      "baseline": 524.59,
+      "width": 78.85,
+      "fontSize": 8.0,
+      "runLength": 32,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 3,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b027",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        40.5,
+        498.83,
+        296.76,
+        506.83
+      ],
+      "baseline": 500.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "runLength": 104,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 2
+    },
+    {
+      "id": "320-p2-b028",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        309.4,
+        498.83,
+        565.66,
+        506.83
+      ],
+      "baseline": 500.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "runLength": 104,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 1,
+      "runsOnLine": 2
+    },
+    {
+      "id": "320-p2-b029",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        40.5,
+        327.22,
+        180.95,
+        335.22
+      ],
+      "baseline": 328.98,
+      "width": 140.45,
+      "fontSize": 8.0,
+      "runLength": 57,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b030",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        190.5,
+        327.22,
+        308.77,
+        335.22
+      ],
+      "baseline": 328.98,
+      "width": 118.27,
+      "fontSize": 8.0,
+      "runLength": 48,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 1,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b031",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        333.5,
+        327.22,
+        459.16,
+        335.22
+      ],
+      "baseline": 328.98,
+      "width": 125.66,
+      "fontSize": 8.0,
+      "runLength": 51,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 2,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b032",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        473.5,
+        327.22,
+        569.6,
+        335.22
+      ],
+      "baseline": 328.98,
+      "width": 96.1,
+      "fontSize": 8.0,
+      "runLength": 39,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 3,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b033",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        40.5,
+        304.22,
+        180.95,
+        312.22
+      ],
+      "baseline": 305.98,
+      "width": 140.45,
+      "fontSize": 8.0,
+      "runLength": 57,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b034",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        190.5,
+        304.22,
+        308.77,
+        312.22
+      ],
+      "baseline": 305.98,
+      "width": 118.27,
+      "fontSize": 8.0,
+      "runLength": 48,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 1,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b035",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        333.5,
+        304.22,
+        459.16,
+        312.22
+      ],
+      "baseline": 305.98,
+      "width": 125.66,
+      "fontSize": 8.0,
+      "runLength": 51,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 2,
+      "runsOnLine": 4
+    },
+    {
+      "id": "320-p2-b036",
+      "name": null,
+      "page": 2,
+      "bbox": [
+        473.5,
+        304.22,
+        569.6,
+        312.22
+      ],
+      "baseline": 305.98,
+      "width": 96.1,
+      "fontSize": 8.0,
+      "runLength": 39,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 3,
+      "runsOnLine": 4
+    }
+  ]
+}

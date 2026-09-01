@@ -1,0 +1,1012 @@
+{
+  "form": "801",
+  "source": "(Ontario) 801 - Offer Summary Document – For use with Agreement of .pdf",
+  "sourceSha256": "9ff3c8b27553c943f00c166b4ec8131226067500c43222d822933df6c681dc36",
+  "generator": "tools/extract_template.py",
+  "coordinateSpace": "pdf-user-space-origin-bottom-left",
+  "units": "pt",
+  "extraction": {
+    "minRunLength": 4,
+    "leaderChars": ".․·_",
+    "lineTolerance": 2.0,
+    "runBreakFactor": 2.5
+  },
+  "pageCount": 1,
+  "pages": [
+    {
+      "page": 1,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    }
+  ],
+  "blankCount": 49,
+  "blanks": [
+    {
+      "id": "801-p1-b001",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        181.4,
+        617.4,
+        277.49,
+        625.4
+      ],
+      "baseline": 619.16,
+      "width": 96.1,
+      "fontSize": 8.0,
+      "runLength": 39,
+      "label": "REAL PROPERTY ADDRESS",
+      "labelAfter": "(the “property”)",
+      "lineText": "REAL PROPERTY ADDRESS: . (the “property”)",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "801-p1-b002",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        245.95,
+        591.4,
+        285.37,
+        599.4
+      ],
+      "baseline": 593.16,
+      "width": 39.42,
+      "fontSize": 8.0,
+      "runLength": 16,
+      "label": "for an Agreement of Purchase and Sale dated: the",
+      "labelAfter": "day of , 20 (“offer”)",
+      "lineText": "for an Agreement of Purchase and Sale dated: the day of , 20 (“offer”)",
+      "runIndexOnLine": 0,
+      "runsOnLine": 3
+    },
+    {
+      "id": "801-p1-b003",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        311.23,
+        591.4,
+        488.64,
+        599.4
+      ],
+      "baseline": 593.16,
+      "width": 177.41,
+      "fontSize": 8.0,
+      "runLength": 72,
+      "label": "for an Agreement of Purchase and Sale dated: the day of",
+      "labelAfter": ", 20 (“offer”)",
+      "lineText": "for an Agreement of Purchase and Sale dated: the day of , 20 (“offer”)",
+      "runIndexOnLine": 1,
+      "runsOnLine": 3
+    },
+    {
+      "id": "801-p1-b004",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        504.93,
+        591.4,
+        541.89,
+        599.4
+      ],
+      "baseline": 593.16,
+      "width": 36.96,
+      "fontSize": 8.0,
+      "runLength": 15,
+      "label": "for an Agreement of Purchase and Sale dated: the day of , 20",
+      "labelAfter": "(“offer”)",
+      "lineText": "for an Agreement of Purchase and Sale dated: the day of , 20 (“offer”)",
+      "runIndexOnLine": 2,
+      "runsOnLine": 3
+    },
+    {
+      "id": "801-p1-b005",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        96.95,
+        570.4,
+        570.04,
+        578.4
+      ],
+      "baseline": 572.16,
+      "width": 473.09,
+      "fontSize": 8.0,
+      "runLength": 192,
+      "label": "BROKERAGE",
+      "labelAfter": "",
+      "lineText": "BROKERAGE",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "801-p1-b006",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        179.64,
+        549.4,
+        571.42,
+        557.4
+      ],
+      "baseline": 551.16,
+      "width": 391.78,
+      "fontSize": 8.0,
+      "runLength": 159,
+      "label": "SALES REPRESENTATIVE/BROKER",
+      "labelAfter": "",
+      "lineText": "SALES REPRESENTATIVE/BROKER",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "801-p1-b007",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        63.46,
+        528.4,
+        440.45,
+        536.4
+      ],
+      "baseline": 530.16,
+      "width": 376.99,
+      "fontSize": 8.0,
+      "runLength": 153,
+      "label": "I/We,",
+      "labelAfter": ", have signed an offer for the property",
+      "lineText": "I/We, , have signed an offer for the property",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "801-p1-b008",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        40.5,
+        502.4,
+        205.59,
+        510.4
+      ],
+      "baseline": 504.16,
+      "width": 165.09,
+      "fontSize": 8.0,
+      "runLength": 67,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 4
+    },
+    {
+      "id": "801-p1-b009",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        212.62,
+        502.4,
+        301.32,
+        510.4
+      ],
+      "baseline": 504.16,
+      "width": 88.7,
+      "fontSize": 8.0,
+      "runLength": 36,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 1,
+      "runsOnLine": 4
+    },
+    {
+      "id": "801-p1-b010",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        310.7,
+        502.4,
+        475.79,
+        510.4
+      ],
+      "baseline": 504.16,
+      "width": 165.09,
+      "fontSize": 8.0,
+      "runLength": 67,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 2,
+      "runsOnLine": 4
+    },
+    {
+      "id": "801-p1-b011",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        482.82,
+        502.4,
+        571.52,
+        510.4
+      ],
+      "baseline": 504.16,
+      "width": 88.7,
+      "fontSize": 8.0,
+      "runLength": 36,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 3,
+      "runsOnLine": 4
+    },
+    {
+      "id": "801-p1-b012",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        128.45,
+        476.4,
+        300.93,
+        484.4
+      ],
+      "baseline": 478.16,
+      "width": 172.48,
+      "fontSize": 8.0,
+      "runLength": 70,
+      "label": "This offer was submitted,",
+      "labelAfter": "to the Listing Brokerage at on the day of",
+      "lineText": "This offer was submitted, to the Listing Brokerage at on the day of",
+      "runIndexOnLine": 0,
+      "runsOnLine": 3
+    },
+    {
+      "id": "801-p1-b013",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        395.85,
+        476.4,
+        459.91,
+        484.4
+      ],
+      "baseline": 478.16,
+      "width": 64.06,
+      "fontSize": 8.0,
+      "runLength": 26,
+      "label": "This offer was submitted, to the Listing Brokerage at",
+      "labelAfter": "on the day of",
+      "lineText": "This offer was submitted, to the Listing Brokerage at on the day of",
+      "runIndexOnLine": 1,
+      "runsOnLine": 3
+    },
+    {
+      "id": "801-p1-b014",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        486.32,
+        476.4,
+        545.45,
+        484.4
+      ],
+      "baseline": 478.16,
+      "width": 59.14,
+      "fontSize": 8.0,
+      "runLength": 24,
+      "label": "This offer was submitted, to the Listing Brokerage at on the",
+      "labelAfter": "day of",
+      "lineText": "This offer was submitted, to the Listing Brokerage at on the day of",
+      "runIndexOnLine": 2,
+      "runsOnLine": 3
+    },
+    {
+      "id": "801-p1-b015",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        40.5,
+        450.4,
+        151.38,
+        458.4
+      ],
+      "baseline": 452.16,
+      "width": 110.88,
+      "fontSize": 8.0,
+      "runLength": 45,
+      "label": "",
+      "labelAfter": ", 20 Irrevocable until on the day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "runIndexOnLine": 0,
+      "runsOnLine": 6
+    },
+    {
+      "id": "801-p1-b016",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        166.08,
+        450.4,
+        195.65,
+        458.4
+      ],
+      "baseline": 452.16,
+      "width": 29.57,
+      "fontSize": 8.0,
+      "runLength": 12,
+      "label": ", 20",
+      "labelAfter": "Irrevocable until on the day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "runIndexOnLine": 1,
+      "runsOnLine": 6
+    },
+    {
+      "id": "801-p1-b017",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        262.13,
+        450.4,
+        318.8,
+        458.4
+      ],
+      "baseline": 452.16,
+      "width": 56.67,
+      "fontSize": 8.0,
+      "runLength": 23,
+      "label": ", 20 Irrevocable until",
+      "labelAfter": "on the day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "runIndexOnLine": 2,
+      "runsOnLine": 6
+    },
+    {
+      "id": "801-p1-b018",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        344.97,
+        450.4,
+        384.39,
+        458.4
+      ],
+      "baseline": 452.16,
+      "width": 39.42,
+      "fontSize": 8.0,
+      "runLength": 16,
+      "label": ", 20 Irrevocable until on the",
+      "labelAfter": "day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "runIndexOnLine": 3,
+      "runsOnLine": 6
+    },
+    {
+      "id": "801-p1-b019",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        411.45,
+        450.4,
+        524.79,
+        458.4
+      ],
+      "baseline": 452.16,
+      "width": 113.34,
+      "fontSize": 8.0,
+      "runLength": 46,
+      "label": ", 20 Irrevocable until on the day of",
+      "labelAfter": ", 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "runIndexOnLine": 4,
+      "runsOnLine": 6
+    },
+    {
+      "id": "801-p1-b020",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        539.49,
+        450.4,
+        571.52,
+        458.4
+      ],
+      "baseline": 452.16,
+      "width": 32.03,
+      "fontSize": 8.0,
+      "runLength": 13,
+      "label": ", 20 Irrevocable until on the day of , 20",
+      "labelAfter": "",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "runIndexOnLine": 5,
+      "runsOnLine": 6
+    },
+    {
+      "id": "801-p1-b021",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        63.46,
+        405.4,
+        440.45,
+        413.4
+      ],
+      "baseline": 407.16,
+      "width": 376.99,
+      "fontSize": 8.0,
+      "runLength": 153,
+      "label": "I/We,",
+      "labelAfter": ", have signed an offer for the property",
+      "lineText": "I/We, , have signed an offer for the property",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "801-p1-b022",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        40.5,
+        379.4,
+        205.59,
+        387.4
+      ],
+      "baseline": 381.16,
+      "width": 165.09,
+      "fontSize": 8.0,
+      "runLength": 67,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 0,
+      "runsOnLine": 4
+    },
+    {
+      "id": "801-p1-b023",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        212.62,
+        379.4,
+        301.32,
+        387.4
+      ],
+      "baseline": 381.16,
+      "width": 88.7,
+      "fontSize": 8.0,
+      "runLength": 36,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 1,
+      "runsOnLine": 4
+    },
+    {
+      "id": "801-p1-b024",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        310.7,
+        379.4,
+        475.79,
+        387.4
+      ],
+      "baseline": 381.16,
+      "width": 165.09,
+      "fontSize": 8.0,
+      "runLength": 67,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 2,
+      "runsOnLine": 4
+    },
+    {
+      "id": "801-p1-b025",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        482.82,
+        379.4,
+        571.52,
+        387.4
+      ],
+      "baseline": 381.16,
+      "width": 88.7,
+      "fontSize": 8.0,
+      "runLength": 36,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "runIndexOnLine": 3,
+      "runsOnLine": 4
+    },
+    {
+      "id": "801-p1-b026",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        124.92,
+        353.4,
+        299.87,
+        361.4
+      ],
+      "baseline": 355.16,
+      "width": 174.94,
+      "fontSize": 8.0,
+      "runLength": 71,
+      "label": "An offer was submitted,",
+      "labelAfter": "to the Listing Brokerage at on the day of",
+      "lineText": "An offer was submitted, to the Listing Brokerage at on the day of",
+      "runIndexOnLine": 0,
+      "runsOnLine": 3
+    },
+    {
+      "id": "801-p1-b027",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        394.69,
+        353.4,
+        463.68,
+        361.4
+      ],
+      "baseline": 355.16,
+      "width": 68.99,
+      "fontSize": 8.0,
+      "runLength": 28,
+      "label": "An offer was submitted, to the Listing Brokerage at",
+      "labelAfter": "on the day of",
+      "lineText": "An offer was submitted, to the Listing Brokerage at on the day of",
+      "runIndexOnLine": 1,
+      "runsOnLine": 3
+    },
+    {
+      "id": "801-p1-b028",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        490.04,
+        353.4,
+        546.72,
+        361.4
+      ],
+      "baseline": 355.16,
+      "width": 56.67,
+      "fontSize": 8.0,
+      "runLength": 23,
+      "label": "An offer was submitted, to the Listing Brokerage at on the",
+      "labelAfter": "day of",
+      "lineText": "An offer was submitted, to the Listing Brokerage at on the day of",
+      "runIndexOnLine": 2,
+      "runsOnLine": 3
+    },
+    {
+      "id": "801-p1-b029",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        40.5,
+        327.4,
+        151.38,
+        335.4
+      ],
+      "baseline": 329.16,
+      "width": 110.88,
+      "fontSize": 8.0,
+      "runLength": 45,
+      "label": "",
+      "labelAfter": ", 20 Irrevocable until on the day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "runIndexOnLine": 0,
+      "runsOnLine": 6
+    },
+    {
+      "id": "801-p1-b030",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        166.08,
+        327.4,
+        195.65,
+        335.4
+      ],
+      "baseline": 329.16,
+      "width": 29.57,
+      "fontSize": 8.0,
+      "runLength": 12,
+      "label": ", 20",
+      "labelAfter": "Irrevocable until on the day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "runIndexOnLine": 1,
+      "runsOnLine": 6
+    },
+    {
+      "id": "801-p1-b031",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        262.13,
+        327.4,
+        318.8,
+        335.4
+      ],
+      "baseline": 329.16,
+      "width": 56.67,
+      "fontSize": 8.0,
+      "runLength": 23,
+      "label": ", 20 Irrevocable until",
+      "labelAfter": "on the day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "runIndexOnLine": 2,
+      "runsOnLine": 6
+    },
+    {
+      "id": "801-p1-b032",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        344.97,
+        327.4,
+        384.39,
+        335.4
+      ],
+      "baseline": 329.16,
+      "width": 39.42,
+      "fontSize": 8.0,
+      "runLength": 16,
+      "label": ", 20 Irrevocable until on the",
+      "labelAfter": "day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "runIndexOnLine": 3,
+      "runsOnLine": 6
+    },
+    {
+      "id": "801-p1-b033",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        411.45,
+        327.4,
+        524.79,
+        335.4
+      ],
+      "baseline": 329.16,
+      "width": 113.34,
+      "fontSize": 8.0,
+      "runLength": 46,
+      "label": ", 20 Irrevocable until on the day of",
+      "labelAfter": ", 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "runIndexOnLine": 4,
+      "runsOnLine": 6
+    },
+    {
+      "id": "801-p1-b034",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        539.49,
+        327.4,
+        571.52,
+        335.4
+      ],
+      "baseline": 329.16,
+      "width": 32.03,
+      "fontSize": 8.0,
+      "runLength": 13,
+      "label": ", 20 Irrevocable until on the day of , 20",
+      "labelAfter": "",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "runIndexOnLine": 5,
+      "runsOnLine": 6
+    },
+    {
+      "id": "801-p1-b035",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        83.36,
+        271.4,
+        571.23,
+        279.4
+      ],
+      "baseline": 273.16,
+      "width": 487.87,
+      "fontSize": 8.0,
+      "runLength": 198,
+      "label": "SELLER(S)",
+      "labelAfter": "",
+      "lineText": "SELLER(S)",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "801-p1-b036",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        124.8,
+        248.4,
+        570.79,
+        256.4
+      ],
+      "baseline": 250.16,
+      "width": 445.98,
+      "fontSize": 8.0,
+      "runLength": 181,
+      "label": "SELLER(S) CONTACT",
+      "labelAfter": "",
+      "lineText": "SELLER(S) CONTACT",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "801-p1-b037",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        132.09,
+        222.4,
+        570.68,
+        230.4
+      ],
+      "baseline": 224.16,
+      "width": 438.59,
+      "fontSize": 8.0,
+      "runLength": 178,
+      "label": "LISTING BROKERAGE",
+      "labelAfter": "",
+      "lineText": "LISTING BROKERAGE",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "801-p1-b038",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        179.73,
+        199.4,
+        571.5,
+        207.4
+      ],
+      "baseline": 201.16,
+      "width": 391.78,
+      "fontSize": 8.0,
+      "runLength": 159,
+      "label": "SALES REPRESENTATIVE/BROKER",
+      "labelAfter": "",
+      "lineText": "SALES REPRESENTATIVE/BROKER",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    },
+    {
+      "id": "801-p1-b039",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        124.48,
+        176.4,
+        220.57,
+        184.4
+      ],
+      "baseline": 178.16,
+      "width": 96.1,
+      "fontSize": 8.0,
+      "runLength": 39,
+      "label": "This offer was received,",
+      "labelAfter": "by the Listing Brokerage at on the day of , 20",
+      "lineText": "This offer was received, by the Listing Brokerage at on the day of , 20",
+      "runIndexOnLine": 0,
+      "runsOnLine": 5
+    },
+    {
+      "id": "801-p1-b040",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        316.81,
+        176.4,
+        371.02,
+        184.4
+      ],
+      "baseline": 178.16,
+      "width": 54.21,
+      "fontSize": 8.0,
+      "runLength": 22,
+      "label": "This offer was received, by the Listing Brokerage at",
+      "labelAfter": "on the day of , 20",
+      "lineText": "This offer was received, by the Listing Brokerage at on the day of , 20",
+      "runIndexOnLine": 1,
+      "runsOnLine": 5
+    },
+    {
+      "id": "801-p1-b041",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        396.99,
+        176.4,
+        424.1,
+        184.4
+      ],
+      "baseline": 178.16,
+      "width": 27.1,
+      "fontSize": 8.0,
+      "runLength": 11,
+      "label": "This offer was received, by the Listing Brokerage at on the",
+      "labelAfter": "day of , 20",
+      "lineText": "This offer was received, by the Listing Brokerage at on the day of , 20",
+      "runIndexOnLine": 2,
+      "runsOnLine": 5
+    },
+    {
+      "id": "801-p1-b042",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        450.96,
+        176.4,
+        542.13,
+        184.4
+      ],
+      "baseline": 178.16,
+      "width": 91.17,
+      "fontSize": 8.0,
+      "runLength": 37,
+      "label": "This offer was received, by the Listing Brokerage at on the day of",
+      "labelAfter": ", 20",
+      "lineText": "This offer was received, by the Listing Brokerage at on the day of , 20",
+      "runIndexOnLine": 3,
+      "runsOnLine": 5
+    },
+    {
+      "id": "801-p1-b043",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        556.77,
+        176.4,
+        571.55,
+        184.4
+      ],
+      "baseline": 178.16,
+      "width": 14.78,
+      "fontSize": 8.0,
+      "runLength": 6,
+      "label": "This offer was received, by the Listing Brokerage at on the day of , 20",
+      "labelAfter": "",
+      "lineText": "This offer was received, by the Listing Brokerage at on the day of , 20",
+      "runIndexOnLine": 4,
+      "runsOnLine": 5
+    },
+    {
+      "id": "801-p1-b044",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        129.4,
+        146.4,
+        235.35,
+        154.4
+      ],
+      "baseline": 148.16,
+      "width": 105.95,
+      "fontSize": 8.0,
+      "runLength": 43,
+      "label": "This offer was presented,",
+      "labelAfter": "to the Seller(s) at on the day of , 20",
+      "lineText": "This offer was presented, to the Seller(s) at on the day of , 20",
+      "runIndexOnLine": 0,
+      "runsOnLine": 5
+    },
+    {
+      "id": "801-p1-b045",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        300.25,
+        146.4,
+        354.46,
+        154.4
+      ],
+      "baseline": 148.16,
+      "width": 54.21,
+      "fontSize": 8.0,
+      "runLength": 22,
+      "label": "This offer was presented, to the Seller(s) at",
+      "labelAfter": "on the day of , 20",
+      "lineText": "This offer was presented, to the Seller(s) at on the day of , 20",
+      "runIndexOnLine": 1,
+      "runsOnLine": 5
+    },
+    {
+      "id": "801-p1-b046",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        380.87,
+        146.4,
+        417.83,
+        154.4
+      ],
+      "baseline": 148.16,
+      "width": 36.96,
+      "fontSize": 8.0,
+      "runLength": 15,
+      "label": "This offer was presented, to the Seller(s) at on the",
+      "labelAfter": "day of , 20",
+      "lineText": "This offer was presented, to the Seller(s) at on the day of , 20",
+      "runIndexOnLine": 2,
+      "runsOnLine": 5
+    },
+    {
+      "id": "801-p1-b047",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        445.12,
+        146.4,
+        536.29,
+        154.4
+      ],
+      "baseline": 148.16,
+      "width": 91.17,
+      "fontSize": 8.0,
+      "runLength": 37,
+      "label": "This offer was presented, to the Seller(s) at on the day of",
+      "labelAfter": ", 20",
+      "lineText": "This offer was presented, to the Seller(s) at on the day of , 20",
+      "runIndexOnLine": 3,
+      "runsOnLine": 5
+    },
+    {
+      "id": "801-p1-b048",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        551.07,
+        146.4,
+        570.79,
+        154.4
+      ],
+      "baseline": 148.16,
+      "width": 19.71,
+      "fontSize": 8.0,
+      "runLength": 8,
+      "label": "This offer was presented, to the Seller(s) at on the day of , 20",
+      "labelAfter": "",
+      "lineText": "This offer was presented, to the Seller(s) at on the day of , 20",
+      "runIndexOnLine": 4,
+      "runsOnLine": 5
+    },
+    {
+      "id": "801-p1-b049",
+      "name": null,
+      "page": 1,
+      "bbox": [
+        91.02,
+        79.4,
+        571.5,
+        87.4
+      ],
+      "baseline": 81.16,
+      "width": 480.48,
+      "fontSize": 8.0,
+      "runLength": 195,
+      "label": "Comments",
+      "labelAfter": "",
+      "lineText": "Comments",
+      "runIndexOnLine": 0,
+      "runsOnLine": 1
+    }
+  ]
+}
