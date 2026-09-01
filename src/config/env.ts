@@ -23,7 +23,21 @@ const envSchema = z.object({
 
     // Explicit origin, not `*` — the frontend sends the session cookie, and a
     // wildcard origin is invalid with credentialed CORS.
-    CORS_ORIGIN: z.string().min(1).default('http://localhost:3000')
+    CORS_ORIGIN: z.string().min(1).default('http://localhost:3000'),
+
+    // Storage. The bucket is Canadian-resident on purpose: identity documents
+    // are FINTRAC material and do not leave `ca-central-1`.
+    AWS_REGION: z.string().min(1).default('ca-central-1'),
+    AWS_S3_BUCKET: z.string().min(1, 'AWS_S3_BUCKET is required'),
+
+    // Required, not optional. Every object is written with SSE-KMS; without a
+    // key id the first identity upload would be the thing that discovers it.
+    AWS_KMS_KEY_ID: z.string().min(1, 'AWS_KMS_KEY_ID is required')
+
+    // AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY are deliberately absent. The
+    // SDK's default credential chain reads them from the environment in
+    // development and from the instance role in production; requiring them
+    // here would make a correctly role-based deployment fail to boot.
 })
 
 const parsed = envSchema.safeParse(process.env)
