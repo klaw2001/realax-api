@@ -11,6 +11,7 @@ import '@/schemas/common'
 import '@/schemas/health'
 import '@/schemas/brokerage'
 import '@/schemas/agent'
+import '@/schemas/transaction'
 
 const OUTPUT = path.resolve(process.cwd(), 'openapi.json')
 

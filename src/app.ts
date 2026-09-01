@@ -14,6 +14,7 @@ import requireAgent from '@/middleware/auth'
 import agentRoutes from '@/modules/agent/agent.routes'
 import { authRoutes, meRoutes } from '@/modules/auth/auth.routes'
 import healthRoutes from '@/modules/health/health.routes'
+import transactionRoutes from '@/modules/transaction/transaction.routes'
 
 const app = express()
 
@@ -93,5 +94,6 @@ app.use('/api', requireAgent)
 
 app.use('/api/me', meRoutes)
 app.use('/api/agent', agentRoutes)
+app.use('/api/transactions', transactionRoutes)
 
 export default app
