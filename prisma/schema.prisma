@@ -59,13 +59,37 @@ model Brokerage {
 // Parties and identity
 // ---------------------------------------------------------------------------
 
+// A person on a transaction (build plan 1.5).
+//
+// The columns below the contact block are the ones an Ontario driver's licence
+// yields and an OREA form or FINTRAC check actually consumes. They are filled by
+// hand today; Phase 2.5 populates the same columns from an OCR'd scan, which is
+// why they live here rather than waiting for the vendor decision. Nothing on the
+// card that no form and no check asks for — sex, height, licence class — is
+// stored: see NEEDS-KLAW for that list.
+//
+// The licence number and its expiry are deliberately NOT here. Those are
+// `IdentityRecord`: FINTRAC material, encrypted at rest, five-year retention,
+// and written only by the verification flow.
 model Party {
   id              String             @id @default(cuid())
   fullLegalName   String
   email           String?
   phone           String?
+  // The address as it appears on the licence, and the starting point for the
+  // "address for service" blanks on the OREA forms. Editable — the two are
+  // often not the same address.
+  address         String?
+  city            String?
+  province        String?
+  postalCode      String?
+  // A calendar date, not an instant: `@db.Date` so a birth date read back in
+  // another timezone is still the date printed on the card.
+  dateOfBirth     DateTime?          @db.Date
   identityRecords IdentityRecord[]
   roles           TransactionParty[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 }
 
 model IdentityRecord {
@@ -145,6 +169,8 @@ enum PartyRole {
   WITNESS
 }
 
+// One person in one role on one transaction. This is the row the parties API
+// addresses: `Party` is the person, `TransactionParty` is their place in a deal.
 model TransactionParty {
   id            String      @id @default(cuid())
   transactionId String
@@ -153,6 +179,12 @@ model TransactionParty {
   party         Party       @relation(fields: [partyId], references: [id])
   role          PartyRole
   signingOrder  Int?
+  // Soft delete, and only ever on this row — never on `Party`. Removing a
+  // seller from a listing must not disturb the same person on another
+  // transaction, and their identity records are held five years regardless.
+  // Every read filters on this being null.
+  deletedAt     DateTime?
+  createdAt     DateTime    @default(now())
 
   @@unique([transactionId, partyId, role])
 }

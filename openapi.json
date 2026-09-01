@@ -824,6 +824,339 @@
           "address",
           "city"
         ]
+      },
+      "PartyRole": {
+        "type": "string",
+        "enum": [
+          "BUYER",
+          "SELLER",
+          "SPOUSE",
+          "WITNESS"
+        ],
+        "example": "SELLER"
+      },
+      "Party": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identifies this party on this transaction. Use it for the item routes under /api/transactions/{id}/parties.",
+            "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+          },
+          "personId": {
+            "type": "string",
+            "description": "The underlying person record. Distinct from `id` because build plan 2.5 reuses one person across transactions; today there is exactly one party per person.",
+            "example": "clx9z8y7x6w5v4u3t2s1r0q9p"
+          },
+          "role": {
+            "$ref": "#/components/schemas/PartyRole"
+          },
+          "signingOrder": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Position in the signing sequence (build plan 3.1 signs one signer at a time). Null until the order is set.",
+            "example": 1
+          },
+          "fullLegalName": {
+            "type": "string",
+            "example": "Margaret Anne Chen"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "m.chen@example.com"
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0142"
+          },
+          "address": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "88 Wellesley St E"
+          },
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Toronto"
+          },
+          "province": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "ON"
+          },
+          "postalCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "M4Y 1H1"
+          },
+          "dateOfBirth": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "description": "As printed on the identity document. Date only — no time, no timezone.",
+            "example": "1979-04-17"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-02T09:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-02T09:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "personId",
+          "role",
+          "signingOrder",
+          "fullLegalName",
+          "email",
+          "phone",
+          "address",
+          "city",
+          "province",
+          "postalCode",
+          "dateOfBirth",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PartyResponse": {
+        "type": "object",
+        "properties": {
+          "party": {
+            "$ref": "#/components/schemas/Party"
+          }
+        },
+        "required": [
+          "party"
+        ]
+      },
+      "PartyListResponse": {
+        "type": "object",
+        "properties": {
+          "parties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Party"
+            }
+          }
+        },
+        "required": [
+          "parties"
+        ]
+      },
+      "CreatePartyRequest": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/PartyRole"
+          },
+          "fullLegalName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "The name as it appears on identification and as it will be filled on the form.",
+            "example": "Margaret Anne Chen"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 320,
+            "format": "email",
+            "example": "m.chen@example.com"
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 32,
+            "example": "416-555-0142"
+          },
+          "address": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "example": "88 Wellesley St E"
+          },
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 120,
+            "example": "Toronto"
+          },
+          "province": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 32,
+            "example": "ON"
+          },
+          "postalCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 16,
+            "example": "M4Y 1H1"
+          },
+          "dateOfBirth": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "1979-04-17"
+          },
+          "signingOrder": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 50,
+            "description": "Position in the signing sequence. Left null until the order is decided.",
+            "example": 1
+          }
+        },
+        "required": [
+          "role",
+          "fullLegalName"
+        ]
+      },
+      "UpdatePartyRequest": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/PartyRole"
+          },
+          "fullLegalName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "example": "Margaret Anne Chen"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 320,
+            "format": "email",
+            "example": "m.chen@example.com"
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 32,
+            "example": "416-555-0142"
+          },
+          "address": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "example": "88 Wellesley St E"
+          },
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 120,
+            "example": "Toronto"
+          },
+          "province": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 32,
+            "example": "ON"
+          },
+          "postalCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 16,
+            "example": "M4Y 1H1"
+          },
+          "dateOfBirth": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "1979-04-17"
+          },
+          "signingOrder": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 50,
+            "example": 1
+          }
+        }
+      },
+      "DeletePartyResponse": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "example": true
+          }
+        },
+        "required": [
+          "deleted"
+        ]
       }
     },
     "parameters": {}
@@ -1452,6 +1785,368 @@
           },
           "404": {
             "description": "No such transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{id}/parties": {
+      "get": {
+        "summary": "The parties on a transaction",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. Ordered by signing order, then by when each party was added; parties with no signing order come last. Removed parties are absent. A transaction someone else owns answers 404, the same as one that does not exist.",
+        "tags": [
+          "parties"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The transaction. Must belong to the caller.",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "description": "The transaction. Must belong to the caller.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The parties on the transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartyListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add a party to a transaction",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. Creates a new person record and places them on the transaction. There is no way to attach an existing person yet — see build plan 2.5.",
+        "tags": [
+          "parties"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The transaction. Must belong to the caller.",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "description": "The transaction. Must belong to the caller.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePartyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The party as saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{id}/parties/{partyId}": {
+      "get": {
+        "summary": "One party on a transaction",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. A removed party answers 404.",
+        "tags": [
+          "parties"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The transaction. Must belong to the caller.",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "description": "The transaction. Must belong to the caller.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "The party's `id` — the one from the list response, not `personId`.",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "description": "The party's `id` — the one from the list response, not `personId`.",
+            "name": "partyId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The party",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartyResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction, or no such party on it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Edit a party",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. Partial: an absent field is unchanged, an explicit null clears it. Returns the saved party, so the client renders what was stored rather than what it sent.",
+        "tags": [
+          "parties"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The transaction. Must belong to the caller.",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "description": "The transaction. Must belong to the caller.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "The party's `id` — the one from the list response, not `personId`.",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "description": "The party's `id` — the one from the list response, not `personId`.",
+            "name": "partyId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePartyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The saved party",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction, or no such party on it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove a party from a transaction",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. A soft delete: the party stops appearing on this transaction, and the person record is left intact because the same person may be on another transaction and their identity records are retained regardless. Removing an already-removed party answers 404.",
+        "tags": [
+          "parties"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The transaction. Must belong to the caller.",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "description": "The transaction. Must belong to the caller.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "The party's `id` — the one from the list response, not `personId`.",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "description": "The party's `id` — the one from the list response, not `personId`.",
+            "name": "partyId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The party was removed from the transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletePartyResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction, or no such party on it",
             "content": {
               "application/json": {
                 "schema": {

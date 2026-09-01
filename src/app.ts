@@ -14,6 +14,7 @@ import requireAgent from '@/middleware/auth'
 import agentRoutes from '@/modules/agent/agent.routes'
 import { authRoutes, meRoutes } from '@/modules/auth/auth.routes'
 import healthRoutes from '@/modules/health/health.routes'
+import { transactionPartyRoutes } from '@/modules/party/party.routes'
 import { propertyRoutes, transactionPropertyRoutes } from '@/modules/property/property.routes'
 import transactionRoutes from '@/modules/transaction/transaction.routes'
 
@@ -100,6 +101,7 @@ app.use('/api/transactions', transactionRoutes)
 // Mounted apart from the transaction router rather than inside it: the property
 // module owns these handlers, and a route lives in the module that owns it.
 app.use('/api/transactions/:id/property', transactionPropertyRoutes)
+app.use('/api/transactions/:id/parties', transactionPartyRoutes)
 app.use('/api/properties', propertyRoutes)
 
 export default app
