@@ -25,18 +25,5 @@ export default tseslint.config(
                 { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
             ]
         }
-    },
-    {
-        // Inherited Express-starter code: the demo modules under src/app and
-        // the helper layer under src/@core. Both are replaced by real REALAX
-        // modules (src/modules) and clients (src/lib) during Phase 0, so their
-        // `any` usage and dead imports are surfaced but not blocking. New code
-        // outside these paths gets the rules at error level.
-        files: ['src/app/**/*.ts', 'src/@core/**/*.ts'],
-        rules: {
-            '@typescript-eslint/no-explicit-any': 'warn',
-            '@typescript-eslint/no-unused-vars': 'warn',
-            '@typescript-eslint/no-unsafe-function-type': 'warn'
-        }
     }
 )

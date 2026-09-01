@@ -6,7 +6,7 @@
 			"script": "dev",
 			"problemMatcher": [],
 			"label": "npm: dev",
-			"detail": "kill-port 8002 && nodemon server.js --exec babel-node --presets es2015,stage-2"
+			"detail": "kill-port 4000 && nodemon src/index.ts"
 		}
 	]
 }

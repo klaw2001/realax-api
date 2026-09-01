@@ -1,23 +1,10 @@
-MODE="development"
-
 PORT=4000
 
 DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/realax_dev?schema=public"
 
-JWT_ACCESS_SECRET="793472e6d8d22a64acc569f0b761b3aaf5e039ef"
-JWT_ACCESS_TOKEN_EXPIRE="1d"
-JWT_REFRESH_SECRET="4334df97fc28724451dd91bdbc1e6d9534506167"
-JWT_REFRESH_TOKEN_EXPIRE="10d"
-
-ENCRYPT_KEY="95c530a5f60879594e878ad671339eb19164c78ff15214c4d2b7e9445ec3e9ba"
-ENCRYPT_IV="fef81079c52360f6374a974f5f03bb43"
-
 CORS_ORIGIN="http://localhost:3000"
 API_BASEURL="http://localhost:4000"
-FRONTEND_BASEURL="http://localhost:8080"
 
-EMAIL_ID="atharv.andewar@enpointe.io"
-EMAIL_PASSWD="xxxxxxxxxx"
 # Signs the session cookie (build plan 0.3). Generate with:
 #   node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 SESSION_SECRET="change-me-at-least-32-characters-long-000000"
