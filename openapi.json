@@ -37,13 +37,35 @@
           "message"
         ]
       },
+      "DependencyCheck": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down"
+            ],
+            "example": "up"
+          },
+          "latencyMs": {
+            "type": "number",
+            "example": 4
+          }
+        },
+        "required": [
+          "status",
+          "latencyMs"
+        ]
+      },
       "HealthResponse": {
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
             "enum": [
-              "ok"
+              "ok",
+              "degraded"
             ],
             "example": "ok"
           },
@@ -59,13 +81,33 @@
             "type": "string",
             "format": "date-time",
             "example": "2026-08-31T12:00:00.000Z"
+          },
+          "checks": {
+            "type": "object",
+            "properties": {
+              "database": {
+                "$ref": "#/components/schemas/DependencyCheck"
+              },
+              "redis": {
+                "$ref": "#/components/schemas/DependencyCheck"
+              },
+              "storage": {
+                "$ref": "#/components/schemas/DependencyCheck"
+              }
+            },
+            "required": [
+              "database",
+              "redis",
+              "storage"
+            ]
           }
         },
         "required": [
           "status",
           "service",
           "uptimeSeconds",
-          "timestamp"
+          "timestamp",
+          "checks"
         ]
       },
       "Agent": {
@@ -172,14 +214,24 @@
   "paths": {
     "/health": {
       "get": {
-        "summary": "Liveness probe",
-        "description": "Unauthenticated. Returns 200 while the service is up.",
+        "summary": "Liveness and dependency probe",
+        "description": "Unauthenticated. 200 while the service and all three dependencies (Postgres, Redis, S3) answer; 503 with the same body shape when any of them does not.",
         "tags": [
           "health"
         ],
         "responses": {
           "200": {
-            "description": "Service is up",
+            "description": "Service and every dependency are up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service is up but at least one dependency is down",
             "content": {
               "application/json": {
                 "schema": {

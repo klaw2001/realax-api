@@ -17,6 +17,11 @@ const envSchema = z.object({
 
     DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
 
+    // Cache only — nothing is stored here that cannot be rebuilt from Postgres
+    // or re-fetched upstream. Defaults to a local server so a fresh checkout
+    // boots without an extra variable; production must set it explicitly.
+    REDIS_URL: z.string().min(1).default('redis://localhost:6379'),
+
     // Signs the session cookie. Rotating it invalidates every live session,
     // which is the intended behaviour after a leak.
     SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters'),
