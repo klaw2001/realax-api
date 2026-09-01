@@ -1,0 +1,644 @@
+{
+  "rooms": [
+    {
+      "features": "ceiling fan(s)",
+      "level": "Main",
+      "length": null,
+      "width": null,
+      "description": "Primary Bedroom",
+      "features3": "walk-in closet(s)",
+      "features2": "full bath"
+    },
+    {
+      "features": "granite counters",
+      "level": "Main",
+      "length": null,
+      "width": null,
+      "description": "Primary Bathroom",
+      "features3": "full bath",
+      "features2": "double vanity"
+    },
+    {
+      "features": "center island",
+      "level": "Main",
+      "length": null,
+      "width": null,
+      "description": "Kitchen",
+      "features3": null,
+      "features2": "pantry"
+    }
+  ],
+  "occupancy": null,
+  "condominium": {
+    "pets": null,
+    "condoCorpNum": null,
+    "parkingType": "Driveway, Garage",
+    "fees": {
+      "cableInlc": null,
+      "waterIncl": null,
+      "heatIncl": null,
+      "taxesIncl": null,
+      "parkingIncl": null,
+      "maintenance": 250,
+      "hydroIncl": null
+    },
+    "stories": null,
+    "propertyMgr": null,
+    "lockerLevel": null,
+    "unitNumber": null,
+    "buildingInsurance": null,
+    "locker": null,
+    "condoCorp": "Springfield HOA",
+    "sharesPercentage": null,
+    "ensuiteLaundry": null,
+    "exposure": null,
+    "lockerNumber": null,
+    "lockerUnitNumber": null,
+    "amenities": []
+  },
+  "taxes": {
+    "annualAmount": null,
+    "assessmentYear": "2023"
+  },
+  "office": {
+    "brokerageName": "All City Real Estate Ltd. Co"
+  },
+  "type": "Sale",
+  "nearby": {
+    "amenities": [
+      "Common Grounds",
+      "High Speed Internet",
+      "Park",
+      "Picnic Area",
+      "Playground",
+      "Pool"
+    ]
+  },
+  "openHouse": [],
+  "permissions": {
+    "displayAddressOnInternet": "Y",
+    "displayPublic": "Y",
+    "displayInternetEntireListing": "Y"
+  },
+  "soldPrice": null,
+  "estimate": {
+    "date": "2025-08-06T20:40:52.040Z",
+    "high": 410343.69283686153,
+    "low": 349132.49466313847,
+    "confidence": 0.08059659957899999,
+    "history": {
+      "mth": {
+        "2025-05": {
+          "value": 379929.34375
+        },
+        "2024-04": {
+          "value": 383242.71875
+        },
+        "2025-04": {
+          "value": 380092.90625
+        },
+        "2024-03": {
+          "value": 383647.75
+        },
+        "2025-07": {
+          "value": 379315.03125
+        },
+        "2024-06": {
+          "value": 380171.75
+        },
+        "2025-06": {
+          "value": 378953.0625
+        },
+        "2024-05": {
+          "value": 381323.03125
+        },
+        "2024-08": {
+          "value": 379375.34375
+        },
+        "2025-08": {
+          "value": 379738.09375
+        },
+        "2024-07": {
+          "value": 379281.46875
+        },
+        "2024-09": {
+          "value": 379167.3125
+        },
+        "2023-09": {
+          "value": 378055.25
+        },
+        "2025-01": {
+          "value": 379619.34375
+        },
+        "2024-11": {
+          "value": 379872.71875
+        },
+        "2024-10": {
+          "value": 378990.4375
+        },
+        "2023-10": {
+          "value": 377955.75
+        },
+        "2025-03": {
+          "value": 380626.0625
+        },
+        "2024-02": {
+          "value": 382043.375
+        },
+        "2023-11": {
+          "value": 377567.0625
+        },
+        "2025-02": {
+          "value": 381254.25
+        },
+        "2024-12": {
+          "value": 379772.0625
+        },
+        "2024-01": {
+          "value": 379071.75
+        },
+        "2023-12": {
+          "value": 377920.8125
+        }
+      }
+    },
+    "value": 379738.09375
+  },
+  "details": {
+    "numKitchens": null,
+    "numParkingSpaces": 4,
+    "laundryLevel": null,
+    "zoningDescription": null,
+    "moreInformationLink": null,
+    "certificationLevel": null,
+    "den": null,
+    "yearBuilt": "2004",
+    "balcony": "Rear Porch",
+    "alternateURLVideoLink": null,
+    "exteriorConstruction1": "HardiPlank Type, Stone",
+    "elevator": null,
+    "exteriorConstruction2": null,
+    "roofMaterial": "Composition, Shingle",
+    "zoning": null,
+    "basement1": null,
+    "basement2": null,
+    "sqft": "1752",
+    "handicappedEquipped": "See Remarks",
+    "heating": "Central, Electric",
+    "numRooms": null,
+    "landscapeFeatures": null,
+    "virtualTourUrl": null,
+    "landSewer": null,
+    "energyCertification": null,
+    "numBathrooms": 2,
+    "greenPropertyInformationStatement": null,
+    "liveStreamEventURL": null,
+    "zoningType": null,
+    "landAccessType": null,
+    "businessSubType": null,
+    "numKitchensPlus": null,
+    "bathrooms": [],
+    "swimmingPool": "None",
+    "constructionStyleSplitLevel": null,
+    "leaseTerms": null,
+    "numRoomsPlus": null,
+    "flooringType": "Tile, Vinyl",
+    "farmType": null,
+    "landDisposition": null,
+    "viewType": "Trees/Woods",
+    "waterfront": null,
+    "style": "Single Family Residence",
+    "loadingType": null,
+    "numGarageSpaces": 2,
+    "parkCostMonthly": null,
+    "airConditioning": "Central Air, Electric",
+    "familyRoom": null,
+    "constructionStatus": null,
+    "numBedrooms": 4,
+    "description": "**** SAMPLE DATA **** Step into Elevated Living in the Heart of Springfield, Austin! Discover the epitome of modern refinement in this stunning remodeled home nestled within the vibrant Springfield subdivision of Austin. With 4 bedrooms and 2 baths, this residence has been meticulously redesigned to offer a seamless blend of contemporary charm and timeless elegance. From the moment you step inside, you'll be struck by the sense of sophistication that permeates every corner. Thoughtfully curated updates, including fresh paint, sleek flooring, and stylish countertops, elevate the aesthetic of this home to new heights, creating a space that's both welcoming and effortlessly chic. The kitchen is a focal point of luxury, boasting modern finishes and high-end hardware that cater to both culinary enthusiasts and entertainers alike. Whether you're hosting a gathering or simply enjoying a quiet meal with loved ones, this space provides the perfect backdrop for memorable moments. Indulge in relaxation in the newly remodeled bathrooms, where spa-like amenities and serene design elements offer a tranquil escape from the hustle and bustle of daily life. Each bedroom offers its own retreat, ensuring that everyone in the household can unwind in comfort and style. With its pristine condition and contemporary updates, this home feels like new, offering a fresh start for its fortunate new owners. Located in one of Austin's most coveted neighborhoods, this remodeled residence presents an unparalleled opportunity to experience the best of modern living in Springfield. Don't miss out on the chance to make this exceptional home yours. Schedule a showing today and prepare to be impressed by everything this remodeled gem has to offer! **** SAMPLE DATA ****",
+    "extras": "Cooktop, Dishwasher, Microwave, Oven, RNGHD, Refrigerator",
+    "livingAreaMeasurement": null,
+    "patio": "Rear Porch",
+    "amperage": null,
+    "centralAirConditioning": null,
+    "furnished": null,
+    "foundationType": "Slab",
+    "sewer": "Public Sewer",
+    "propertyType": "Residential",
+    "HOAFee": "250",
+    "commonElementsIncluded": null,
+    "numDrivewaySpaces": null,
+    "HOAFee2": null,
+    "HOAFee3": null,
+    "numBathroomsPlus": null,
+    "ceilingType": null,
+    "waterSource": "Public",
+    "numBedroomsPlus": null,
+    "garage": null,
+    "centralVac": null,
+    "sqftRange": null,
+    "driveway": null,
+    "numFireplaces": null,
+    "energuideRating": null,
+    "fireProtection": null,
+    "storageType": null,
+    "analyticsClick": null,
+    "businessType": null,
+    "numBathroomsHalf": null
+  },
+  "images": [
+    "sample/IMG-ACT8714298_0.jpg",
+    "sample/IMG-ACT8714298_1.jpg",
+    "sample/IMG-ACT8714298_2.jpg",
+    "sample/IMG-ACT8714298_3.jpg",
+    "sample/IMG-ACT8714298_4.jpg",
+    "sample/IMG-ACT8714298_5.jpg",
+    "sample/IMG-ACT8714298_6.jpg",
+    "sample/IMG-ACT8714298_7.jpg",
+    "sample/IMG-ACT8714298_8.jpg",
+    "sample/IMG-ACT8714298_9.jpg",
+    "sample/IMG-ACT8714298_10.jpg",
+    "sample/IMG-ACT8714298_11.jpg",
+    "sample/IMG-ACT8714298_12.jpg",
+    "sample/IMG-ACT8714298_13.jpg",
+    "sample/IMG-ACT8714298_14.jpg",
+    "sample/IMG-ACT8714298_15.jpg",
+    "sample/IMG-ACT8714298_16.jpg",
+    "sample/IMG-ACT8714298_17.jpg",
+    "sample/IMG-ACT8714298_18.jpg",
+    "sample/IMG-ACT8714298_19.jpg",
+    "sample/IMG-ACT8714298_20.jpg",
+    "sample/IMG-ACT8714298_21.jpg",
+    "sample/IMG-ACT8714298_22.jpg",
+    "sample/IMG-ACT8714298_23.jpg",
+    "sample/IMG-ACT8714298_24.jpg",
+    "sample/IMG-ACT8714298_25.jpg",
+    "sample/IMG-ACT8714298_26.jpg",
+    "sample/IMG-ACT8714298_27.jpg",
+    "sample/IMG-ACT8714298_28.jpg"
+  ],
+  "resource": "Property:2505",
+  "updatedOn": "2025-02-10T20:01:15.000-00:00",
+  "history": [],
+  "daysOnMarket": 69,
+  "coopCompensation": null,
+  "imageInsights": {
+    "summary": {
+      "quality": {
+        "qualitative": {
+          "features": {
+            "kitchen": "excellent",
+            "bedroom": "above average",
+            "bathroom": "average"
+          },
+          "overall": "above average"
+        },
+        "quantitative": {
+          "features": {
+            "kitchen": 4.8119831085,
+            "bedroom": 4.1663341522,
+            "bathroom": 3.9400684834
+          },
+          "overall": 4.02449762825
+        }
+      }
+    },
+    "images": [
+      {
+        "image": "sample/IMG-ACT8714298_8.jpg",
+        "classification": {
+          "imageOf": "Kitchen",
+          "prediction": 0.9720810056
+        },
+        "quality": {
+          "qualitative": "excellent",
+          "quantitative": 4.8119831085
+        }
+      },
+      {
+        "image": "sample/IMG-ACT8714298_10.jpg",
+        "classification": {
+          "imageOf": "Kitchen",
+          "prediction": 0.9513797164
+        },
+        "quality": {
+          "qualitative": "above average",
+          "quantitative": 4.1768898964
+        }
+      },
+      {
+        "image": "sample/IMG-ACT8714298_12.jpg",
+        "classification": {
+          "imageOf": "Kitchen",
+          "prediction": 0.9990363121
+        },
+        "quality": {
+          "qualitative": "above average",
+          "quantitative": 4.3923015594
+        }
+      },
+      {
+        "image": "sample/IMG-ACT8714298_13.jpg",
+        "classification": {
+          "imageOf": "Bedroom",
+          "prediction": 0.9665094614
+        },
+        "quality": {
+          "qualitative": "above average",
+          "quantitative": 4.1089267731
+        }
+      },
+      {
+        "image": "sample/IMG-ACT8714298_14.jpg",
+        "classification": {
+          "imageOf": "Bedroom",
+          "prediction": 0.9719392061
+        },
+        "quality": {
+          "qualitative": "average",
+          "quantitative": 3.5840950012
+        }
+      },
+      {
+        "image": "sample/IMG-ACT8714298_15.jpg",
+        "classification": {
+          "imageOf": "Bathroom",
+          "prediction": 0.9999519587
+        },
+        "quality": {
+          "qualitative": "average",
+          "quantitative": 3.2669997215
+        }
+      },
+      {
+        "image": "sample/IMG-ACT8714298_16.jpg",
+        "classification": {
+          "imageOf": "Bedroom",
+          "prediction": 0.9357970953
+        },
+        "quality": {
+          "qualitative": "average",
+          "quantitative": 3.5070090294
+        }
+      },
+      {
+        "image": "sample/IMG-ACT8714298_20.jpg",
+        "classification": {
+          "imageOf": "Other",
+          "prediction": 0.9218738675
+        },
+        "quality": null
+      },
+      {
+        "image": "sample/IMG-ACT8714298_21.jpg",
+        "classification": {
+          "imageOf": "Bedroom",
+          "prediction": 0.9722547531
+        },
+        "quality": {
+          "qualitative": "above average",
+          "quantitative": 4.1663341522
+        }
+      },
+      {
+        "image": "sample/IMG-ACT8714298_22.jpg",
+        "classification": {
+          "imageOf": "Bedroom",
+          "prediction": 0.9052315354
+        },
+        "quality": {
+          "qualitative": "average",
+          "quantitative": 3.606795311
+        }
+      },
+      {
+        "image": "sample/IMG-ACT8714298_24.jpg",
+        "classification": {
+          "imageOf": "Bathroom",
+          "prediction": 0.9997324347
+        },
+        "quality": {
+          "qualitative": "average",
+          "quantitative": 3.9400684834
+        }
+      },
+      {
+        "image": "sample/IMG-ACT8714298_25.jpg",
+        "classification": {
+          "imageOf": "Walk-In Closet(s)",
+          "prediction": 0.9301934242
+        },
+        "quality": null
+      }
+    ]
+  },
+  "lastStatus": "New",
+  "status": "A",
+  "listDate": "2026-02-01T00:00:00.000-00:00",
+  "originalPrice": 375000,
+  "soldDate": null,
+  "timestamps": {
+    "repliersUpdatedOn": "2026-02-10T02:55:02.378Z",
+    "terminatedDate": null,
+    "conditionalExpiryDate": null,
+    "listingUpdated": "2025-02-10T20:01:15.000-00:00",
+    "extensionEntryDate": null,
+    "unavailableDate": null,
+    "expiryDate": null,
+    "listingEntryDate": null,
+    "closedDate": null,
+    "possessionDate": null,
+    "imageInsightsUpdatedOn": "2025-02-10T20:01:15.000-00:00",
+    "idxUpdated": "2025-02-10T20:01:15.000-00:00",
+    "photosUpdated": "2025-02-10T20:01:15.000-00:00",
+    "suspendedDate": null
+  },
+  "photoCount": 29,
+  "lot": {
+    "taxLot": null,
+    "irregular": null,
+    "source": null,
+    "legalDescription": "LOT 7 BLK G SPRINGFIELD PHS B SEC 5",
+    "measurement": null,
+    "dimensionsSource": null,
+    "features": "Few Trees",
+    "depth": null,
+    "size": "8058.6",
+    "width": null,
+    "squareFeet": 8058.6,
+    "acres": 0.185,
+    "dimensions": null
+  },
+  "mlsNumber": "ACT8714298",
+  "class": "CondoProperty",
+  "map": {
+    "latitude": 30.158569,
+    "point": "POINT (-97.74043 30.158569)",
+    "longitude": -97.74043
+  },
+  "address": {
+    "area": "Travis",
+    "zip": "78747",
+    "country": "US",
+    "city": "Austin",
+    "streetNumber": "7913",
+    "unitNumber": null,
+    "streetDirection": null,
+    "streetName": "Eudora",
+    "streetDirectionPrefix": null,
+    "district": null,
+    "streetSuffix": "LN",
+    "neighborhood": "Springfield Ph B Sec 05",
+    "state": "TX",
+    "majorIntersection": null,
+    "communityCode": null,
+    "addressKey": "7913eudoralaneaustin"
+  },
+  "comparables": [
+    {
+      "listDate": "2025-05-07T00:00:00.000-00:00",
+      "images": [
+        "sample/IMG-NWM1500996_0.jpg",
+        "sample/IMG-NWM1500996_1.jpg",
+        "sample/IMG-NWM1500996_2.jpg",
+        "sample/IMG-NWM1500996_3.jpg",
+        "sample/IMG-NWM1500996_4.jpg",
+        "sample/IMG-NWM1500996_5.jpg",
+        "sample/IMG-NWM1500996_6.jpg",
+        "sample/IMG-NWM1500996_7.jpg",
+        "sample/IMG-NWM1500996_8.jpg",
+        "sample/IMG-NWM1500996_9.jpg",
+        "sample/IMG-NWM1500996_10.jpg"
+      ],
+      "address": {
+        "area": "Pierce",
+        "zip": "98327",
+        "country": "US",
+        "city": "Dupont",
+        "streetNumber": "1208",
+        "unitNumber": null,
+        "streetDirection": null,
+        "streetName": "Hudson",
+        "streetDirectionPrefix": null,
+        "district": null,
+        "streetSuffix": "Street",
+        "neighborhood": "Dupont",
+        "state": "WA",
+        "majorIntersection": null,
+        "communityCode": null
+      },
+      "distance": 2845.9387004200807,
+      "soldDate": "2025-11-14T00:00:00.000-00:00",
+      "timestamps": {
+        "repliersUpdatedOn": "2026-02-01T06:45:08.494Z",
+        "terminatedDate": null,
+        "conditionalExpiryDate": null,
+        "listingUpdated": "2025-03-14T20:08:04.000-00:00",
+        "extensionEntryDate": null,
+        "unavailableDate": "2019-11-04T00:00:00.000-00:00",
+        "expiryDate": null,
+        "listingEntryDate": null,
+        "closedDate": "2019-11-04T00:00:00.000-00:00",
+        "possessionDate": null,
+        "imageInsightsUpdatedOn": "2025-03-14T20:08:04.000-00:00",
+        "idxUpdated": "2025-03-14T20:08:04.000-00:00",
+        "photosUpdated": "2025-03-14T20:08:04.000-00:00",
+        "suspendedDate": null
+      },
+      "type": "Sale",
+      "mlsNumber": "NWM1500996",
+      "soldPrice": 365000,
+      "details": {
+        "numKitchens": null,
+        "numParkingSpaces": 2,
+        "laundryLevel": null,
+        "zoningDescription": null,
+        "moreInformationLink": null,
+        "certificationLevel": null,
+        "den": null,
+        "yearBuilt": "2004",
+        "balcony": null,
+        "alternateURLVideoLink": null,
+        "exteriorConstruction1": null,
+        "elevator": null,
+        "exteriorConstruction2": null,
+        "roofMaterial": "Composition",
+        "zoning": null,
+        "basement1": "None",
+        "basement2": null,
+        "sqft": "1951",
+        "handicappedEquipped": null,
+        "heating": null,
+        "numRooms": null,
+        "landscapeFeatures": null,
+        "virtualTourUrl": null,
+        "landSewer": null,
+        "energyCertification": null,
+        "numBathrooms": 3,
+        "greenPropertyInformationStatement": null,
+        "liveStreamEventURL": null,
+        "zoningType": null,
+        "landAccessType": null,
+        "businessSubType": null,
+        "numKitchensPlus": null,
+        "bathrooms": [],
+        "swimmingPool": null,
+        "constructionStyleSplitLevel": null,
+        "leaseTerms": null,
+        "numRoomsPlus": null,
+        "flooringType": "Vinyl, Carpet",
+        "farmType": null,
+        "landDisposition": null,
+        "viewType": "Territorial",
+        "waterfront": null,
+        "style": "Single Family Residence",
+        "loadingType": null,
+        "numGarageSpaces": 2,
+        "parkCostMonthly": null,
+        "airConditioning": null,
+        "familyRoom": null,
+        "constructionStatus": null,
+        "numBedrooms": 4,
+        "description": "**** SAMPLE DATA **** Home in desirable NW Landing neighborhood, a master planned community in Dupont. This 2 story home has 4bed/2.5 bath, across from intel. Central AC, tile counter tops and tile shower in master bedroom as well as double sinks. Open concept floor plan features in great room with fireplace, kitchen with island and appliances, attached 2 car garage and fully fenced yard. Community has walking trails is conveniently located near the I-5 corridor and JBLM military installation. **** SAMPLE DATA ****",
+        "extras": "Dishwasher,Garbage Disposal,Microwave,Range/Oven,Refrigerator",
+        "livingAreaMeasurement": "Square Feet",
+        "patio": null,
+        "amperage": null,
+        "centralAirConditioning": null,
+        "furnished": "Unfurnished",
+        "foundationType": "Poured Concrete",
+        "sewer": "Sewer Connected",
+        "propertyType": "Residential",
+        "HOAFee": "34",
+        "commonElementsIncluded": null,
+        "numDrivewaySpaces": null,
+        "HOAFee2": null,
+        "HOAFee3": null,
+        "numBathroomsPlus": null,
+        "ceilingType": null,
+        "waterSource": "Public",
+        "numBedroomsPlus": 0,
+        "garage": null,
+        "centralVac": null,
+        "sqftRange": null,
+        "driveway": null,
+        "numFireplaces": "2",
+        "energuideRating": null,
+        "minSqft": "1951",
+        "fireProtection": null,
+        "storageType": null,
+        "analyticsClick": null,
+        "businessType": null,
+        "maxSqft": "1951",
+        "numBathroomsHalf": 1
+      },
+      "listPrice": 365000,
+      "lastStatus": "Sld"
+    }
+  ],
+  "assignment": null,
+  "listPrice": 369000,
+  "simpleDaysOnMarket": 213,
+  "standardStatus": "Active",
+  "boardId": 110
+}

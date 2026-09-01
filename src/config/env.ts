@@ -37,7 +37,16 @@ const envSchema = z.object({
 
     // Required, not optional. Every object is written with SSE-KMS; without a
     // key id the first identity upload would be the thing that discovers it.
-    AWS_KMS_KEY_ID: z.string().min(1, 'AWS_KMS_KEY_ID is required')
+    AWS_KMS_KEY_ID: z.string().min(1, 'AWS_KMS_KEY_ID is required'),
+
+    // MLS (build plan 1.3). Billed per request, and it lives here rather than
+    // anywhere the frontend can reach. Required: a missing key must fail on
+    // boot, not on the first property search in front of a client.
+    REPLIERS_API_KEY: z.string().min(1, 'REPLIERS_API_KEY is required'),
+
+    // Overridable so a test or a staging environment can be pointed elsewhere
+    // without a code change.
+    REPLIERS_BASE_URL: z.url().default('https://api.repliers.io')
 
     // AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY are deliberately absent. The
     // SDK's default credential chain reads them from the environment in

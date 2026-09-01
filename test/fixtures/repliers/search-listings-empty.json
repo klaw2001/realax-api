@@ -1,0 +1,15 @@
+{
+  "unrecognizedParams": [],
+  "apiVersion": 2,
+  "page": 1,
+  "numPages": 0,
+  "pageSize": 2,
+  "count": 0,
+  "statistics": {
+    "listPrice": {
+      "min": null,
+      "max": null
+    }
+  },
+  "listings": []
+}

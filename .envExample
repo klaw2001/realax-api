@@ -19,3 +19,11 @@ AWS_KMS_KEY_ID="arn:aws:kms:ca-central-1:000000000000:key/change-me"
 # Cache (build plan 0.5). Local Redis in development:
 #   brew services start redis
 REDIS_URL="redis://localhost:6379"
+
+# MLS (build plan 1.3). Billed per request — every call is cached in Redis for
+# 24h. Server-side only; this key never reaches the frontend bundle.
+#
+# NOTE: the current key returns US board data (Austin, Charlotte, Nashville),
+# not TRREB. See test/fixtures/repliers/README.md.
+REPLIERS_API_KEY="change-me"
+REPLIERS_BASE_URL="https://api.repliers.io"
