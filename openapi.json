@@ -437,6 +437,393 @@
         "required": [
           "type"
         ]
+      },
+      "Property": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+          },
+          "mlsNumber": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "C5839471"
+          },
+          "address": {
+            "type": "string",
+            "example": "7913 Eudora LN"
+          },
+          "city": {
+            "type": "string",
+            "example": "Toronto"
+          },
+          "province": {
+            "type": "string",
+            "example": "ON"
+          },
+          "postalCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "M5V 2T6"
+          },
+          "frontingSide": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "North"
+          },
+          "frontingStreet": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Eudora Lane"
+          },
+          "frontage": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "49.21 feet"
+          },
+          "depth": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "120 feet"
+          },
+          "legalDescription": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "LOT 7 BLK G PLAN 66M-1234"
+          },
+          "listPrice": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 369000
+          },
+          "taxes": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "4,231.00"
+          }
+        },
+        "required": [
+          "id",
+          "mlsNumber",
+          "address",
+          "city",
+          "province",
+          "postalCode",
+          "frontingSide",
+          "frontingStreet",
+          "frontage",
+          "depth",
+          "legalDescription",
+          "listPrice",
+          "taxes"
+        ]
+      },
+      "PropertyResponse": {
+        "type": "object",
+        "properties": {
+          "property": {
+            "$ref": "#/components/schemas/Property"
+          }
+        },
+        "required": [
+          "property"
+        ]
+      },
+      "PropertyDraft": {
+        "type": "object",
+        "properties": {
+          "mlsNumber": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "C5839471"
+          },
+          "address": {
+            "type": "string",
+            "example": "7913 Eudora LN"
+          },
+          "city": {
+            "type": "string",
+            "example": "Toronto"
+          },
+          "province": {
+            "type": "string",
+            "example": "ON"
+          },
+          "postalCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "M5V 2T6"
+          },
+          "frontingSide": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "North"
+          },
+          "frontingStreet": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Eudora Lane"
+          },
+          "frontage": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "49.21 feet"
+          },
+          "depth": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "120 feet"
+          },
+          "legalDescription": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "LOT 7 BLK G PLAN 66M-1234"
+          },
+          "listPrice": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 369000
+          },
+          "taxes": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "4,231.00"
+          }
+        },
+        "required": [
+          "mlsNumber",
+          "address",
+          "city",
+          "province",
+          "postalCode",
+          "frontingSide",
+          "frontingStreet",
+          "frontage",
+          "depth",
+          "legalDescription",
+          "listPrice",
+          "taxes"
+        ]
+      },
+      "PropertyDraftResponse": {
+        "type": "object",
+        "properties": {
+          "property": {
+            "$ref": "#/components/schemas/PropertyDraft"
+          }
+        },
+        "required": [
+          "property"
+        ]
+      },
+      "PropertySearchResult": {
+        "type": "object",
+        "properties": {
+          "mlsNumber": {
+            "type": "string",
+            "example": "C5839471"
+          },
+          "address": {
+            "type": "string",
+            "example": "7913 Eudora LN"
+          },
+          "city": {
+            "type": "string",
+            "example": "Austin"
+          },
+          "province": {
+            "type": "string",
+            "example": "TX"
+          },
+          "listPrice": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 369000
+          },
+          "propertyType": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Residential"
+          }
+        },
+        "required": [
+          "mlsNumber",
+          "address",
+          "city",
+          "province",
+          "listPrice",
+          "propertyType"
+        ]
+      },
+      "PropertySearchResponse": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PropertySearchResult"
+            }
+          },
+          "count": {
+            "type": "integer",
+            "example": 42886
+          }
+        },
+        "required": [
+          "results",
+          "count"
+        ]
+      },
+      "SavePropertyRequest": {
+        "type": "object",
+        "properties": {
+          "mlsNumber": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 32,
+            "description": "The listing this was autofilled from, when it was autofilled at all.",
+            "example": "C5839471"
+          },
+          "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "example": "7913 Eudora LN"
+          },
+          "city": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "example": "Toronto"
+          },
+          "province": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "default": "ON",
+            "example": "ON"
+          },
+          "postalCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 16,
+            "example": "M5V 2T6"
+          },
+          "frontingSide": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 32,
+            "example": "North"
+          },
+          "frontingStreet": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200,
+            "example": "Eudora Lane"
+          },
+          "frontage": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "example": "49.21 feet"
+          },
+          "depth": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "example": "120 feet"
+          },
+          "legalDescription": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 1000,
+            "example": "LOT 7 BLK G PLAN 66M-1234"
+          },
+          "listPrice": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1000000000,
+            "example": 369000
+          },
+          "taxes": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "example": "4,231.00"
+          }
+        },
+        "required": [
+          "address",
+          "city"
+        ]
       }
     },
     "parameters": {}
@@ -786,6 +1173,285 @@
           },
           "401": {
             "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/properties/search": {
+      "get": {
+        "summary": "Search MLS listings by address or MLS number",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session. Proxies Repliers — the key is server-side only. An entry matching an MLS number pattern is routed to the detail endpoint and returns at most one result. Results are cached for 24 hours; Repliers bills per request.",
+        "tags": [
+          "properties"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Address text or an MLS number. Blank returns no results rather than the whole board.",
+              "example": "Eudora"
+            },
+            "required": true,
+            "description": "Address text or an MLS number. Blank returns no results rather than the whole board.",
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "example": 10
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching listings, newest page first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PropertySearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Repliers is unreachable, or answered with a shape that no longer matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/properties/mls/{mlsNumber}": {
+      "get": {
+        "summary": "One listing, mapped to property fields",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session. The autofill source: MLS values mapped onto the property form, nothing saved. Cached for 24 hours by MLS number.",
+        "tags": [
+          "properties"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "ACT8714298"
+            },
+            "required": true,
+            "name": "mlsNumber",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The listing as a property draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PropertyDraftResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No listing with that MLS number",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Repliers is unreachable, or answered with a shape that no longer matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{id}/property": {
+      "get": {
+        "summary": "A transaction's saved property",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. A transaction someone else owns answers 404, the same as one that does not exist.",
+        "tags": [
+          "properties"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The saved property",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PropertyResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction, or it has no property yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Save a transaction's property",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. Creates the property and links it on the first call, replaces it in place afterwards. The whole form is sent every time — an absent optional field clears it.",
+        "tags": [
+          "properties"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavePropertyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The saved property",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PropertyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction",
             "content": {
               "application/json": {
                 "schema": {
