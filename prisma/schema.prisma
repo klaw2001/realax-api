@@ -1,14 +1,250 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// REALAX — data model (build plan 0.2)
+//
+// Postgres via Prisma (Neon in prod, local Postgres in dev). The demo's
+// single `Transaction` with a `Json` blob is retired here — the field
+// shapes are known now.
+//
+// The `sys_module` / `roles` / `module_role_map` / `users` models at the
+// bottom are Express-starter boilerplate. The modules that used them
+// (`src/app/modules/{auth,user,role,master,home}`) were deleted in 0.3. The
+// models are kept only because dropping them is a destructive migration and
+// the build plan requires that to be asked for explicitly — nothing in the
+// codebase reads them any more.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// ---------------------------------------------------------------------------
+// Agents and brokerages
+// ---------------------------------------------------------------------------
+
+model Agent {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String
+  recoNumber   String?
+  phone        String?
+  brokerageId  String?
+  brokerage    Brokerage?    @relation(fields: [brokerageId], references: [id])
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+}
+
+model Brokerage {
+  id      String  @id @default(cuid())
+  name    String
+  address String
+  phone   String?
+  agents  Agent[]
+  // Seeded preset table — Phase 1 profile autofill
+}
+
+// ---------------------------------------------------------------------------
+// Parties and identity
+// ---------------------------------------------------------------------------
+
+model Party {
+  id              String             @id @default(cuid())
+  fullLegalName   String
+  email           String?
+  phone           String?
+  identityRecords IdentityRecord[]
+  roles           TransactionParty[]
+}
+
+model IdentityRecord {
+  id             String    @id @default(cuid())
+  partyId        String
+  party          Party     @relation(fields: [partyId], references: [id])
+  documentType   String // drivers_licence | passport | …
+  documentNumber String // encrypted at rest
+  expiryDate     DateTime?
+  verifiedAt     DateTime
+  verifiedMethod String // FINTRAC method used
+  s3Key          String
+  // Retained 5 years. Object Lock applies to the S3 object.
+  createdAt      DateTime  @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Property
+// ---------------------------------------------------------------------------
+
+model Property {
+  id               String        @id @default(cuid())
+  mlsNumber        String?
+  address          String
+  city             String
+  province         String        @default("ON")
+  postalCode       String?
+  frontingSide     String?
+  frontingStreet   String?
+  frontage         String?
+  depth            String?
+  legalDescription String?
+  listPrice        Int?
+  taxes            String?
+  transactions     Transaction[]
+}
+
+// ---------------------------------------------------------------------------
+// Transaction
+// ---------------------------------------------------------------------------
+
+enum TransactionType {
+  LISTING
+  PURCHASE
+  LEASE
+}
+
+enum TransactionStatus {
+  DRAFT
+  COMPLIANCE_PENDING
+  READY_TO_SIGN
+  OUT_FOR_SIGNATURE
+  COMPLETED
+  CANCELLED
+}
+
+model Transaction {
+  id         String             @id @default(cuid())
+  type       TransactionType
+  status     TransactionStatus  @default(DRAFT)
+  agentId    String
+  agent      Agent              @relation(fields: [agentId], references: [id])
+  propertyId String?
+  property   Property?          @relation(fields: [propertyId], references: [id])
+  parties    TransactionParty[]
+  forms      TransactionForm[]
+  envelopes  SigningEnvelope[]
+  documents  Document[]
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+}
+
+enum PartyRole {
+  BUYER
+  SELLER
+  SPOUSE
+  WITNESS
+}
+
+model TransactionParty {
+  id            String      @id @default(cuid())
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  partyId       String
+  party         Party       @relation(fields: [partyId], references: [id])
+  role          PartyRole
+  signingOrder  Int?
+
+  @@unique([transactionId, partyId, role])
+}
+
+// ---------------------------------------------------------------------------
+// Forms and compliance
+// ---------------------------------------------------------------------------
+
+model FormTemplate {
+  id           String            @id @default(cuid())
+  formCode     String // "100", "200a"
+  revision     String // "May 2026"
+  sourceSha256 String
+  sourceS3Key  String
+  fieldMap     Json // output of extract_template.py, curated
+  forms        TransactionForm[]
+
+  @@unique([formCode, revision])
+}
+
+enum FormStatus {
+  DRAFT
+  FILLED
+  SIGNED
+}
+
+model TransactionForm {
+  id             String            @id @default(cuid())
+  transactionId  String
+  transaction    Transaction       @relation(fields: [transactionId], references: [id])
+  formTemplateId String
+  formTemplate   FormTemplate      @relation(fields: [formTemplateId], references: [id])
+  values         Json // merged object fed to the fill engine
+  filledS3Key    String?
+  status         FormStatus        @default(DRAFT)
+  checks         ComplianceCheck[]
+}
+
+model ComplianceCheck {
+  id                String          @id @default(cuid())
+  transactionFormId String
+  transactionForm   TransactionForm @relation(fields: [transactionFormId], references: [id])
+  missingFields     Json
+  overrides         Json // [{ field, reason, agentId, at }]
+  passed            Boolean
+  checkedAt         DateTime        @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Signing
+// ---------------------------------------------------------------------------
+
+model SigningEnvelope {
+  id             String        @id @default(cuid())
+  transactionId  String
+  transaction    Transaction   @relation(fields: [transactionId], references: [id])
+  provider       String        @default("signnow")
+  externalId     String        @unique
+  status         String
+  auditCertS3Key String?
+  events         SignerEvent[]
+  createdAt      DateTime      @default(now())
+}
+
+model SignerEvent {
+  id         String          @id @default(cuid())
+  envelopeId String
+  envelope   SigningEnvelope @relation(fields: [envelopeId], references: [id])
+  eventType  String
+  payload    Json
+  receivedAt DateTime        @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Documents and audit
+// ---------------------------------------------------------------------------
+
+model Document {
+  id            String      @id @default(cuid())
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  kind          String // id_scan | filled_form | signed_form | audit_cert
+  s3Key         String
+  sha256        String
+  createdAt     DateTime    @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+}
+
+// ---------------------------------------------------------------------------
+// Express-starter boilerplate — retired in 0.3 with the modules that use it
+// ---------------------------------------------------------------------------
 
 model sys_module {
   module_id         Int               @id @default(autoincrement())
@@ -19,7 +255,7 @@ model sys_module {
   module_updated_by String?           @db.VarChar(25)
   module_created_at DateTime          @default(now())
   module_updated_at DateTime          @updatedAt
-  module_archived    Boolean           @default(false)
+  module_archived   Boolean           @default(false)
   module_deleted    Boolean           @default(false)
   module_role_map   module_role_map[]
 }
@@ -33,7 +269,7 @@ model roles {
   role_updated_by String?           @db.VarChar(25)
   role_created_at DateTime          @default(now())
   role_updated_at DateTime          @updatedAt
-  role_archived    Boolean           @default(false)
+  role_archived   Boolean           @default(false)
   role_deleted    Boolean           @default(false)
   module_role_map module_role_map[]
   users           users[]
@@ -52,7 +288,7 @@ model module_role_map {
   mrm_updated_by    String?    @db.VarChar(25)
   mrm_created_at    DateTime   @default(now())
   mrm_updated_at    DateTime   @updatedAt
-  mrm_archived       Boolean    @default(false)
+  mrm_archived      Boolean    @default(false)
   mrm_deleted       Boolean    @default(false)
 }
 
@@ -70,6 +306,6 @@ model users {
   user_updated_by    String?  @db.VarChar(25)
   user_created_at    DateTime @default(now())
   user_updated_at    DateTime @updatedAt
-  user_archived       Boolean  @default(false)
+  user_archived      Boolean  @default(false)
   user_deleted       Boolean  @default(false)
 }

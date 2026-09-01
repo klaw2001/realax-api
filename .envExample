@@ -2,7 +2,7 @@ MODE="development"
 
 PORT=4000
 
-DATABASE_URL="mysql://prisma:password@localhost:3306/starter?schema=public"
+DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/realax_dev?schema=public"
 
 JWT_ACCESS_SECRET="793472e6d8d22a64acc569f0b761b3aaf5e039ef"
 JWT_ACCESS_TOKEN_EXPIRE="1d"

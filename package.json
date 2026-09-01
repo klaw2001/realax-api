@@ -4,7 +4,7 @@
   "description": "REALAX API — transaction automation for Ontario realtors",
   "main": "./dist/index.js",
   "prisma": {
-    "seed": "node prisma/seed.mjs"
+    "seed": "ts-node -r tsconfig-paths/register -r dotenv/config prisma/seed.ts"
   },
   "scripts": {
     "dev": "kill-port 4000 && nodemon -r tsconfig-paths/register -r dotenv/config ./src/index.ts",
@@ -14,7 +14,9 @@
     "typecheck": "tsc --noEmit",
     "test": "jest ./test --verbose --setupFiles dotenv/config --detectOpenHandles",
     "gen:openapi": "ts-node -r tsconfig-paths/register -r dotenv/config src/openapi/generate.ts",
-    "lint:fix": "eslint src test --fix"
+    "lint:fix": "eslint src test --fix",
+    "db:seed": "prisma db seed",
+    "db:migrate": "prisma migrate dev"
   },
   "author": "Rv - rv.prodeveloper@gmail.com",
   "license": "ISC",
