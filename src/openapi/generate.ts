@@ -9,6 +9,7 @@ import { registry } from '@/openapi/registry'
 // ones here — a schema that is not imported is not in the contract.
 import '@/schemas/common'
 import '@/schemas/health'
+import '@/schemas/brokerage'
 import '@/schemas/agent'
 
 const OUTPUT = path.resolve(process.cwd(), 'openapi.json')

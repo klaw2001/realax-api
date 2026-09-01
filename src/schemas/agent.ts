@@ -1,4 +1,5 @@
 import { registry, z } from '@/openapi/registry'
+import { brokerageSchema } from '@/schemas/brokerage'
 import { errorContent } from '@/schemas/common'
 
 /**
@@ -118,5 +119,112 @@ registry.registerPath({
             content: { 'application/json': { schema: sessionResponseSchema } }
         },
         401: errorContent('No session, or the session refers to an agent that no longer exists')
+    }
+})
+
+/**
+ * The agent's own profile (build plan 1.1).
+ *
+ * Same agent fields as `Agent`, plus the resolved brokerage. The brokerage is
+ * embedded rather than left as an id the frontend has to look up: its address
+ * and phone are the "dependent fields" the profile form fills in when a
+ * brokerage is picked, and they must come from the same response that says
+ * which brokerage is selected — otherwise a reload can render a selection
+ * against stale detail.
+ */
+export const agentProfileSchema = registry.register(
+    'AgentProfile',
+    agentSchema.extend({
+        // A union rather than `.nullable()`. A nullable `$ref` emits as
+        // `allOf: [$ref, {type: [object, null]}]`, which openapi-typescript
+        // renders as an intersection — and `Brokerage & null` collapses to
+        // `never`, so the generated frontend type would claim this is always
+        // present. The union emits `anyOf`, which generates as
+        // `Brokerage | null`: what the API actually returns.
+        brokerage: z.union([brokerageSchema, z.null()]).openapi({
+            description: 'The selected preset, or null when the agent has not picked one.'
+        })
+    })
+)
+
+export type AgentProfile = z.infer<typeof agentProfileSchema>
+
+export const agentProfileResponseSchema = registry.register(
+    'AgentProfileResponse',
+    z.object({
+        profile: agentProfileSchema
+    })
+)
+
+export type AgentProfileResponse = z.infer<typeof agentProfileResponseSchema>
+
+/**
+ * Profile update. Every field is optional — this is a PATCH, and an absent key
+ * means "leave it alone".
+ *
+ * The nullable fields distinguish absent from `null` on purpose: `null` clears
+ * the value, which is the only way to detach a brokerage or drop a phone
+ * number once one has been set.
+ *
+ * `email` is not updatable here. It is the login identifier, and changing it is
+ * an account operation rather than a profile edit.
+ *
+ * RECO numbers are validated only for length. They are registrant numbers
+ * issued by RECO, and refusing a real one because it does not match a guessed
+ * format would block an agent from completing their profile.
+ */
+export const updateAgentProfileRequestSchema = registry.register(
+    'UpdateAgentProfileRequest',
+    z.object({
+        name: z.string().trim().min(1).max(120).optional().openapi({ example: 'Darren Fischer' }),
+        recoNumber: z.string().trim().min(1).max(32).nullable().optional().openapi({ example: '4812277' }),
+        phone: z.string().trim().min(1).max(32).nullable().optional().openapi({ example: '416-555-0188' }),
+        brokerageId: z.string().trim().min(1).nullable().optional().openapi({
+            description: 'Id of a brokerage from GET /api/agent/brokerages, or null to detach.',
+            example: 'seed_brokerage_0001'
+        })
+    })
+)
+
+export type UpdateAgentProfileRequest = z.infer<typeof updateAgentProfileRequestSchema>
+
+registry.registerPath({
+    method: 'get',
+    path: '/api/agent/profile',
+    summary: "The signed-in agent's profile",
+    security: [{ sessionCookie: [] }],
+    description:
+        'Requires a session. Always the caller\'s own profile — there is no agent id in the path, because there is no way to read anyone else\'s.',
+    tags: ['agent'],
+    responses: {
+        200: {
+            description: 'The profile, with the selected brokerage resolved',
+            content: { 'application/json': { schema: agentProfileResponseSchema } }
+        },
+        401: errorContent('No session')
+    }
+})
+
+registry.registerPath({
+    method: 'patch',
+    path: '/api/agent/profile',
+    summary: "Update the signed-in agent's profile",
+    security: [{ sessionCookie: [] }],
+    description:
+        'Requires a session. Partial: an absent field is unchanged, an explicit null clears it. Returns the saved profile, so the client renders what was stored rather than what it sent.',
+    tags: ['agent'],
+    request: {
+        body: {
+            required: true,
+            content: { 'application/json': { schema: updateAgentProfileRequestSchema } }
+        }
+    },
+    responses: {
+        200: {
+            description: 'The saved profile',
+            content: { 'application/json': { schema: agentProfileResponseSchema } }
+        },
+        400: errorContent('Body failed validation, or brokerageId names a brokerage that does not exist'),
+        401: errorContent('No session')
     }
 })

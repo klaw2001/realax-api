@@ -11,6 +11,7 @@ import { PrismaSessionStore } from '@quixo3/prisma-session-store'
 import { env, isProduction } from '@/config/env'
 import prisma from '@/lib/prisma'
 import requireAgent from '@/middleware/auth'
+import agentRoutes from '@/modules/agent/agent.routes'
 import { authRoutes, meRoutes } from '@/modules/auth/auth.routes'
 import healthRoutes from '@/modules/health/health.routes'
 
@@ -91,5 +92,6 @@ app.use('/api/auth', authRoutes)
 app.use('/api', requireAgent)
 
 app.use('/api/me', meRoutes)
+app.use('/api/agent', agentRoutes)
 
 export default app

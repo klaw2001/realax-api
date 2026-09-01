@@ -110,6 +110,50 @@
           "checks"
         ]
       },
+      "Brokerage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "seed_brokerage_0001"
+          },
+          "name": {
+            "type": "string",
+            "example": "Realax Realty Inc., Brokerage"
+          },
+          "address": {
+            "type": "string",
+            "example": "55 Yonge Street, Suite 400, Toronto, ON M5E 1J4"
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0142"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "address",
+          "phone"
+        ]
+      },
+      "BrokerageListResponse": {
+        "type": "object",
+        "properties": {
+          "brokerages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Brokerage"
+            }
+          }
+        },
+        "required": [
+          "brokerages"
+        ]
+      },
       "Agent": {
         "type": "object",
         "properties": {
@@ -207,6 +251,81 @@
         "required": [
           "loggedOut"
         ]
+      },
+      "AgentProfile": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Agent"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "brokerage": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Brokerage"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The selected preset, or null when the agent has not picked one."
+              }
+            },
+            "required": [
+              "brokerage"
+            ]
+          }
+        ]
+      },
+      "AgentProfileResponse": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/AgentProfile"
+          }
+        },
+        "required": [
+          "profile"
+        ]
+      },
+      "UpdateAgentProfileRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "example": "Darren Fischer"
+          },
+          "recoNumber": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 32,
+            "example": "4812277"
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 32,
+            "example": "416-555-0188"
+          },
+          "brokerageId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "description": "Id of a brokerage from GET /api/agent/brokerages, or null to detach.",
+            "example": "seed_brokerage_0001"
+          }
+        }
       }
     },
     "parameters": {}
@@ -236,6 +355,42 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/brokerages": {
+      "get": {
+        "summary": "The brokerage presets available on the profile form",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session. Reference data, ordered by name — the profile form renders it as a select, and the selected entry supplies the address and phone displayed next to it.",
+        "tags": [
+          "agent"
+        ],
+        "responses": {
+          "200": {
+            "description": "Every seeded brokerage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrokerageListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -340,6 +495,96 @@
           },
           "401": {
             "description": "No session, or the session refers to an agent that no longer exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/profile": {
+      "get": {
+        "summary": "The signed-in agent's profile",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session. Always the caller's own profile — there is no agent id in the path, because there is no way to read anyone else's.",
+        "tags": [
+          "agent"
+        ],
+        "responses": {
+          "200": {
+            "description": "The profile, with the selected brokerage resolved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update the signed-in agent's profile",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session. Partial: an absent field is unchanged, an explicit null clears it. Returns the saved profile, so the client renders what was stored rather than what it sent.",
+        "tags": [
+          "agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAgentProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The saved profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body failed validation, or brokerageId names a brokerage that does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
             "content": {
               "application/json": {
                 "schema": {
