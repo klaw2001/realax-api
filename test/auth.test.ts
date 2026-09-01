@@ -2,6 +2,7 @@ import request from 'supertest'
 
 import app from '../src/app'
 import prisma from '../src/lib/prisma'
+import { disconnect as disconnectRedis } from '../src/lib/redis'
 import { hashPassword } from '../src/modules/auth/auth.service'
 
 // A dedicated agent so the suite does not depend on the seed having run, and
@@ -23,7 +24,17 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await prisma.agent.deleteMany({ where: { email: EMAIL } })
-    await prisma.$disconnect()
+
+    // This suite exercises `/health`, which opens the shared Redis client in
+    // this worker. Nothing else here closes it, and a connected client keeps
+    // the process alive after the last assertion — so the suite has to
+    // disconnect it, exactly as health.test.ts does.
+    //
+    // `--detectOpenHandles` blames the supertest listener on the `/health`
+    // request for this. That is a misattribution: supertest opens an ephemeral
+    // server per request and closes it on assert, and reverting to it while
+    // keeping this disconnect still exits cleanly.
+    await Promise.all([disconnectRedis(), prisma.$disconnect()])
 })
 
 describe('the session guard', () => {
