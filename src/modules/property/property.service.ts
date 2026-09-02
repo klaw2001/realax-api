@@ -1,4 +1,7 @@
 import prisma from '@/lib/prisma'
+// Re-exported below, not redeclared: one name for one type, so `instanceof`
+// holds across the modules that raise it and the controllers that catch it.
+import { TransactionNotFoundError } from '@/modules/transaction/transaction.service'
 import { getListing, searchListings } from '@/integrations/repliers/client'
 import type { RepliersListing } from '@/integrations/repliers/schema'
 import type {
@@ -143,6 +146,8 @@ export const getPropertyDraft = async (mlsNumber: string): Promise<PropertyDraft
     return listing === null ? null : toPropertyDraft(listing)
 }
 
+export { TransactionNotFoundError }
+
 /** The property columns the API publishes. */
 const propertySelect = {
     id: true,
@@ -192,14 +197,6 @@ export const getTransactionProperty = async (
         where: { id: transaction.propertyId },
         select: propertySelect
     })
-}
-
-/** Raised when the transaction does not exist, or belongs to another agent. */
-export class TransactionNotFoundError extends Error {
-    constructor() {
-        super('No such transaction')
-        this.name = 'TransactionNotFoundError'
-    }
 }
 
 /**

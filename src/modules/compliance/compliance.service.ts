@@ -487,16 +487,37 @@ export const runComplianceGate = async (
     agentId: string,
     formCode: string
 ): Promise<ComplianceResult> => {
+    const { template, snapshot, result } = await checkTransaction(transactionId, agentId, formCode)
+
+    await recordComplianceCheck(transactionId, template, snapshot, result)
+
+    return result
+}
+
+/**
+ * The same verdict, without recording it.
+ *
+ * What the overview page reads to show each section as complete or not. That is
+ * a page an agent opens and reopens while working, and a `ComplianceCheck` row
+ * per glance would turn the record of "why was this blocked on Tuesday" into
+ * noise. A check is worth remembering when something was gated on it, which is
+ * the POST.
+ */
+export const checkCompliance = async (
+    transactionId: string,
+    agentId: string,
+    formCode: string
+): Promise<ComplianceResult> =>
+    (await checkTransaction(transactionId, agentId, formCode)).result
+
+/** Load everything the gate reads, and evaluate. No writes. */
+const checkTransaction = async (transactionId: string, agentId: string, formCode: string) => {
     const template = await loadTemplate(formCode)
 
     const entries = await loadEntryInput(transactionId, agentId)
     const snapshot = await loadTransactionSnapshot(transactionId, agentId, entries)
 
-    const result = evaluateCompliance(template, snapshot)
-
-    await recordComplianceCheck(transactionId, template, snapshot, result)
-
-    return result
+    return { template, snapshot, result: evaluateCompliance(template, snapshot) }
 }
 
 /**

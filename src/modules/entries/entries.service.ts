@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client'
 
 import prisma from '@/lib/prisma'
 import type { EntryInput } from '@/modules/forms/mapper.service'
+import { TransactionNotFoundError } from '@/modules/transaction/transaction.service'
 import type { SaveTransactionEntriesRequest, TransactionEntries } from '@/schemas/entries'
 
 /**
@@ -15,6 +16,11 @@ import type { SaveTransactionEntriesRequest, TransactionEntries } from '@/schema
  * than checking ownership after reading — the same rule the property and party
  * services follow, for the same reason.
  */
+
+// Re-exported, not redeclared. A second class with this name would be a second
+// type, and a controller catching the other one would answer 500 to a request
+// this module correctly refused.
+export { TransactionNotFoundError }
 
 const entriesSelect = {
     transactionId: true,
@@ -162,14 +168,6 @@ const emptyEntries = (transactionId: string, updatedAt: Date): TransactionEntrie
     buyerLawyerFax: null,
     updatedAt: updatedAt.toISOString()
 })
-
-/** Raised when the transaction does not exist, or belongs to another agent. */
-export class TransactionNotFoundError extends Error {
-    constructor() {
-        super('No such transaction')
-        this.name = 'TransactionNotFoundError'
-    }
-}
 
 const ownedTransaction = (transactionId: string, agentId: string) =>
     prisma.transaction.findFirst({

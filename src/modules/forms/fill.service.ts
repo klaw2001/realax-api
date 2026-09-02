@@ -14,6 +14,7 @@ import { loadTemplate, readFillSourcePdf, sha256 } from '@/modules/forms/templat
 import { findProfile } from '@/modules/agent/agent.service'
 import { listTransactionParties } from '@/modules/party/party.service'
 import { getTransactionProperty } from '@/modules/property/property.service'
+import { TransactionNotFoundError } from '@/modules/transaction/transaction.service'
 import type { FormTemplate, TemplateBlank } from '@/schemas/form'
 
 /**
@@ -105,12 +106,8 @@ export class FormTemplateNotSeededError extends Error {
     }
 }
 
-export class TransactionNotFoundError extends Error {
-    constructor() {
-        super('No such transaction')
-        this.name = 'TransactionNotFoundError'
-    }
-}
+// Re-exported, not redeclared — see the note in transaction.service.ts.
+export { TransactionNotFoundError }
 
 /**
  * Text as the standard fonts can encode it.

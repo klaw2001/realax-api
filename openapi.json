@@ -1736,6 +1736,197 @@
             "maxLength": 40
           }
         }
+      },
+      "ComplianceArea": {
+        "type": "string",
+        "enum": [
+          "profile",
+          "property",
+          "parties",
+          "entries"
+        ],
+        "example": "entries"
+      },
+      "ComplianceReason": {
+        "type": "string",
+        "enum": [
+          "missing",
+          "absent"
+        ],
+        "example": "missing"
+      },
+      "ComplianceFailure": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "Stable identifier. For a form blank it is the name the curated template gives it; for a rule about the transaction itself it is the rule. Branch on this, not on `label`.",
+            "example": "completion.dateDay"
+          },
+          "label": {
+            "type": "string",
+            "description": "What an agent calls this field. Safe to show as-is.",
+            "example": "Completion date"
+          },
+          "area": {
+            "$ref": "#/components/schemas/ComplianceArea"
+          },
+          "areaLabel": {
+            "type": "string",
+            "description": "The name of the page that fixes it, for the link text.",
+            "example": "Agreement terms"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/ComplianceReason"
+          }
+        },
+        "required": [
+          "field",
+          "label",
+          "area",
+          "areaLabel",
+          "reason"
+        ]
+      },
+      "ComplianceResult": {
+        "type": "object",
+        "properties": {
+          "formCode": {
+            "type": "string",
+            "example": "100"
+          },
+          "passed": {
+            "type": "boolean",
+            "example": false
+          },
+          "failures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ComplianceFailure"
+            },
+            "description": "Empty when the check passed. Ordered as the form prints, which is the order an agent works down it."
+          },
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-02T09:00:00.000Z"
+          }
+        },
+        "required": [
+          "formCode",
+          "passed",
+          "failures",
+          "checkedAt"
+        ]
+      },
+      "ComplianceResponse": {
+        "type": "object",
+        "properties": {
+          "compliance": {
+            "$ref": "#/components/schemas/ComplianceResult"
+          }
+        },
+        "required": [
+          "compliance"
+        ]
+      },
+      "FormStatus": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "FILLED",
+          "SIGNED"
+        ],
+        "example": "FILLED"
+      },
+      "TransactionForm": {
+        "type": "object",
+        "properties": {
+          "formCode": {
+            "type": "string",
+            "example": "100"
+          },
+          "revision": {
+            "type": "string",
+            "description": "The OREA revision the template is pinned to.",
+            "example": "May 2026"
+          },
+          "status": {
+            "$ref": "#/components/schemas/FormStatus"
+          },
+          "available": {
+            "type": "boolean",
+            "description": "Whether a filled PDF exists to download.",
+            "example": true
+          },
+          "filledCount": {
+            "type": "integer",
+            "description": "Data blanks that had a value at the last fill.",
+            "example": 76
+          }
+        },
+        "required": [
+          "formCode",
+          "revision",
+          "status",
+          "available",
+          "filledCount"
+        ]
+      },
+      "TransactionFormResponse": {
+        "type": "object",
+        "properties": {
+          "form": {
+            "$ref": "#/components/schemas/TransactionForm"
+          }
+        },
+        "required": [
+          "form"
+        ]
+      },
+      "FillFormResponse": {
+        "type": "object",
+        "properties": {
+          "form": {
+            "$ref": "#/components/schemas/TransactionForm"
+          },
+          "truncated": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Blanks whose value would not fit and was cut down to it, even after shrinking. Empty on a normal fill, and worth showing when it is not: the document says less than the agent typed.",
+            "example": []
+          }
+        },
+        "required": [
+          "form",
+          "truncated"
+        ]
+      },
+      "FormDownloadResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://s3.ca-central-1.amazonaws.com/…"
+          },
+          "expiresInSeconds": {
+            "type": "integer",
+            "example": 300
+          },
+          "fileName": {
+            "type": "string",
+            "description": "A sensible name to save it as. Carries no client detail.",
+            "example": "OREA-100-filled.pdf"
+          }
+        },
+        "required": [
+          "url",
+          "expiresInSeconds",
+          "fileName"
+        ]
       }
     },
     "parameters": {}
@@ -2915,6 +3106,306 @@
           },
           "404": {
             "description": "No such transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{id}/forms/{formCode}/fill": {
+      "post": {
+        "summary": "Fill a form, if the compliance gate passes",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. The compliance gate runs FIRST. If it fails the answer is 422 carrying the failure list and nothing is drawn — no PDF, not even a partial one. There is no override and no force flag. On a pass the form is drawn, stored, and the row moves to FILLED.",
+        "tags": [
+          "forms"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "example": "100"
+            },
+            "required": true,
+            "name": "formCode",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The filled form",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FillFormResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction, or no curated template for that form",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The compliance gate blocked the fill. `compliance.failures` is the list to show the agent; nothing was written.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "compliance_failed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "7 things need attention before this form can be filled"
+                    },
+                    "compliance": {
+                      "$ref": "#/components/schemas/ComplianceResult"
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "compliance"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{id}/forms/{formCode}": {
+      "get": {
+        "summary": "A form's status on a transaction",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. A form that has never been filled answers 200 with status DRAFT and `available` false rather than 404 — the form exists for the transaction as soon as the template does.",
+        "tags": [
+          "forms"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "example": "100"
+            },
+            "required": true,
+            "name": "formCode",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The form",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionFormResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction, or no curated template for that form",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{id}/forms/{formCode}/download": {
+      "get": {
+        "summary": "A short-lived link to the filled form",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. Issues a presigned URL valid for a few minutes. Nothing in the bucket is public; this is the only way a filled form is read.",
+        "tags": [
+          "forms"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "example": "100"
+            },
+            "required": true,
+            "name": "formCode",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The link",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormDownloadResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction, or the form has not been filled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{id}/forms/{formCode}/compliance": {
+      "get": {
+        "summary": "What is stopping this form from being filled",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. The same verdict the fill endpoint gates on, without filling anything and without recording a check — this is what a page reads to show each section as complete or not.",
+        "tags": [
+          "forms"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "example": "100"
+            },
+            "required": true,
+            "name": "formCode",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The verdict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "compliance": {
+                      "$ref": "#/components/schemas/ComplianceResult"
+                    }
+                  },
+                  "required": [
+                    "compliance"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction, or no curated template for that form",
             "content": {
               "application/json": {
                 "schema": {

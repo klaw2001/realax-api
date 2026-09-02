@@ -1,13 +1,17 @@
-import { z } from 'zod'
+import { registry, z } from '@/openapi/registry'
+import { errorContent } from '@/schemas/common'
+import { complianceResultSchema } from '@/schemas/compliance'
 
 /**
  * The curated form template — `forms/templates/<code>.json`.
  *
- * Deliberately **not** registered with the OpenAPI registry. This validates a
- * file on disk, not an HTTP boundary: nothing outside the service ever receives
- * a template, and the endpoints that expose *filled* forms (build plan 2.3)
- * will register their own response shapes. Registering it here would put 106
- * bounding boxes into the frontend's generated types for no consumer.
+ * Deliberately **not** registered with the OpenAPI registry — it uses the
+ * registry's `z` only for the `.openapi()` extension, and registers nothing.
+ * This validates a file on disk, not an HTTP boundary: nothing outside the
+ * service ever receives a template, and the endpoints that expose *filled*
+ * forms register their own shapes at the foot of this file. Registering it
+ * here would put 106 bounding boxes into the frontend's generated types for no
+ * consumer.
  *
  * The file is produced by `tools/curate_template.py`, which merges the
  * extractor's output with a hand-written curation. It is committed, so this
@@ -190,3 +194,199 @@ export const formTemplateSchema = z
     })
 
 export type FormTemplate = z.infer<typeof formTemplateSchema>
+
+// ---------------------------------------------------------------------------
+// The HTTP contract
+// ---------------------------------------------------------------------------
+//
+// Everything above describes the file on disk and is deliberately unregistered
+// — 106 bounding boxes are of no use to the frontend. What follows is what the
+// endpoints in build plan 2.3 actually publish, which is a great deal less: a
+// form's status, and a link to fetch it with.
+
+export const formStatusSchema = registry.register(
+    'FormStatus',
+    z.enum(['DRAFT', 'FILLED', 'SIGNED']).openapi({ example: 'FILLED' })
+)
+
+export type FormStatus = z.infer<typeof formStatusSchema>
+
+/**
+ * A form on a transaction, as the frontend sees it.
+ *
+ * No S3 key. Nothing outside this service reads a bucket path — a filled
+ * agreement is fetched through a presigned URL this API issues after its own
+ * auth check, and publishing the key would invite a client to build one.
+ */
+export const transactionFormSchema = registry.register(
+    'TransactionForm',
+    z.object({
+        formCode: z.string().openapi({ example: '100' }),
+        revision: z.string().openapi({
+            description: 'The OREA revision the template is pinned to.',
+            example: 'May 2026'
+        }),
+        status: formStatusSchema,
+        available: z.boolean().openapi({
+            description: 'Whether a filled PDF exists to download.',
+            example: true
+        }),
+        filledCount: z.number().int().openapi({
+            description: 'Data blanks that had a value at the last fill.',
+            example: 76
+        })
+    })
+)
+
+export type TransactionForm = z.infer<typeof transactionFormSchema>
+
+export const transactionFormResponseSchema = registry.register(
+    'TransactionFormResponse',
+    z.object({ form: transactionFormSchema })
+)
+
+export type TransactionFormResponse = z.infer<typeof transactionFormResponseSchema>
+
+/**
+ * What a fill answers with.
+ *
+ * `truncated` sits here rather than on the form itself because it is only
+ * knowable at the moment of drawing: whether a value fits is a question about
+ * font metrics, and the answer exists in the engine's output and nowhere else.
+ * Putting it on the status shape would mean a field that is honest on the reply
+ * to a fill and silently always empty everywhere else.
+ */
+export const fillFormResponseSchema = registry.register(
+    'FillFormResponse',
+    z.object({
+        form: transactionFormSchema,
+        truncated: z.array(z.string()).openapi({
+            description:
+                'Blanks whose value would not fit and was cut down to it, even after shrinking. Empty on a normal fill, and worth showing when it is not: the document says less than the agent typed.',
+            example: []
+        })
+    })
+)
+
+export type FillFormResponse = z.infer<typeof fillFormResponseSchema>
+
+/**
+ * A link to one filled form.
+ *
+ * Short-lived and fetched on demand rather than stored anywhere: a URL that
+ * grants access to a document is not something to keep in a page's state, a
+ * log, or a bookmark.
+ */
+export const formDownloadResponseSchema = registry.register(
+    'FormDownloadResponse',
+    z.object({
+        url: z.url().openapi({ example: 'https://s3.ca-central-1.amazonaws.com/…' }),
+        expiresInSeconds: z.number().int().openapi({ example: 300 }),
+        fileName: z.string().openapi({
+            description: 'A sensible name to save it as. Carries no client detail.',
+            example: 'OREA-100-filled.pdf'
+        })
+    })
+)
+
+export type FormDownloadResponse = z.infer<typeof formDownloadResponseSchema>
+
+const formParams = z.object({
+    id: z.string().openapi({ example: 'clx0a1b2c3d4e5f6g7h8i9j0k' }),
+    formCode: z.string().openapi({ example: '100' })
+})
+
+registry.registerPath({
+    method: 'post',
+    path: '/api/transactions/{id}/forms/{formCode}/fill',
+    summary: 'Fill a form, if the compliance gate passes',
+    security: [{ sessionCookie: [] }],
+    description:
+        'Requires a session, and the transaction must belong to the caller. The compliance gate runs FIRST. If it fails the answer is 422 carrying the failure list and nothing is drawn — no PDF, not even a partial one. There is no override and no force flag. On a pass the form is drawn, stored, and the row moves to FILLED.',
+    tags: ['forms'],
+    request: { params: formParams },
+    responses: {
+        200: {
+            description: 'The filled form',
+            content: { 'application/json': { schema: fillFormResponseSchema } }
+        },
+        401: errorContent('No session'),
+        404: errorContent('No such transaction, or no curated template for that form'),
+        422: {
+            description:
+                'The compliance gate blocked the fill. `compliance.failures` is the list to show the agent; nothing was written.',
+            content: {
+                'application/json': {
+                    schema: z.object({
+                        error: z.string().openapi({ example: 'compliance_failed' }),
+                        message: z.string().openapi({
+                            example: '7 things need attention before this form can be filled'
+                        }),
+                        compliance: complianceResultSchema
+                    })
+                }
+            }
+        }
+    }
+})
+
+registry.registerPath({
+    method: 'get',
+    path: '/api/transactions/{id}/forms/{formCode}',
+    summary: "A form's status on a transaction",
+    security: [{ sessionCookie: [] }],
+    description:
+        'Requires a session, and the transaction must belong to the caller. A form that has never been filled answers 200 with status DRAFT and `available` false rather than 404 — the form exists for the transaction as soon as the template does.',
+    tags: ['forms'],
+    request: { params: formParams },
+    responses: {
+        200: {
+            description: 'The form',
+            content: { 'application/json': { schema: transactionFormResponseSchema } }
+        },
+        401: errorContent('No session'),
+        404: errorContent('No such transaction, or no curated template for that form')
+    }
+})
+
+registry.registerPath({
+    method: 'get',
+    path: '/api/transactions/{id}/forms/{formCode}/download',
+    summary: 'A short-lived link to the filled form',
+    security: [{ sessionCookie: [] }],
+    description:
+        'Requires a session, and the transaction must belong to the caller. Issues a presigned URL valid for a few minutes. Nothing in the bucket is public; this is the only way a filled form is read.',
+    tags: ['forms'],
+    request: { params: formParams },
+    responses: {
+        200: {
+            description: 'The link',
+            content: { 'application/json': { schema: formDownloadResponseSchema } }
+        },
+        401: errorContent('No session'),
+        404: errorContent('No such transaction, or the form has not been filled')
+    }
+})
+
+registry.registerPath({
+    method: 'get',
+    path: '/api/transactions/{id}/forms/{formCode}/compliance',
+    summary: 'What is stopping this form from being filled',
+    security: [{ sessionCookie: [] }],
+    description:
+        'Requires a session, and the transaction must belong to the caller. The same verdict the fill endpoint gates on, without filling anything and without recording a check — this is what a page reads to show each section as complete or not.',
+    tags: ['forms'],
+    request: { params: formParams },
+    responses: {
+        200: {
+            description: 'The verdict',
+            content: {
+                'application/json': {
+                    schema: z.object({ compliance: complianceResultSchema })
+                }
+            }
+        },
+        401: errorContent('No session'),
+        404: errorContent('No such transaction, or no curated template for that form')
+    }
+})

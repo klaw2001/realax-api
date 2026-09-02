@@ -52,6 +52,24 @@ export const listTransactions = async (agentId: string): Promise<Transaction[]> 
 }
 
 /**
+ * The transaction does not exist, or belongs to another agent.
+ *
+ * Defined once, here, because a transaction is what this module owns. It used
+ * to be defined separately in each module that needed it, which read as
+ * harmless duplication and was not: three classes with one name are three
+ * types, and `instanceof` across two of them is false. A controller catching
+ * the fill engine's version answered a 500 to a request the entries service
+ * had correctly refused. Modules re-export this rather than declaring their
+ * own.
+ */
+export class TransactionNotFoundError extends Error {
+    constructor() {
+        super('No such transaction')
+        this.name = 'TransactionNotFoundError'
+    }
+}
+
+/**
  * One transaction, if the caller owns it.
  *
  * `null` for a transaction that does not exist and for one belonging to another
