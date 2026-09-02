@@ -101,24 +101,25 @@ async function seedRealax() {
     })
 
     // A property for the transaction to point at.
+    const propertyDetail = {
+        mlsNumber: 'C8123456',
+        address: '18 Maple Grove Avenue',
+        city: 'Toronto',
+        province: 'ON',
+        postalCode: 'M4K 2R7',
+        frontingSide: 'north',
+        frontingStreet: 'Maple Grove Avenue',
+        frontage: '30.02 feet',
+        depth: '120.5 feet',
+        legalDescription: 'LOT 42, PLAN 1187, CITY OF TORONTO',
+        listPrice: 1249000,
+        taxes: '6,842.17 (2025)'
+    }
+
     const property = await prisma.property.upsert({
         where: { id: PROPERTY_ID },
-        update: {},
-        create: {
-            id: PROPERTY_ID,
-            mlsNumber: 'C8123456',
-            address: '18 Maple Grove Avenue',
-            city: 'Toronto',
-            province: 'ON',
-            postalCode: 'M4K 2R7',
-            frontingSide: 'north',
-            frontingStreet: 'Maple Grove Avenue',
-            frontage: '30.02 feet',
-            depth: '120.5 feet',
-            legalDescription: 'LOT 42, PLAN 1187, CITY OF TORONTO',
-            listPrice: 1249000,
-            taxes: '6,842.17 (2025)'
-        }
+        update: propertyDetail,
+        create: { id: PROPERTY_ID, ...propertyDetail }
     })
 
     // One transaction, owned by the agent.
@@ -137,38 +138,45 @@ async function seedRealax() {
     // The seller, with the address block filled: it is the starting point for
     // the "address for service" blanks on Form 100, which the mapper takes from
     // the first party on each side.
+    const sellerDetail = {
+        fullLegalName: 'Margaret Anne Whitfield',
+        email: 'm.whitfield@example.test',
+        phone: '647-555-0119',
+        address: '18 Maple Grove Avenue',
+        city: 'Toronto',
+        province: 'ON',
+        postalCode: 'M4K 2R7'
+    }
+
+    // The detail is carried in `update` as well as `create`, the same way the
+    // brokerage presets are. These are rows we invent, not rows an agent has
+    // edited, so a field added here has to reach a database that was seeded
+    // before it existed — otherwise the seed stops producing the complete
+    // transaction it claims to.
     const seller = await prisma.party.upsert({
         where: { id: SELLER_ID },
-        update: {},
-        create: {
-            id: SELLER_ID,
-            fullLegalName: 'Margaret Anne Whitfield',
-            email: 'm.whitfield@example.test',
-            phone: '647-555-0119',
-            address: '18 Maple Grove Avenue',
-            city: 'Toronto',
-            province: 'ON',
-            postalCode: 'M4K 2R7'
-        }
+        update: sellerDetail,
+        create: { id: SELLER_ID, ...sellerDetail }
     })
 
     // A buyer as well as a seller. Form 100 is an Agreement of Purchase and
     // Sale and names both sides, so a seeded transaction with only a seller
     // cannot produce a complete form — which would make the compliance gate
     // impossible to see passing against seeded data.
+    const buyerDetail = {
+        fullLegalName: 'Priya Raghunathan',
+        email: 'p.raghunathan@example.test',
+        phone: '416-555-0164',
+        address: '404 Sherbourne Street, Unit 12',
+        city: 'Toronto',
+        province: 'ON',
+        postalCode: 'M4X 1K2'
+    }
+
     const buyer = await prisma.party.upsert({
         where: { id: BUYER_ID },
-        update: {},
-        create: {
-            id: BUYER_ID,
-            fullLegalName: 'Priya Raghunathan',
-            email: 'p.raghunathan@example.test',
-            phone: '416-555-0164',
-            address: '404 Sherbourne Street, Unit 12',
-            city: 'Toronto',
-            province: 'ON',
-            postalCode: 'M4X 1K2'
-        }
+        update: buyerDetail,
+        create: { id: BUYER_ID, ...buyerDetail }
     })
 
     for (const [party, role] of [
@@ -197,65 +205,65 @@ async function seedRealax() {
     // no column for. Seeded complete on purpose: a transaction that fills
     // cleanly is what makes a transaction that does not fill legible, and the
     // fill engine and the compliance gate both need one to be checked against.
+    const entriesDetail = {
+        agreementDate: new Date('2026-09-02'),
+
+        purchasePrice: '1225000.00',
+        purchasePriceWords: 'One Million Two Hundred Twenty-Five Thousand',
+
+        depositTiming: 'Upon Acceptance',
+        depositAmount: '60000.00',
+        depositAmountWords: 'Sixty Thousand',
+        depositHolder: 'Realax Realty Inc., Brokerage',
+
+        schedulesList: 'A',
+
+        irrevocabilityBoundParty: 'Buyer',
+        irrevocabilityTime: '11:59 p.m.',
+        irrevocabilityDate: new Date('2026-09-04'),
+
+        completionDate: new Date('2026-11-14'),
+        titleSearchDate: new Date('2026-10-24'),
+
+        noticesSellerFax: '416-555-0143',
+        noticesBuyerFax: '416-555-0165',
+
+        chattelsIncluded: [
+            'Refrigerator',
+            'Stove',
+            'Built-in dishwasher',
+            'Washer and dryer',
+            'All existing window coverings',
+            'All existing light fixtures'
+        ],
+        fixturesExcluded: ['Dining room chandelier', 'Garage shelving'],
+        rentalItems: ['Hot water tank', 'Furnace and air conditioner'],
+
+        hstTreatment: 'included in',
+
+        propertyPresentUse: 'Single family residential',
+
+        coopBrokerageName: 'Bayview Heights Real Estate Ltd., Brokerage',
+        coopBrokerageTel: '416-555-0173',
+        coopBrokerageSalesperson: 'Alan Prakash',
+
+        sellerLawyerName: 'Hollis & Wren LLP',
+        sellerLawyerAddress: '120 Adelaide Street West, Suite 900, Toronto, ON M5H 1T1',
+        sellerLawyerEmail: 'conveyancing@holliswren.example.test',
+        sellerLawyerTel: '416-555-0107',
+        sellerLawyerFax: '416-555-0108',
+
+        buyerLawyerName: 'Marchetti Law Professional Corporation',
+        buyerLawyerAddress: '75 Front Street East, Suite 300, Toronto, ON M5E 1B8',
+        buyerLawyerEmail: 'closings@marchettilaw.example.test',
+        buyerLawyerTel: '416-555-0131',
+        buyerLawyerFax: '416-555-0132'
+    }
+
     const entries = await prisma.transactionEntries.upsert({
         where: { transactionId: transaction.id },
-        update: {},
-        create: {
-            transactionId: transaction.id,
-
-            agreementDate: new Date('2026-09-02'),
-
-            purchasePrice: '1225000.00',
-            purchasePriceWords: 'One Million Two Hundred Twenty-Five Thousand',
-
-            depositTiming: 'Upon Acceptance',
-            depositAmount: '60000.00',
-            depositAmountWords: 'Sixty Thousand',
-            depositHolder: 'Realax Realty Inc., Brokerage',
-
-            schedulesList: 'A',
-
-            irrevocabilityBoundParty: 'Buyer',
-            irrevocabilityTime: '11:59 p.m.',
-            irrevocabilityDate: new Date('2026-09-04'),
-
-            completionDate: new Date('2026-11-14'),
-            titleSearchDate: new Date('2026-10-24'),
-
-            noticesSellerFax: '416-555-0143',
-            noticesBuyerFax: '416-555-0165',
-
-            chattelsIncluded: [
-                'Refrigerator',
-                'Stove',
-                'Built-in dishwasher',
-                'Washer and dryer',
-                'All existing window coverings',
-                'All existing light fixtures'
-            ],
-            fixturesExcluded: ['Dining room chandelier', 'Garage shelving'],
-            rentalItems: ['Hot water tank', 'Furnace and air conditioner'],
-
-            hstTreatment: 'included in',
-
-            propertyPresentUse: 'Single family residential',
-
-            coopBrokerageName: 'Bayview Heights Real Estate Ltd., Brokerage',
-            coopBrokerageTel: '416-555-0173',
-            coopBrokerageSalesperson: 'Alan Prakash',
-
-            sellerLawyerName: 'Hollis & Wren LLP',
-            sellerLawyerAddress: '120 Adelaide Street West, Suite 900, Toronto, ON M5H 1T1',
-            sellerLawyerEmail: 'conveyancing@holliswren.example.test',
-            sellerLawyerTel: '416-555-0107',
-            sellerLawyerFax: '416-555-0108',
-
-            buyerLawyerName: 'Marchetti Law Professional Corporation',
-            buyerLawyerAddress: '75 Front Street East, Suite 300, Toronto, ON M5E 1B8',
-            buyerLawyerEmail: 'closings@marchettilaw.example.test',
-            buyerLawyerTel: '416-555-0131',
-            buyerLawyerFax: '416-555-0132'
-        }
+        update: entriesDetail,
+        create: { transactionId: transaction.id, ...entriesDetail }
     })
 
     console.log('seeded brokerages :', brokerages.length, 'presets')
