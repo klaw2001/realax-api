@@ -57,7 +57,8 @@ const BROKERAGE_PRESETS = [
 ]
 const PROPERTY_ID = 'seed_property_0001'
 const TRANSACTION_ID = 'seed_transaction_0001'
-const PARTY_ID = 'seed_party_0001'
+const SELLER_ID = 'seed_party_0001'
+const BUYER_ID = 'seed_party_0002'
 
 const AGENT_EMAIL = 'darren@realax.test'
 
@@ -133,33 +134,127 @@ async function seedRealax() {
         }
     })
 
-    // A seller on the transaction, so the join table has a row to inspect in
-    // `prisma studio` alongside the agent → transaction → property chain.
-    const party = await prisma.party.upsert({
-        where: { id: PARTY_ID },
+    // The seller, with the address block filled: it is the starting point for
+    // the "address for service" blanks on Form 100, which the mapper takes from
+    // the first party on each side.
+    const seller = await prisma.party.upsert({
+        where: { id: SELLER_ID },
         update: {},
         create: {
-            id: PARTY_ID,
+            id: SELLER_ID,
             fullLegalName: 'Margaret Anne Whitfield',
             email: 'm.whitfield@example.test',
-            phone: '647-555-0119'
+            phone: '647-555-0119',
+            address: '18 Maple Grove Avenue',
+            city: 'Toronto',
+            province: 'ON',
+            postalCode: 'M4K 2R7'
         }
     })
 
-    await prisma.transactionParty.upsert({
-        where: {
-            transactionId_partyId_role: {
+    // A buyer as well as a seller. Form 100 is an Agreement of Purchase and
+    // Sale and names both sides, so a seeded transaction with only a seller
+    // cannot produce a complete form — which would make the compliance gate
+    // impossible to see passing against seeded data.
+    const buyer = await prisma.party.upsert({
+        where: { id: BUYER_ID },
+        update: {},
+        create: {
+            id: BUYER_ID,
+            fullLegalName: 'Priya Raghunathan',
+            email: 'p.raghunathan@example.test',
+            phone: '416-555-0164',
+            address: '404 Sherbourne Street, Unit 12',
+            city: 'Toronto',
+            province: 'ON',
+            postalCode: 'M4X 1K2'
+        }
+    })
+
+    for (const [party, role] of [
+        [seller, PartyRole.SELLER],
+        [buyer, PartyRole.BUYER]
+    ] as const) {
+        await prisma.transactionParty.upsert({
+            where: {
+                transactionId_partyId_role: {
+                    transactionId: transaction.id,
+                    partyId: party.id,
+                    role
+                }
+            },
+            update: {},
+            create: {
                 transactionId: transaction.id,
                 partyId: party.id,
-                role: PartyRole.SELLER
+                role,
+                signingOrder: 1
             }
-        },
+        })
+    }
+
+    // The agreement terms — the fifty-two Form 100 blanks the domain model has
+    // no column for. Seeded complete on purpose: a transaction that fills
+    // cleanly is what makes a transaction that does not fill legible, and the
+    // fill engine and the compliance gate both need one to be checked against.
+    const entries = await prisma.transactionEntries.upsert({
+        where: { transactionId: transaction.id },
         update: {},
         create: {
             transactionId: transaction.id,
-            partyId: party.id,
-            role: PartyRole.SELLER,
-            signingOrder: 1
+
+            agreementDate: new Date('2026-09-02'),
+
+            purchasePrice: '1225000.00',
+            purchasePriceWords: 'One Million Two Hundred Twenty-Five Thousand',
+
+            depositTiming: 'Upon Acceptance',
+            depositAmount: '60000.00',
+            depositAmountWords: 'Sixty Thousand',
+            depositHolder: 'Realax Realty Inc., Brokerage',
+
+            schedulesList: 'A',
+
+            irrevocabilityBoundParty: 'Buyer',
+            irrevocabilityTime: '11:59 p.m.',
+            irrevocabilityDate: new Date('2026-09-04'),
+
+            completionDate: new Date('2026-11-14'),
+            titleSearchDate: new Date('2026-10-24'),
+
+            noticesSellerFax: '416-555-0143',
+            noticesBuyerFax: '416-555-0165',
+
+            chattelsIncluded: [
+                'Refrigerator',
+                'Stove',
+                'Built-in dishwasher',
+                'Washer and dryer',
+                'All existing window coverings',
+                'All existing light fixtures'
+            ],
+            fixturesExcluded: ['Dining room chandelier', 'Garage shelving'],
+            rentalItems: ['Hot water tank', 'Furnace and air conditioner'],
+
+            hstTreatment: 'included in',
+
+            propertyPresentUse: 'Single family residential',
+
+            coopBrokerageName: 'Bayview Heights Real Estate Ltd., Brokerage',
+            coopBrokerageTel: '416-555-0173',
+            coopBrokerageSalesperson: 'Alan Prakash',
+
+            sellerLawyerName: 'Hollis & Wren LLP',
+            sellerLawyerAddress: '120 Adelaide Street West, Suite 900, Toronto, ON M5H 1T1',
+            sellerLawyerEmail: 'conveyancing@holliswren.example.test',
+            sellerLawyerTel: '416-555-0107',
+            sellerLawyerFax: '416-555-0108',
+
+            buyerLawyerName: 'Marchetti Law Professional Corporation',
+            buyerLawyerAddress: '75 Front Street East, Suite 300, Toronto, ON M5E 1B8',
+            buyerLawyerEmail: 'closings@marchettilaw.example.test',
+            buyerLawyerTel: '416-555-0131',
+            buyerLawyerFax: '416-555-0132'
         }
     })
 
@@ -168,6 +263,8 @@ async function seedRealax() {
     console.log('seeded agent      :', agent.id, agent.email)
     console.log('seeded property   :', property.id, property.address)
     console.log('seeded transaction:', transaction.id, transaction.type, transaction.status)
+    console.log('seeded parties    :', seller.fullLegalName, '(seller),', buyer.fullLegalName, '(buyer)')
+    console.log('seeded entries    :', entries.id, 'completion', entries.completionDate?.toISOString().slice(0, 10))
     console.log('login with       :', AGENT_EMAIL, '/', AGENT_PASSWORD)
 }
 

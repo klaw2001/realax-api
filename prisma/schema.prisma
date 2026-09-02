@@ -147,19 +147,20 @@ enum TransactionStatus {
 }
 
 model Transaction {
-  id         String             @id @default(cuid())
+  id         String              @id @default(cuid())
   type       TransactionType
-  status     TransactionStatus  @default(DRAFT)
+  status     TransactionStatus   @default(DRAFT)
   agentId    String
-  agent      Agent              @relation(fields: [agentId], references: [id])
+  agent      Agent               @relation(fields: [agentId], references: [id])
   propertyId String?
-  property   Property?          @relation(fields: [propertyId], references: [id])
+  property   Property?           @relation(fields: [propertyId], references: [id])
   parties    TransactionParty[]
+  entries    TransactionEntries?
   forms      TransactionForm[]
   envelopes  SigningEnvelope[]
   documents  Document[]
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @updatedAt
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
 }
 
 enum PartyRole {
@@ -282,4 +283,106 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   @@index([entityType, entityId])
+}
+
+// ---------------------------------------------------------------------------
+// Form entries
+// ---------------------------------------------------------------------------
+
+// The agreement terms the domain model has no other column for (build plan 2.3).
+//
+// Form 100 names 76 data blanks. Twenty-four of them the domain model already
+// answers — the parties' names, the property, the agent's brokerage — and the
+// mapper fills those from `Property`, `TransactionParty` and `Agent`. The other
+// fifty-two are the deal itself: the price, the deposit, the dates, the
+// chattels, the lawyers. Those are this table.
+//
+// Every column below exists because `mapper.service.ts` reads the entry key it
+// carries. Nothing here is a field the mapper would ignore, and the fifty-two
+// blanks are covered exactly once: `agreementDate` alone fans out into three of
+// them, and Schedule A's date follows the agreement's rather than having a
+// column of its own — one agreement, one date.
+//
+// A `Json` blob would have done the same job and is what the demo used. It is
+// not what this is, for the reason the top of this file gives: the field shapes
+// are known now, and a typed column is what makes a missing completion date a
+// compliance failure rather than a key nobody noticed was misspelled.
+model TransactionEntries {
+  id            String      @id @default(cuid())
+  transactionId String      @unique
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+
+  // --- The agreement ------------------------------------------------------
+  // Calendar dates, not instants: `@db.Date`, so a completion date read back in
+  // another timezone is still the date printed on the agreement. The mapper
+  // splits each one into the day / month / year the forms print separately.
+  agreementDate DateTime? @db.Date
+
+  // Decimal rather than a float. This figure is drawn onto a contract, and
+  // binary floating point is not a thing to write a purchase price in.
+  purchasePrice      Decimal? @db.Decimal(12, 2)
+  // The same figure spelled out — the form prints both, and the words govern.
+  purchasePriceWords String?
+
+  // "Buyer submits herewith" / "upon acceptance" — a phrase, not a date.
+  depositTiming      String?
+  depositAmount      Decimal? @db.Decimal(12, 2)
+  depositAmountWords String?
+  // The brokerage holding the deposit in trust.
+  depositHolder      String?
+
+  // "A" — which schedules form part of the agreement.
+  schedulesList String?
+
+  // Which side is bound, until when, on what date.
+  irrevocabilityBoundParty String?
+  irrevocabilityTime       String?
+  irrevocabilityDate       DateTime? @db.Date
+
+  completionDate  DateTime? @db.Date
+  titleSearchDate DateTime? @db.Date
+
+  // --- Notices ------------------------------------------------------------
+  // Fax only. The email blanks are the parties' own and come from `Party`.
+  noticesSellerFax String?
+  noticesBuyerFax  String?
+
+  // --- The ruled blocks ---------------------------------------------------
+  // Lists, one item per element, because that is what an agent is writing down.
+  // They are joined and flowed across the form's ruled continuation lines at
+  // fill time, where the font metrics are — see `flow` in the curated template.
+  chattelsIncluded String[]
+  fixturesExcluded String[]
+  rentalItems      String[]
+
+  // "included in" / "in addition to" the purchase price.
+  hstTreatment String?
+
+  // The present use the agreement warrants — "single family residential".
+  propertyPresentUse String?
+
+  // --- The other side's brokerage ------------------------------------------
+  // On a listing the agent's own brokerage is the listing brokerage and comes
+  // from their profile; the co-operating brokerage acts for the buyer and is
+  // typed in. There is no listing-brokerage column here for the same reason:
+  // only LISTING is wired (build plan 1.2), so the profile always answers it.
+  coopBrokerageName        String?
+  coopBrokerageTel         String?
+  coopBrokerageSalesperson String?
+
+  // --- Lawyers -------------------------------------------------------------
+  sellerLawyerName    String?
+  sellerLawyerAddress String?
+  sellerLawyerEmail   String?
+  sellerLawyerTel     String?
+  sellerLawyerFax     String?
+
+  buyerLawyerName    String?
+  buyerLawyerAddress String?
+  buyerLawyerEmail   String?
+  buyerLawyerTel     String?
+  buyerLawyerFax     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
