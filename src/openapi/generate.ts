@@ -17,6 +17,7 @@ import '@/schemas/party'
 import '@/schemas/entries'
 import '@/schemas/compliance'
 import '@/schemas/form'
+import '@/schemas/identity'
 
 const OUTPUT = path.resolve(process.cwd(), 'openapi.json')
 

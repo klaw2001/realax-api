@@ -46,7 +46,32 @@ const envSchema = z.object({
 
     // Overridable so a test or a staging environment can be pointed elsewhere
     // without a code change.
-    REPLIERS_BASE_URL: z.url().default('https://api.repliers.io')
+    REPLIERS_BASE_URL: z.url().default('https://api.repliers.io'),
+
+    // OCR for identity documents (build plan 2.5). Named rather than assumed,
+    // so swapping the vendor is a variable and a file under `integrations/ocr/`
+    // rather than a search for every place that says Textract.
+    OCR_PROVIDER: z.enum(['textract']).default('textract'),
+
+    // AnalyzeID runs in the same region as the bucket. Identity documents are
+    // FINTRAC material and do not leave `ca-central-1` — including to be read.
+    // Separate from AWS_REGION only so that a future non-AWS vendor does not
+    // require repointing storage as well.
+    OCR_REGION: z.string().min(1).default('ca-central-1'),
+
+    // Field encryption for `IdentityRecord.documentNumber` (build plan 0.2
+    // labels that column encrypted at rest). 32 bytes, hex or base64 —
+    // `src/lib/encryption.ts` refuses anything else. Required, not optional: a
+    // column documented as encrypted that silently holds plaintext because a
+    // variable was unset is worse than one that never claimed to be. Generate
+    // with:
+    //   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+    //
+    // Rotating it makes every existing document number unreadable. Values carry
+    // a version prefix so a re-encryption migration can tell old from new.
+    IDENTITY_ENCRYPTION_KEY: z
+        .string()
+        .min(32, 'IDENTITY_ENCRYPTION_KEY must decode to 32 bytes')
 
     // AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY are deliberately absent. The
     // SDK's default credential chain reads them from the environment in

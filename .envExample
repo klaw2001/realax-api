@@ -27,3 +27,18 @@ REDIS_URL="redis://localhost:6379"
 # not TRREB. See test/fixtures/repliers/README.md.
 REPLIERS_API_KEY="change-me"
 REPLIERS_BASE_URL="https://api.repliers.io"
+
+# OCR for identity documents (build plan 2.5). Textract AnalyzeID, in the same
+# region as the bucket — identity documents are FINTRAC material and do not
+# leave ca-central-1, including to be read. AnalyzeID is available there;
+# confirmed before the integration was written.
+OCR_PROVIDER="textract"
+OCR_REGION="ca-central-1"
+
+# Field encryption for IdentityRecord.documentNumber, which the data model has
+# always described as encrypted at rest. 32 bytes, hex or base64. Generate with:
+#   node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+#
+# Rotating this makes every stored document number unreadable. Not a secret that
+# can be regenerated casually.
+IDENTITY_ENCRYPTION_KEY="change-me-32-bytes-base64-or-hex-0000000000="

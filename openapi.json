@@ -1927,6 +1927,213 @@
           "expiresInSeconds",
           "fileName"
         ]
+      },
+      "IdentityDocumentType": {
+        "type": "string",
+        "enum": [
+          "drivers_licence",
+          "passport"
+        ],
+        "description": "Narrow on purpose: FINTRAC names particular documents, and a scan of something else is not a verification however well it reads.",
+        "example": "drivers_licence"
+      },
+      "ScannedIdentity": {
+        "type": "object",
+        "properties": {
+          "documentType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IdentityDocumentType"
+              },
+              {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            ]
+          },
+          "fullName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "MARGARET ANNE WHITFIELD"
+          },
+          "firstName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "middleName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dateOfBirth": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "1979-04-17"
+          },
+          "expiryDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2029-04-17"
+          },
+          "address": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "province": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "postalCode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "documentNumberRead": {
+            "type": "boolean",
+            "description": "Whether a document number was read. The number itself is never returned; it is encrypted at rest and stays server-side.",
+            "example": true
+          },
+          "confidence": {
+            "type": "number",
+            "description": "The lowest confidence across the fields that were found, 0–100. The lowest rather than the mean, because a result where everything is certain except the document number is exactly the result to check.",
+            "example": 96.4
+          },
+          "lowConfidence": {
+            "type": "boolean",
+            "description": "Below the threshold at which the agent should read every field rather than skim.",
+            "example": false
+          }
+        },
+        "required": [
+          "documentType",
+          "fullName",
+          "firstName",
+          "middleName",
+          "lastName",
+          "dateOfBirth",
+          "expiryDate",
+          "address",
+          "city",
+          "province",
+          "postalCode",
+          "documentNumberRead",
+          "confidence",
+          "lowConfidence"
+        ]
+      },
+      "IdentityRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+          },
+          "partyId": {
+            "type": "string",
+            "description": "The person this verifies, not the party-on-a-transaction row.",
+            "example": "clx9z8y7x6w5v4u3t2s1r0q9p"
+          },
+          "documentType": {
+            "$ref": "#/components/schemas/IdentityDocumentType"
+          },
+          "documentNumberOnFile": {
+            "type": "boolean",
+            "description": "Whether a document number is held. The number is encrypted at rest and is never returned by this API, in any form.",
+            "example": true
+          },
+          "expiryDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2029-04-17"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-02T09:00:00.000Z"
+          },
+          "verifiedMethod": {
+            "type": "string",
+            "description": "The FINTRAC method used.",
+            "example": "government_photo_id"
+          },
+          "expired": {
+            "type": "boolean",
+            "description": "The document had expired as of this reading. A verification on an expired document is not one.",
+            "example": false
+          }
+        },
+        "required": [
+          "id",
+          "partyId",
+          "documentType",
+          "documentNumberOnFile",
+          "expiryDate",
+          "verifiedAt",
+          "verifiedMethod",
+          "expired"
+        ]
+      },
+      "IdentityRecordListResponse": {
+        "type": "object",
+        "properties": {
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentityRecord"
+            }
+          }
+        },
+        "required": [
+          "records"
+        ]
+      },
+      "ScanIdentityResponse": {
+        "type": "object",
+        "properties": {
+          "scanned": {
+            "$ref": "#/components/schemas/ScannedIdentity"
+          },
+          "record": {
+            "$ref": "#/components/schemas/IdentityRecord"
+          }
+        },
+        "required": [
+          "scanned",
+          "record"
+        ]
       }
     },
     "parameters": {}
@@ -3406,6 +3613,190 @@
           },
           "404": {
             "description": "No such transaction, or no curated template for that form",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{id}/parties/{partyId}/identity": {
+      "post": {
+        "summary": "Upload and read a party’s identity document",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. Multipart: `document` is the image and `documentType` says what it is. The file is stored in the Canadian bucket under SSE-KMS first and read from there, so the record is provably about the stored object. The document number is encrypted before it reaches a column and is never returned.",
+        "tags": [
+          "identity"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx9z8y7x6w5v4u3t2s1r0q9p"
+            },
+            "required": true,
+            "name": "partyId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "document": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "JPEG or PNG, at most 5 MB."
+                  },
+                  "documentType": {
+                    "$ref": "#/components/schemas/IdentityDocumentType"
+                  }
+                },
+                "required": [
+                  "document",
+                  "documentType"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "What was read, and the record it created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanIdentityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No file, an unsupported type, or a document type that is not accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction, or no such party on it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The image was stored but no identity document could be read from it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The document reader is unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "The identity records held for a party",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. Records are held against the person, so a party verified on an earlier transaction is already verified here — that reuse is the point of build plan 2.5. Document numbers are never included.",
+        "tags": [
+          "identity"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx9z8y7x6w5v4u3t2s1r0q9p"
+            },
+            "required": true,
+            "name": "partyId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The records held, newest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityRecordListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction, or no such party on it",
             "content": {
               "application/json": {
                 "schema": {
