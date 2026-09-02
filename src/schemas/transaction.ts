@@ -110,6 +110,29 @@ registry.registerPath({
 })
 
 registry.registerPath({
+    method: 'get',
+    path: '/api/transactions/{id}',
+    summary: 'One transaction',
+    security: [{ sessionCookie: [] }],
+    description:
+        "Requires a session, and the transaction must belong to the caller. A transaction someone else owns answers 404, the same as one that does not exist. The transaction alone — its property, parties and entries each have their own endpoint under this one.",
+    tags: ['transactions'],
+    request: {
+        params: z.object({
+            id: z.string().openapi({ example: 'clx0a1b2c3d4e5f6g7h8i9j0k' })
+        })
+    },
+    responses: {
+        200: {
+            description: 'The transaction',
+            content: { 'application/json': { schema: transactionResponseSchema } }
+        },
+        401: errorContent('No session'),
+        404: errorContent('No such transaction')
+    }
+})
+
+registry.registerPath({
     method: 'post',
     path: '/api/transactions',
     summary: 'Start a transaction',

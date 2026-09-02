@@ -1,6 +1,10 @@
 import express from 'express'
 
-import { getTransactions, postTransaction } from '@/modules/transaction/transaction.controller'
+import {
+    getTransaction,
+    getTransactions,
+    postTransaction
+} from '@/modules/transaction/transaction.controller'
 
 /**
  * Mounted at `/api/transactions`, behind the session guard — so every handler
@@ -17,6 +21,10 @@ transactionRoutes.get('/', (req, res, next) => {
 
 transactionRoutes.post('/', (req, res, next) => {
     postTransaction(req, res).catch(next)
+})
+
+transactionRoutes.get('/:id', (req, res, next) => {
+    getTransaction(req, res).catch(next)
 })
 
 export default transactionRoutes

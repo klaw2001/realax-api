@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 
 import {
     createListingTransaction,
+    findTransaction,
     listTransactions
 } from '@/modules/transaction/transaction.service'
 import type { ErrorResponse } from '@/schemas/common'
@@ -27,6 +28,36 @@ export const getTransactions = async (req: Request, res: Response) => {
     const transactions = await listTransactions(req.agent.id)
 
     res.status(200).json(transactionListResponseSchema.parse({ transactions }))
+}
+
+/**
+ * `GET /api/transactions/:id`.
+ *
+ * The transaction itself, without its relations. The property, the parties and
+ * the entries each have their own endpoint under this one and are fetched
+ * separately — the pages that show them are separate pages, and an overview
+ * that had to load all of it to render a status line would be the slowest
+ * screen in the product.
+ */
+export const getTransaction = async (req: Request, res: Response) => {
+    if (!req.agent) {
+        res.status(401).json(unauthorized)
+
+        return
+    }
+
+    const transaction = await findTransaction(req.params.id ?? '', req.agent.id)
+
+    if (!transaction) {
+        res.status(404).json({
+            error: 'transaction_not_found',
+            message: 'No such transaction'
+        } satisfies ErrorResponse)
+
+        return
+    }
+
+    res.status(200).json(transactionResponseSchema.parse({ transaction }))
 }
 
 /** `POST /api/transactions`. */

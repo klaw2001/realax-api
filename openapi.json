@@ -1157,6 +1157,585 @@
         "required": [
           "deleted"
         ]
+      },
+      "TransactionEntries": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+          },
+          "agreementDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-09-02"
+          },
+          "purchasePrice": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{1,10}(\\.\\d{1,2})?$",
+            "example": "1225000.00"
+          },
+          "purchasePriceWords": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The same figure spelled out. The form prints both, and the words govern.",
+            "example": "One Million Two Hundred Twenty-Five Thousand"
+          },
+          "depositTiming": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Upon Acceptance"
+          },
+          "depositAmount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{1,10}(\\.\\d{1,2})?$",
+            "example": "60000.00"
+          },
+          "depositAmountWords": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Sixty Thousand"
+          },
+          "depositHolder": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The brokerage holding the deposit in trust.",
+            "example": "Realax Realty Inc., Brokerage"
+          },
+          "schedulesList": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Which schedules form part of the agreement.",
+            "example": "A"
+          },
+          "irrevocabilityBoundParty": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Buyer"
+          },
+          "irrevocabilityTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "11:59 p.m."
+          },
+          "irrevocabilityDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-09-04"
+          },
+          "completionDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-11-14"
+          },
+          "titleSearchDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-10-24"
+          },
+          "noticesSellerFax": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0143"
+          },
+          "noticesBuyerFax": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0165"
+          },
+          "chattelsIncluded": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Refrigerator",
+              "Stove"
+            ]
+          },
+          "fixturesExcluded": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Dining room chandelier"
+            ]
+          },
+          "rentalItems": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Hot water tank"
+            ]
+          },
+          "hstTreatment": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Whether HST is included in or in addition to the purchase price.",
+            "example": "included in"
+          },
+          "propertyPresentUse": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Single family residential"
+          },
+          "coopBrokerageName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Bayview Heights Real Estate Ltd., Brokerage"
+          },
+          "coopBrokerageTel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0173"
+          },
+          "coopBrokerageSalesperson": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Alan Prakash"
+          },
+          "sellerLawyerName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Hollis & Wren LLP"
+          },
+          "sellerLawyerAddress": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "120 Adelaide Street West, Suite 900, Toronto, ON M5H 1T1"
+          },
+          "sellerLawyerEmail": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "conveyancing@holliswren.test"
+          },
+          "sellerLawyerTel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0107"
+          },
+          "sellerLawyerFax": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0108"
+          },
+          "buyerLawyerName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Marchetti Law Professional Corporation"
+          },
+          "buyerLawyerAddress": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "75 Front Street East, Suite 300, Toronto, ON M5E 1B8"
+          },
+          "buyerLawyerEmail": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "closings@marchettilaw.test"
+          },
+          "buyerLawyerTel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0131"
+          },
+          "buyerLawyerFax": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0132"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-02T09:00:00.000Z"
+          }
+        },
+        "required": [
+          "transactionId",
+          "agreementDate",
+          "purchasePrice",
+          "purchasePriceWords",
+          "depositTiming",
+          "depositAmount",
+          "depositAmountWords",
+          "depositHolder",
+          "schedulesList",
+          "irrevocabilityBoundParty",
+          "irrevocabilityTime",
+          "irrevocabilityDate",
+          "completionDate",
+          "titleSearchDate",
+          "noticesSellerFax",
+          "noticesBuyerFax",
+          "chattelsIncluded",
+          "fixturesExcluded",
+          "rentalItems",
+          "hstTreatment",
+          "propertyPresentUse",
+          "coopBrokerageName",
+          "coopBrokerageTel",
+          "coopBrokerageSalesperson",
+          "sellerLawyerName",
+          "sellerLawyerAddress",
+          "sellerLawyerEmail",
+          "sellerLawyerTel",
+          "sellerLawyerFax",
+          "buyerLawyerName",
+          "buyerLawyerAddress",
+          "buyerLawyerEmail",
+          "buyerLawyerTel",
+          "buyerLawyerFax",
+          "updatedAt"
+        ]
+      },
+      "TransactionEntriesResponse": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "$ref": "#/components/schemas/TransactionEntries"
+          }
+        },
+        "required": [
+          "entries"
+        ]
+      },
+      "SaveTransactionEntriesRequest": {
+        "type": "object",
+        "properties": {
+          "agreementDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-09-02"
+          },
+          "purchasePrice": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{1,10}(\\.\\d{1,2})?$",
+            "example": "1225000.00"
+          },
+          "purchasePriceWords": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "depositTiming": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "depositAmount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{1,10}(\\.\\d{1,2})?$",
+            "example": "60000.00"
+          },
+          "depositAmountWords": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "depositHolder": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "schedulesList": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "irrevocabilityBoundParty": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "irrevocabilityTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "irrevocabilityDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "completionDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "titleSearchDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "noticesSellerFax": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "noticesBuyerFax": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "chattelsIncluded": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "maxItems": 40
+          },
+          "fixturesExcluded": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "maxItems": 40
+          },
+          "rentalItems": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "maxItems": 40
+          },
+          "hstTreatment": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "propertyPresentUse": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "coopBrokerageName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "coopBrokerageTel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "coopBrokerageSalesperson": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "sellerLawyerName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "sellerLawyerAddress": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "sellerLawyerEmail": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "sellerLawyerTel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "sellerLawyerFax": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "buyerLawyerName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "buyerLawyerAddress": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "buyerLawyerEmail": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "buyerLawyerTel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "buyerLawyerFax": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          }
+        }
       }
     },
     "parameters": {}
@@ -1506,6 +2085,63 @@
           },
           "401": {
             "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{id}": {
+      "get": {
+        "summary": "One transaction",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. A transaction someone else owns answers 404, the same as one that does not exist. The transaction alone — its property, parties and entries each have their own endpoint under this one.",
+        "tags": [
+          "transactions"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction",
             "content": {
               "application/json": {
                 "schema": {
@@ -2147,6 +2783,138 @@
           },
           "404": {
             "description": "No such transaction, or no such party on it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{id}/entries": {
+      "get": {
+        "summary": "A transaction's agreement terms",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. A transaction with nothing entered yet answers 200 with every field null rather than 404 — the entries exist as soon as the transaction does, they are simply empty.",
+        "tags": [
+          "entries"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The saved entries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionEntriesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Save a transaction's agreement terms",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. Creates the row on the first call and replaces it in place afterwards. The whole form is sent every time — an absent field clears it.",
+        "tags": [
+          "entries"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveTransactionEntriesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The saved entries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionEntriesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction",
             "content": {
               "application/json": {
                 "schema": {

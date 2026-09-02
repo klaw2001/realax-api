@@ -52,6 +52,27 @@ export const listTransactions = async (agentId: string): Promise<Transaction[]> 
 }
 
 /**
+ * One transaction, if the caller owns it.
+ *
+ * `null` for a transaction that does not exist and for one belonging to another
+ * agent alike: ownership is a filter on the query rather than a check after it,
+ * so there is no code path that reads someone else's transaction and then
+ * decides what to do about it — and which of the two it was is not something
+ * the caller gets to learn.
+ */
+export const findTransaction = async (
+    transactionId: string,
+    agentId: string
+): Promise<Transaction | null> => {
+    const record = await prisma.transaction.findFirst({
+        where: { id: transactionId, agentId },
+        select: transactionSelect
+    })
+
+    return record === null ? null : toTransaction(record)
+}
+
+/**
  * Start a DRAFT transaction.
  *
  * The status is not taken from the request: every transaction begins as a
