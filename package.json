@@ -16,6 +16,8 @@
     "gen:openapi": "ts-node -r tsconfig-paths/register -r dotenv/config src/openapi/generate.ts",
     "lint:fix": "eslint src test --fix",
     "db:seed": "prisma db seed",
+    "forms:curate": "python3 tools/curate_template.py",
+    "forms:seed": "ts-node -r tsconfig-paths/register -r dotenv/config prisma/seedFormTemplates.ts",
     "db:migrate": "prisma migrate dev"
   },
   "author": "Rv - rv.prodeveloper@gmail.com",

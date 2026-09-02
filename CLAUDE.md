@@ -64,6 +64,16 @@ one unit of work.
 - **Templates are version-pinned by SHA-256.** OREA revises forms and
   coordinates shift silently. Refuse to fill on a hash mismatch rather
   than producing a plausible-looking wrong document.
+- **A template is two files merged.** `forms/templates/<code>.raw.json` is
+  extractor output and regenerable; `<code>.names.json` is the hand-written
+  curation naming each blank. `tools/curate_template.py <code>` merges them
+  into `<code>.json`, which is the only one the service loads. A form with a
+  `.raw.json` and no `.json` has geometry but no names and is not fillable —
+  that is deliberate, not an oversight.
+- **`kind` on a blank is not decoration.** `data` blanks are the agent's and
+  the compliance gate checks them; `signature` and `signingDate` blanks are
+  filled inside the e-sign session, and counting one as missing would block
+  every transaction.
 - **The compliance check runs before signing**, not after. Catching a
   missing field post-signature forces a re-sign loop.
 - **Webhooks are the source of truth for signer state**, never the iframe
@@ -80,4 +90,7 @@ npm run typecheck        # must pass before any commit
 npm test
 npm run gen:openapi
 npx prisma migrate dev
+
+python3 tools/curate_template.py 100   # re-merge a curated template
+npm run forms:seed                     # upload sources to S3, upsert FormTemplate
 ```

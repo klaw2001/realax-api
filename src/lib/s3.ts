@@ -45,10 +45,20 @@ function segment(value: string, name: string): string {
 }
 
 /**
+ * "May 2026" is how OREA prints a revision and how the `FormTemplate` row
+ * stores it. It is not a key segment — hence one slug, next to the check it
+ * has to satisfy, rather than a caller remembering to lower-case it.
+ */
+function revisionSlug(revision: string): string {
+    return revision.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+/**
  * The key convention, in one place. Nothing else in the codebase should build
  * a key by string concatenation — the layout is what makes retention and
  * lifecycle rules expressible as prefixes.
  *
+ *   forms/sources/{formCode}/{revision}.pdf
  *   transactions/{txId}/ids/{partyId}/{docType}.jpg
  *   transactions/{txId}/forms/{formCode}/filled.pdf
  *   transactions/{txId}/forms/{formCode}/signed.pdf
@@ -62,6 +72,19 @@ export const keys = {
             `/ids/${segment(partyId, 'partyId')}` +
             `/${segment(docType, 'docType')}.${segment(extension, 'extension')}`
         )
+    },
+
+    /**
+     * The blank OREA source PDF a template is pinned to.
+     *
+     * Not under `transactions/` — a source belongs to the form library, not to
+     * any one deal, and every filled document in the bucket traces back to one
+     * of these. Keyed by revision because OREA reissues a form under the same
+     * number and both revisions stay live while offers written on the old one
+     * are still in flight.
+     */
+    formSource(formCode: string, revision: string): string {
+        return `forms/sources/${segment(formCode, 'formCode')}/${segment(revisionSlug(revision), 'revision')}.pdf`
     },
 
     /** The filled, unsigned OREA form. */
@@ -129,6 +152,23 @@ export async function getSignedUrl(key: string, ttlSeconds = DEFAULT_SIGNED_URL_
     return presign(s3, new GetObjectCommand({ Bucket: env.AWS_S3_BUCKET, Key: key }), {
         expiresIn: ttlSeconds
     })
+}
+
+/**
+ * Read an object's bytes into memory.
+ *
+ * For our own artefacts — a blank form source, a filled PDF being re-read for
+ * signing. Not for streaming to a client: everything a client reads goes out as
+ * a presigned URL so the bytes never pass through this process.
+ */
+export async function getObjectBytes(key: string): Promise<Buffer> {
+    const response = await s3.send(new GetObjectCommand({ Bucket: env.AWS_S3_BUCKET, Key: key }))
+
+    if (!response.Body) {
+        throw new Error('S3 returned an object with no body')
+    }
+
+    return Buffer.from(await response.Body.transformToByteArray())
 }
 
 export interface ObjectMetadata {

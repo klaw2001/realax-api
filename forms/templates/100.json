@@ -1,0 +1,2001 @@
+{
+  "form": "100",
+  "revision": "May 2026",
+  "source": "(Ontario) 100 - Agreement of Purchase and Sale - Residential.pdf",
+  "sourceSha256": "d6113e676c000472eb5b919bd64c856252dd634b986e215f49b2937766e3a671",
+  "generator": "tools/curate_template.py",
+  "coordinateSpace": "pdf-user-space-origin-bottom-left",
+  "units": "pt",
+  "extraction": {
+    "minRunLength": 4,
+    "leaderChars": ".\u2024\u00b7_",
+    "lineTolerance": 2.0,
+    "runBreakFactor": 2.5
+  },
+  "pageCount": 6,
+  "pages": [
+    {
+      "page": 1,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    },
+    {
+      "page": 2,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    },
+    {
+      "page": 3,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    },
+    {
+      "page": 4,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    },
+    {
+      "page": 5,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    },
+    {
+      "page": 6,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    }
+  ],
+  "blankCount": 106,
+  "blanks": [
+    {
+      "id": "100-p1-b001",
+      "name": "agreement.dateDay",
+      "page": 1,
+      "bbox": [
+        202.34,
+        676.63,
+        259.01,
+        684.63
+      ],
+      "baseline": 678.39,
+      "width": 56.67,
+      "fontSize": 8.0,
+      "label": "This Agreement of Purchase and Sale dated this",
+      "labelAfter": "day of 20",
+      "lineText": "This Agreement of Purchase and Sale dated this day of 20",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b002",
+      "name": "agreement.dateMonth",
+      "page": 1,
+      "bbox": [
+        284.0,
+        676.63,
+        530.39,
+        684.63
+      ],
+      "baseline": 678.39,
+      "width": 246.39,
+      "fontSize": 8.0,
+      "label": "This Agreement of Purchase and Sale dated this day of",
+      "labelAfter": "20",
+      "lineText": "This Agreement of Purchase and Sale dated this day of 20",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b003",
+      "name": "agreement.dateYear",
+      "page": 1,
+      "bbox": [
+        541.94,
+        676.63,
+        571.51,
+        684.63
+      ],
+      "baseline": 678.39,
+      "width": 29.57,
+      "fontSize": 8.0,
+      "label": "This Agreement of Purchase and Sale dated this day of 20",
+      "labelAfter": "",
+      "lineText": "This Agreement of Purchase and Sale dated this day of 20",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b004",
+      "name": "buyer.fullLegalNames",
+      "page": 1,
+      "bbox": [
+        72.51,
+        651.64,
+        483.98,
+        659.64
+      ],
+      "baseline": 653.4,
+      "width": 411.47,
+      "fontSize": 8.0,
+      "label": "BUYER",
+      "labelAfter": ", agrees to purchase from",
+      "lineText": "BUYER: , agrees to purchase from",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b005",
+      "name": "seller.fullLegalNames",
+      "page": 1,
+      "bbox": [
+        72.79,
+        623.64,
+        521.23,
+        631.63
+      ],
+      "baseline": 625.4,
+      "width": 448.43,
+      "fontSize": 8.0,
+      "label": "SELLER",
+      "labelAfter": ", the following",
+      "lineText": "SELLER: , the following",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b006",
+      "name": "property.address",
+      "page": 1,
+      "bbox": [
+        71.0,
+        568.64,
+        571.18,
+        576.64
+      ],
+      "baseline": 570.4,
+      "width": 500.18,
+      "fontSize": 8.0,
+      "label": "Address",
+      "labelAfter": "",
+      "lineText": "Address",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b007",
+      "name": "property.frontingSide",
+      "page": 1,
+      "bbox": [
+        92.92,
+        543.64,
+        297.43,
+        551.64
+      ],
+      "baseline": 545.4,
+      "width": 204.51,
+      "fontSize": 8.0,
+      "label": "fronting on the",
+      "labelAfter": "side of",
+      "lineText": "fronting on the side of",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b008",
+      "name": "property.frontingStreet",
+      "page": 1,
+      "bbox": [
+        325.11,
+        543.64,
+        571.5,
+        551.64
+      ],
+      "baseline": 545.4,
+      "width": 246.39,
+      "fontSize": 8.0,
+      "label": "fronting on the side of",
+      "labelAfter": "",
+      "lineText": "fronting on the side of",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b009",
+      "name": "property.municipality",
+      "page": 1,
+      "bbox": [
+        61.45,
+        518.64,
+        571.48,
+        526.64
+      ],
+      "baseline": 520.4,
+      "width": 510.03,
+      "fontSize": 8.0,
+      "label": "in the",
+      "labelAfter": "",
+      "lineText": "in the",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b010",
+      "name": "property.frontage",
+      "page": 1,
+      "bbox": [
+        129.34,
+        493.64,
+        284.56,
+        501.64
+      ],
+      "baseline": 495.4,
+      "width": 155.23,
+      "fontSize": 8.0,
+      "label": "and having a frontage of",
+      "labelAfter": "more or less by a depth of more or less",
+      "lineText": "and having a frontage of more or less by a depth of more or less",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b011",
+      "name": "property.depth",
+      "page": 1,
+      "bbox": [
+        379.63,
+        493.64,
+        527.46,
+        501.64
+      ],
+      "baseline": 495.4,
+      "width": 147.84,
+      "fontSize": 8.0,
+      "label": "and having a frontage of more or less by a depth of",
+      "labelAfter": "more or less",
+      "lineText": "and having a frontage of more or less by a depth of more or less",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b012",
+      "name": "property.legalDescription",
+      "page": 1,
+      "bbox": [
+        40.5,
+        443.64,
+        516.04,
+        451.64
+      ],
+      "baseline": 445.4,
+      "width": 475.54,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "(the \u201cproperty\u201d)",
+      "lineText": "(the \u201cproperty\u201d)",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b013",
+      "name": "purchasePrice.numeric",
+      "page": 1,
+      "bbox": [
+        466.81,
+        411.64,
+        570.29,
+        419.64
+      ],
+      "baseline": 413.4,
+      "width": 103.48,
+      "fontSize": 8.0,
+      "label": "PURCHASE PRICE: Dollars (CDN$)",
+      "labelAfter": "",
+      "lineText": "PURCHASE PRICE: Dollars (CDN$)",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b014",
+      "name": "purchasePrice.words",
+      "page": 1,
+      "bbox": [
+        40.5,
+        386.64,
+        545.6,
+        394.64
+      ],
+      "baseline": 388.4,
+      "width": 505.1,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "Dollars",
+      "lineText": "Dollars",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b015",
+      "name": "deposit.timing",
+      "page": 1,
+      "bbox": [
+        129.63,
+        361.64,
+        570.67,
+        369.64
+      ],
+      "baseline": 363.4,
+      "width": 441.04,
+      "fontSize": 8.0,
+      "label": "DEPOSIT: Buyer submits",
+      "labelAfter": "",
+      "lineText": "DEPOSIT: Buyer submits",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b016",
+      "name": "deposit.amountWords",
+      "page": 1,
+      "bbox": [
+        40.5,
+        334.64,
+        407.62,
+        342.64
+      ],
+      "baseline": 336.4,
+      "width": 367.12,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "Dollars (CDN$)",
+      "lineText": "Dollars (CDN$)",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b017",
+      "name": "deposit.amountNumeric",
+      "page": 1,
+      "bbox": [
+        466.41,
+        334.64,
+        569.89,
+        342.64
+      ],
+      "baseline": 336.4,
+      "width": 103.48,
+      "fontSize": 8.0,
+      "label": "Dollars (CDN$)",
+      "labelAfter": "",
+      "lineText": "Dollars (CDN$)",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b018",
+      "name": "deposit.holder",
+      "page": 1,
+      "bbox": [
+        162.5,
+        311.64,
+        468.03,
+        319.64
+      ],
+      "baseline": 313.4,
+      "width": 305.53,
+      "fontSize": 8.0,
+      "label": "by negotiable cheque payable to",
+      "labelAfter": "\u201cDeposit Holder\u201d to be held",
+      "lineText": "by negotiable cheque payable to \u201cDeposit Holder\u201d to be held",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b019",
+      "name": "schedules.list",
+      "page": 1,
+      "bbox": [
+        101.68,
+        219.64,
+        372.71,
+        227.64
+      ],
+      "baseline": 221.4,
+      "width": 271.03,
+      "fontSize": 8.0,
+      "label": "SCHEDULE(S) A",
+      "labelAfter": "attached hereto form(s) part of this Agreement",
+      "lineText": "SCHEDULE(S) A attached hereto form(s) part of this Agreement",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b020",
+      "name": "irrevocability.boundParty",
+      "page": 1,
+      "bbox": [
+        245.84,
+        196.64,
+        415.85,
+        204.64
+      ],
+      "baseline": 198.4,
+      "width": 170.01,
+      "fontSize": 8.0,
+      "label": "1. IRREVOCABILITY: This offer shall be irrevocable by",
+      "labelAfter": "until on the",
+      "lineText": "1. IRREVOCABILITY: This offer shall be irrevocable by until on the",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b021",
+      "name": "irrevocability.time",
+      "page": 1,
+      "bbox": [
+        434.64,
+        196.64,
+        511.02,
+        204.64
+      ],
+      "baseline": 198.4,
+      "width": 76.38,
+      "fontSize": 8.0,
+      "label": "1. IRREVOCABILITY: This offer shall be irrevocable by until",
+      "labelAfter": "on the",
+      "lineText": "1. IRREVOCABILITY: This offer shall be irrevocable by until on the",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b022",
+      "name": "irrevocability.dateDay",
+      "page": 1,
+      "bbox": [
+        537.0,
+        196.64,
+        571.49,
+        204.64
+      ],
+      "baseline": 198.4,
+      "width": 34.49,
+      "fontSize": 8.0,
+      "label": "1. IRREVOCABILITY: This offer shall be irrevocable by until on the",
+      "labelAfter": "",
+      "lineText": "1. IRREVOCABILITY: This offer shall be irrevocable by until on the",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b023",
+      "name": "irrevocability.dateMonth",
+      "page": 1,
+      "bbox": [
+        83.33,
+        169.64,
+        248.41,
+        177.64
+      ],
+      "baseline": 171.4,
+      "width": 165.08,
+      "fontSize": 8.0,
+      "label": "day of",
+      "labelAfter": "20 , after which time, if not accepted, this offer shall be null and void and the deposit",
+      "lineText": "day of 20 , after which time, if not accepted, this offer shall be null and void and the deposit",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b024",
+      "name": "irrevocability.dateYear",
+      "page": 1,
+      "bbox": [
+        263.2,
+        169.64,
+        285.37,
+        177.64
+      ],
+      "baseline": 171.4,
+      "width": 22.18,
+      "fontSize": 8.0,
+      "label": "day of 20",
+      "labelAfter": ", after which time, if not accepted, this offer shall be null and void and the deposit",
+      "lineText": "day of 20 , after which time, if not accepted, this offer shall be null and void and the deposit",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b025",
+      "name": "completion.dateDay",
+      "page": 1,
+      "bbox": [
+        384.09,
+        132.64,
+        418.58,
+        140.64
+      ],
+      "baseline": 134.4,
+      "width": 34.49,
+      "fontSize": 8.0,
+      "label": "2. COMPLETION DATE: This Agreement shall be completed by no later than 6:00 p.m. on the",
+      "labelAfter": "day of",
+      "lineText": "2. COMPLETION DATE: This Agreement shall be completed by no later than 6:00 p.m. on the day of",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b026",
+      "name": "completion.dateMonth",
+      "page": 1,
+      "bbox": [
+        445.83,
+        132.64,
+        571.49,
+        140.64
+      ],
+      "baseline": 134.4,
+      "width": 125.66,
+      "fontSize": 8.0,
+      "label": "2. COMPLETION DATE: This Agreement shall be completed by no later than 6:00 p.m. on the day of",
+      "labelAfter": "",
+      "lineText": "2. COMPLETION DATE: This Agreement shall be completed by no later than 6:00 p.m. on the day of",
+      "kind": "data"
+    },
+    {
+      "id": "100-p1-b027",
+      "name": "completion.dateYear",
+      "page": 1,
+      "bbox": [
+        70.82,
+        109.64,
+        107.78,
+        117.64
+      ],
+      "baseline": 111.4,
+      "width": 36.96,
+      "fontSize": 8.0,
+      "label": "20",
+      "labelAfter": "Upon completion, vacant possession of the property shall be given to the Buyer unless otherwise provided for in this Agreement",
+      "lineText": "20 Upon completion, vacant possession of the property shall be given to the Buyer unless otherwise provided for in this Agreement",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b028",
+      "name": "notices.sellerFax",
+      "page": 2,
+      "bbox": [
+        92.81,
+        617.65,
+        304.71,
+        625.65
+      ],
+      "baseline": 619.41,
+      "width": 211.9,
+      "fontSize": 8.0,
+      "label": "FAX No",
+      "labelAfter": "FAX No",
+      "lineText": "FAX No.: FAX No",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b029",
+      "name": "notices.buyerFax",
+      "page": 2,
+      "bbox": [
+        348.88,
+        617.65,
+        570.64,
+        625.65
+      ],
+      "baseline": 619.41,
+      "width": 221.76,
+      "fontSize": 8.0,
+      "label": "FAX No.: FAX No",
+      "labelAfter": "",
+      "lineText": "FAX No.: FAX No",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b030",
+      "name": "notices.sellerEmail",
+      "page": 2,
+      "bbox": [
+        112.88,
+        586.64,
+        305.06,
+        594.64
+      ],
+      "baseline": 588.4,
+      "width": 192.19,
+      "fontSize": 8.0,
+      "label": "Email Address",
+      "labelAfter": "Email Address",
+      "lineText": "Email Address: Email Address",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b031",
+      "name": "notices.buyerEmail",
+      "page": 2,
+      "bbox": [
+        369.3,
+        586.64,
+        571.34,
+        594.64
+      ],
+      "baseline": 588.4,
+      "width": 202.04,
+      "fontSize": 8.0,
+      "label": "Email Address: Email Address",
+      "labelAfter": "",
+      "lineText": "Email Address: Email Address",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b032",
+      "name": "chattelsIncluded.line1",
+      "page": 2,
+      "bbox": [
+        59.5,
+        526.64,
+        569.54,
+        534.64
+      ],
+      "baseline": 528.4,
+      "width": 510.04,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b033",
+      "name": "chattelsIncluded.line2",
+      "page": 2,
+      "bbox": [
+        59.5,
+        503.64,
+        569.54,
+        511.64
+      ],
+      "baseline": 505.4,
+      "width": 510.04,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b034",
+      "name": "chattelsIncluded.line3",
+      "page": 2,
+      "bbox": [
+        59.5,
+        480.65,
+        569.54,
+        488.64
+      ],
+      "baseline": 482.4,
+      "width": 510.04,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b035",
+      "name": "chattelsIncluded.line4",
+      "page": 2,
+      "bbox": [
+        59.5,
+        457.64,
+        569.54,
+        465.64
+      ],
+      "baseline": 459.4,
+      "width": 510.04,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b036",
+      "name": "fixturesExcluded.line1",
+      "page": 2,
+      "bbox": [
+        58.5,
+        377.65,
+        571.0,
+        385.65
+      ],
+      "baseline": 379.41,
+      "width": 512.5,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b037",
+      "name": "fixturesExcluded.line2",
+      "page": 2,
+      "bbox": [
+        58.5,
+        354.65,
+        571.0,
+        362.65
+      ],
+      "baseline": 356.41,
+      "width": 512.5,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b038",
+      "name": "fixturesExcluded.line3",
+      "page": 2,
+      "bbox": [
+        58.5,
+        331.65,
+        571.0,
+        339.65
+      ],
+      "baseline": 333.41,
+      "width": 512.5,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b039",
+      "name": "fixturesExcluded.line4",
+      "page": 2,
+      "bbox": [
+        58.5,
+        308.65,
+        571.0,
+        316.65
+      ],
+      "baseline": 310.41,
+      "width": 512.5,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b040",
+      "name": "rentalItems.line1",
+      "page": 2,
+      "bbox": [
+        58.5,
+        241.65,
+        571.0,
+        249.65
+      ],
+      "baseline": 243.41,
+      "width": 512.5,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b041",
+      "name": "rentalItems.line2",
+      "page": 2,
+      "bbox": [
+        58.5,
+        218.65,
+        571.0,
+        226.65
+      ],
+      "baseline": 220.41,
+      "width": 512.5,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b042",
+      "name": "rentalItems.line3",
+      "page": 2,
+      "bbox": [
+        58.5,
+        195.65,
+        571.0,
+        203.65
+      ],
+      "baseline": 197.41,
+      "width": 512.5,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p2-b043",
+      "name": "hst.treatment",
+      "page": 2,
+      "bbox": [
+        58.5,
+        126.65,
+        213.73,
+        134.65
+      ],
+      "baseline": 128.41,
+      "width": 155.23,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "the Purchase Price. If the sale of the property is not subject to HST, Seller agrees to certify on or before",
+      "lineText": "the Purchase Price. If the sale of the property is not subject to HST, Seller agrees to certify on or before",
+      "kind": "data"
+    },
+    {
+      "id": "100-p3-b044",
+      "name": "titleSearch.dateDay",
+      "page": 3,
+      "bbox": [
+        270.97,
+        747.64,
+        305.47,
+        755.64
+      ],
+      "baseline": 749.4,
+      "width": 34.5,
+      "fontSize": 8.0,
+      "label": "8. TITLE SEARCH: Buyer shall be allowed until 6:00 p.m. on the",
+      "labelAfter": "day of , 20 , (Requisition Date)",
+      "lineText": "8. TITLE SEARCH: Buyer shall be allowed until 6:00 p.m. on the day of , 20 , (Requisition Date)",
+      "kind": "data"
+    },
+    {
+      "id": "100-p3-b045",
+      "name": "titleSearch.dateMonth",
+      "page": 3,
+      "bbox": [
+        330.7,
+        747.64,
+        466.22,
+        755.64
+      ],
+      "baseline": 749.4,
+      "width": 135.52,
+      "fontSize": 8.0,
+      "label": "8. TITLE SEARCH: Buyer shall be allowed until 6:00 p.m. on the day of",
+      "labelAfter": ", 20 , (Requisition Date)",
+      "lineText": "8. TITLE SEARCH: Buyer shall be allowed until 6:00 p.m. on the day of , 20 , (Requisition Date)",
+      "kind": "data"
+    },
+    {
+      "id": "100-p3-b046",
+      "name": "titleSearch.dateYear",
+      "page": 3,
+      "bbox": [
+        480.32,
+        747.64,
+        507.42,
+        755.64
+      ],
+      "baseline": 749.4,
+      "width": 27.1,
+      "fontSize": 8.0,
+      "label": "8. TITLE SEARCH: Buyer shall be allowed until 6:00 p.m. on the day of , 20",
+      "labelAfter": ", (Requisition Date)",
+      "lineText": "8. TITLE SEARCH: Buyer shall be allowed until 6:00 p.m. on the day of , 20 , (Requisition Date)",
+      "kind": "data"
+    },
+    {
+      "id": "100-p3-b047",
+      "name": "property.presentUse",
+      "page": 3,
+      "bbox": [
+        344.75,
+        703.64,
+        551.72,
+        711.64
+      ],
+      "baseline": 705.4,
+      "width": 206.98,
+      "fontSize": 8.0,
+      "label": "work orders or de\ufb01ciency notices affecting the property, and that its present use (",
+      "labelAfter": ") may",
+      "lineText": "work orders or de\ufb01ciency notices affecting the property, and that its present use ( ) may",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b048",
+      "name": "execution.buyer1.witness",
+      "page": 5,
+      "bbox": [
+        40.5,
+        707.64,
+        235.16,
+        715.64
+      ],
+      "baseline": 709.4,
+      "width": 194.66,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b049",
+      "name": "execution.buyer1.signature",
+      "page": 5,
+      "bbox": [
+        256.5,
+        707.64,
+        433.91,
+        715.64
+      ],
+      "baseline": 709.4,
+      "width": 177.41,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b050",
+      "name": "execution.buyer1.date",
+      "page": 5,
+      "bbox": [
+        472.5,
+        707.64,
+        571.06,
+        715.64
+      ],
+      "baseline": 709.4,
+      "width": 98.56,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b051",
+      "name": "execution.buyer2.witness",
+      "page": 5,
+      "bbox": [
+        40.5,
+        681.64,
+        235.16,
+        689.64
+      ],
+      "baseline": 683.4,
+      "width": 194.66,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b052",
+      "name": "execution.buyer2.signature",
+      "page": 5,
+      "bbox": [
+        256.5,
+        681.64,
+        433.91,
+        689.64
+      ],
+      "baseline": 683.4,
+      "width": 177.41,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b053",
+      "name": "execution.buyer2.date",
+      "page": 5,
+      "bbox": [
+        472.5,
+        681.64,
+        571.06,
+        689.64
+      ],
+      "baseline": 683.4,
+      "width": 98.56,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b054",
+      "name": "execution.seller1.witness",
+      "page": 5,
+      "bbox": [
+        40.5,
+        600.64,
+        235.16,
+        608.64
+      ],
+      "baseline": 602.4,
+      "width": 194.66,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b055",
+      "name": "execution.seller1.signature",
+      "page": 5,
+      "bbox": [
+        256.5,
+        600.64,
+        433.91,
+        608.64
+      ],
+      "baseline": 602.4,
+      "width": 177.41,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b056",
+      "name": "execution.seller1.date",
+      "page": 5,
+      "bbox": [
+        472.5,
+        600.64,
+        571.06,
+        608.64
+      ],
+      "baseline": 602.4,
+      "width": 98.56,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b057",
+      "name": "execution.seller2.witness",
+      "page": 5,
+      "bbox": [
+        40.5,
+        574.64,
+        235.16,
+        582.64
+      ],
+      "baseline": 576.4,
+      "width": 194.66,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b058",
+      "name": "execution.seller2.signature",
+      "page": 5,
+      "bbox": [
+        256.5,
+        574.64,
+        433.91,
+        582.64
+      ],
+      "baseline": 576.4,
+      "width": 177.41,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b059",
+      "name": "execution.seller2.date",
+      "page": 5,
+      "bbox": [
+        472.5,
+        574.64,
+        571.06,
+        582.64
+      ],
+      "baseline": 576.4,
+      "width": 98.56,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b060",
+      "name": "spousalConsent.witness",
+      "page": 5,
+      "bbox": [
+        40.5,
+        519.64,
+        235.16,
+        527.64
+      ],
+      "baseline": 521.4,
+      "width": 194.66,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b061",
+      "name": "spousalConsent.signature",
+      "page": 5,
+      "bbox": [
+        256.5,
+        519.64,
+        433.91,
+        527.64
+      ],
+      "baseline": 521.4,
+      "width": 177.41,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b062",
+      "name": "spousalConsent.date",
+      "page": 5,
+      "bbox": [
+        472.5,
+        519.64,
+        571.06,
+        527.64
+      ],
+      "baseline": 521.4,
+      "width": 98.56,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b063",
+      "name": "acceptance.time",
+      "page": 5,
+      "bbox": [
+        212.2,
+        476.64,
+        315.69,
+        484.64
+      ],
+      "baseline": 478.4,
+      "width": 103.49,
+      "fontSize": 8.0,
+      "label": "and written was \ufb01nally accepted by all parties at",
+      "labelAfter": "this day of , 20",
+      "lineText": "and written was \ufb01nally accepted by all parties at this day of , 20",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b064",
+      "name": "acceptance.dateDay",
+      "page": 5,
+      "bbox": [
+        332.05,
+        476.64,
+        373.94,
+        484.64
+      ],
+      "baseline": 478.4,
+      "width": 41.89,
+      "fontSize": 8.0,
+      "label": "and written was \ufb01nally accepted by all parties at this",
+      "labelAfter": "day of , 20",
+      "lineText": "and written was \ufb01nally accepted by all parties at this day of , 20",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b065",
+      "name": "acceptance.dateMonth",
+      "page": 5,
+      "bbox": [
+        398.77,
+        476.64,
+        529.36,
+        484.64
+      ],
+      "baseline": 478.4,
+      "width": 130.59,
+      "fontSize": 8.0,
+      "label": "and written was \ufb01nally accepted by all parties at this day of",
+      "labelAfter": ", 20",
+      "lineText": "and written was \ufb01nally accepted by all parties at this day of , 20",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b066",
+      "name": "acceptance.dateYear",
+      "page": 5,
+      "bbox": [
+        544.15,
+        476.64,
+        571.25,
+        484.64
+      ],
+      "baseline": 478.4,
+      "width": 27.1,
+      "fontSize": 8.0,
+      "label": "and written was \ufb01nally accepted by all parties at this day of , 20",
+      "labelAfter": "",
+      "lineText": "and written was \ufb01nally accepted by all parties at this day of , 20",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b067",
+      "name": "acceptance.signature",
+      "page": 5,
+      "bbox": [
+        329.5,
+        450.64,
+        570.97,
+        458.64
+      ],
+      "baseline": 452.4,
+      "width": 241.47,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b068",
+      "name": "listingBrokerage.name",
+      "page": 5,
+      "bbox": [
+        111.32,
+        415.64,
+        404.53,
+        423.64
+      ],
+      "baseline": 417.4,
+      "width": 293.22,
+      "fontSize": 8.0,
+      "label": "Listing Brokerage",
+      "labelAfter": "",
+      "lineText": "Listing Brokerage",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b069",
+      "name": "listingBrokerage.tel",
+      "page": 5,
+      "bbox": [
+        414.39,
+        415.64,
+        559.76,
+        423.64
+      ],
+      "baseline": 417.4,
+      "width": 145.38,
+      "fontSize": 8.0,
+      "label": "Listing Brokerage",
+      "labelAfter": "",
+      "lineText": "Listing Brokerage",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b070",
+      "name": "listingBrokerage.salesperson",
+      "page": 5,
+      "bbox": [
+        50.36,
+        396.64,
+        560.4,
+        404.64
+      ],
+      "baseline": 398.4,
+      "width": 510.05,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b071",
+      "name": "coopBrokerage.name",
+      "page": 5,
+      "bbox": [
+        137.64,
+        375.64,
+        406.21,
+        383.64
+      ],
+      "baseline": 377.4,
+      "width": 268.58,
+      "fontSize": 8.0,
+      "label": "Co-op/Buyer Brokerage",
+      "labelAfter": "",
+      "lineText": "Co-op/Buyer Brokerage",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b072",
+      "name": "coopBrokerage.tel",
+      "page": 5,
+      "bbox": [
+        416.07,
+        375.64,
+        561.45,
+        383.64
+      ],
+      "baseline": 377.4,
+      "width": 145.38,
+      "fontSize": 8.0,
+      "label": "Co-op/Buyer Brokerage",
+      "labelAfter": "",
+      "lineText": "Co-op/Buyer Brokerage",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b073",
+      "name": "coopBrokerage.salesperson",
+      "page": 5,
+      "bbox": [
+        50.36,
+        356.64,
+        560.4,
+        364.64
+      ],
+      "baseline": 358.4,
+      "width": 510.05,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b074",
+      "name": "acknowledgement.seller1.signature",
+      "page": 5,
+      "bbox": [
+        40.5,
+        289.64,
+        222.84,
+        297.64
+      ],
+      "baseline": 291.4,
+      "width": 182.34,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b075",
+      "name": "acknowledgement.seller1.date",
+      "page": 5,
+      "bbox": [
+        230.23,
+        289.64,
+        299.22,
+        297.64
+      ],
+      "baseline": 291.4,
+      "width": 68.99,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b076",
+      "name": "acknowledgement.buyer1.signature",
+      "page": 5,
+      "bbox": [
+        310.5,
+        289.64,
+        487.91,
+        297.64
+      ],
+      "baseline": 291.4,
+      "width": 177.41,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b077",
+      "name": "acknowledgement.buyer1.date",
+      "page": 5,
+      "bbox": [
+        492.84,
+        289.64,
+        569.22,
+        297.64
+      ],
+      "baseline": 291.4,
+      "width": 76.38,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b078",
+      "name": "acknowledgement.seller2.signature",
+      "page": 5,
+      "bbox": [
+        40.5,
+        269.64,
+        222.84,
+        277.64
+      ],
+      "baseline": 271.4,
+      "width": 182.34,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b079",
+      "name": "acknowledgement.seller2.date",
+      "page": 5,
+      "bbox": [
+        230.23,
+        269.64,
+        299.22,
+        277.64
+      ],
+      "baseline": 271.4,
+      "width": 68.99,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b080",
+      "name": "acknowledgement.buyer2.signature",
+      "page": 5,
+      "bbox": [
+        310.5,
+        269.64,
+        487.91,
+        277.64
+      ],
+      "baseline": 271.4,
+      "width": 177.41,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b081",
+      "name": "acknowledgement.buyer2.date",
+      "page": 5,
+      "bbox": [
+        493.88,
+        269.64,
+        570.5,
+        277.64
+      ],
+      "baseline": 271.4,
+      "width": 76.63,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "100-p5-b082",
+      "name": "seller.addressForService.line1",
+      "page": 5,
+      "bbox": [
+        111.96,
+        251.64,
+        299.22,
+        259.64
+      ],
+      "baseline": 253.4,
+      "width": 187.26,
+      "fontSize": 8.0,
+      "label": "Address for Service",
+      "labelAfter": "Address for Service",
+      "lineText": "Address for Service Address for Service",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b083",
+      "name": "buyer.addressForService.line1",
+      "page": 5,
+      "bbox": [
+        383.0,
+        251.64,
+        570.26,
+        259.64
+      ],
+      "baseline": 253.4,
+      "width": 187.26,
+      "fontSize": 8.0,
+      "label": "Address for Service Address for Service",
+      "labelAfter": "",
+      "lineText": "Address for Service Address for Service",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b084",
+      "name": "seller.addressForService.line2",
+      "page": 5,
+      "bbox": [
+        40.5,
+        235.64,
+        178.48,
+        243.64
+      ],
+      "baseline": 237.4,
+      "width": 137.98,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b085",
+      "name": "seller.addressForService.tel",
+      "page": 5,
+      "bbox": [
+        188.62,
+        235.64,
+        299.5,
+        243.64
+      ],
+      "baseline": 237.4,
+      "width": 110.88,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b086",
+      "name": "buyer.addressForService.line2",
+      "page": 5,
+      "bbox": [
+        310.5,
+        235.64,
+        448.48,
+        243.64
+      ],
+      "baseline": 237.4,
+      "width": 137.98,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b087",
+      "name": "buyer.addressForService.tel",
+      "page": 5,
+      "bbox": [
+        459.62,
+        235.64,
+        570.5,
+        243.64
+      ],
+      "baseline": 237.4,
+      "width": 110.88,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b088",
+      "name": "sellerLawyer.name",
+      "page": 5,
+      "bbox": [
+        94.71,
+        217.64,
+        299.22,
+        225.64
+      ],
+      "baseline": 219.4,
+      "width": 204.51,
+      "fontSize": 8.0,
+      "label": "Seller\u2019s Lawyer",
+      "labelAfter": "Buyer\u2019s Lawyer",
+      "lineText": "Seller\u2019s Lawyer Buyer\u2019s Lawyer",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b089",
+      "name": "buyerLawyer.name",
+      "page": 5,
+      "bbox": [
+        365.75,
+        217.64,
+        570.26,
+        225.64
+      ],
+      "baseline": 219.4,
+      "width": 204.51,
+      "fontSize": 8.0,
+      "label": "Seller\u2019s Lawyer Buyer\u2019s Lawyer",
+      "labelAfter": "",
+      "lineText": "Seller\u2019s Lawyer Buyer\u2019s Lawyer",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b090",
+      "name": "sellerLawyer.address",
+      "page": 5,
+      "bbox": [
+        72.53,
+        201.64,
+        299.22,
+        209.64
+      ],
+      "baseline": 203.4,
+      "width": 226.69,
+      "fontSize": 8.0,
+      "label": "Address",
+      "labelAfter": "Address",
+      "lineText": "Address Address",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b091",
+      "name": "buyerLawyer.address",
+      "page": 5,
+      "bbox": [
+        341.11,
+        201.64,
+        570.26,
+        209.64
+      ],
+      "baseline": 203.4,
+      "width": 229.15,
+      "fontSize": 8.0,
+      "label": "Address Address",
+      "labelAfter": "",
+      "lineText": "Address Address",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b092",
+      "name": "sellerLawyer.email",
+      "page": 5,
+      "bbox": [
+        62.68,
+        185.64,
+        299.22,
+        193.64
+      ],
+      "baseline": 187.4,
+      "width": 236.54,
+      "fontSize": 8.0,
+      "label": "Email",
+      "labelAfter": "Email",
+      "lineText": "Email Email",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b093",
+      "name": "buyerLawyer.email",
+      "page": 5,
+      "bbox": [
+        333.72,
+        185.64,
+        570.26,
+        193.64
+      ],
+      "baseline": 187.4,
+      "width": 236.54,
+      "fontSize": 8.0,
+      "label": "Email Email",
+      "labelAfter": "",
+      "lineText": "Email Email",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b094",
+      "name": "sellerLawyer.tel",
+      "page": 5,
+      "bbox": [
+        40.5,
+        169.64,
+        176.02,
+        177.64
+      ],
+      "baseline": 171.4,
+      "width": 135.52,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b095",
+      "name": "sellerLawyer.fax",
+      "page": 5,
+      "bbox": [
+        185.88,
+        169.64,
+        299.22,
+        177.64
+      ],
+      "baseline": 171.4,
+      "width": 113.34,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b096",
+      "name": "buyerLawyer.tel",
+      "page": 5,
+      "bbox": [
+        310.5,
+        169.64,
+        446.02,
+        177.64
+      ],
+      "baseline": 171.4,
+      "width": 135.52,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b097",
+      "name": "buyerLawyer.fax",
+      "page": 5,
+      "bbox": [
+        455.88,
+        169.64,
+        570.26,
+        177.64
+      ],
+      "baseline": 171.4,
+      "width": 114.38,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "100-p5-b098",
+      "name": "commissionTrust.listingBrokerageSignature",
+      "page": 5,
+      "bbox": [
+        45.0,
+        74.46,
+        301.56,
+        81.46
+      ],
+      "baseline": 76.0,
+      "width": 256.56,
+      "fontSize": 7.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p5-b099",
+      "name": "commissionTrust.coopBrokerageSignature",
+      "page": 5,
+      "bbox": [
+        366.24,
+        74.46,
+        566.75,
+        81.46
+      ],
+      "baseline": 76.0,
+      "width": 200.51,
+      "fontSize": 7.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "100-p6-b100",
+      "name": "scheduleA.buyer.fullLegalNames",
+      "page": 6,
+      "bbox": [
+        73.73,
+        648.88,
+        554.21,
+        656.88
+      ],
+      "baseline": 650.64,
+      "width": 480.48,
+      "fontSize": 8.0,
+      "label": "BUYER",
+      "labelAfter": ", and",
+      "lineText": "BUYER: , and",
+      "kind": "data"
+    },
+    {
+      "id": "100-p6-b101",
+      "name": "scheduleA.seller.fullLegalNames",
+      "page": 6,
+      "bbox": [
+        73.62,
+        625.88,
+        571.35,
+        633.88
+      ],
+      "baseline": 627.64,
+      "width": 497.73,
+      "fontSize": 8.0,
+      "label": "SELLER",
+      "labelAfter": "",
+      "lineText": "SELLER",
+      "kind": "data"
+    },
+    {
+      "id": "100-p6-b102",
+      "name": "scheduleA.property.line1",
+      "page": 6,
+      "bbox": [
+        141.08,
+        602.88,
+        572.28,
+        610.88
+      ],
+      "baseline": 604.64,
+      "width": 431.2,
+      "fontSize": 8.0,
+      "label": "for the purchase and sale of",
+      "labelAfter": "",
+      "lineText": "for the purchase and sale of",
+      "kind": "data"
+    },
+    {
+      "id": "100-p6-b103",
+      "name": "scheduleA.property.line2",
+      "page": 6,
+      "bbox": [
+        41.33,
+        579.88,
+        218.74,
+        587.88
+      ],
+      "baseline": 581.64,
+      "width": 177.41,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "dated the day of , 20",
+      "lineText": "dated the day of , 20",
+      "kind": "data"
+    },
+    {
+      "id": "100-p6-b104",
+      "name": "scheduleA.dateDay",
+      "page": 6,
+      "bbox": [
+        256.35,
+        579.88,
+        290.84,
+        587.88
+      ],
+      "baseline": 581.64,
+      "width": 34.5,
+      "fontSize": 8.0,
+      "label": "dated the",
+      "labelAfter": "day of , 20",
+      "lineText": "dated the day of , 20",
+      "kind": "data"
+    },
+    {
+      "id": "100-p6-b105",
+      "name": "scheduleA.dateMonth",
+      "page": 6,
+      "bbox": [
+        318.14,
+        579.88,
+        517.72,
+        587.88
+      ],
+      "baseline": 581.64,
+      "width": 199.58,
+      "fontSize": 8.0,
+      "label": "dated the day of",
+      "labelAfter": ", 20",
+      "lineText": "dated the day of , 20",
+      "kind": "data"
+    },
+    {
+      "id": "100-p6-b106",
+      "name": "scheduleA.dateYear",
+      "page": 6,
+      "bbox": [
+        532.51,
+        579.88,
+        571.93,
+        587.88
+      ],
+      "baseline": 581.64,
+      "width": 39.42,
+      "fontSize": 8.0,
+      "label": "dated the day of , 20",
+      "labelAfter": "",
+      "lineText": "dated the day of , 20",
+      "kind": "data"
+    }
+  ]
+}
