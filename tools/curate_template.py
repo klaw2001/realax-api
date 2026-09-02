@@ -44,6 +44,17 @@ DIAGNOSTIC_KEYS = ("runLength", "runIndexOnLine", "runsOnLine")
 TEMPLATES = Path(__file__).resolve().parent.parent / "forms" / "templates"
 SOURCES = Path(__file__).resolve().parent.parent / "forms" / "sources"
 
+# The OREA downloads are RC4/AES encrypted and pdf-lib refuses them, so the fill
+# engine draws on a decrypted derivative made once per revision:
+#
+#     qpdf --decrypt "forms/sources/<the OREA file>.pdf" forms/sources/decrypted/<form>.pdf
+#
+# Both files are pinned. `sourceSha256` is the revision OREA published and the
+# coordinates were measured on; `fillSourceSha256` is the copy actually drawn on,
+# so a re-decrypt with a different qpdf, or an edited derivative, is caught
+# before it becomes a filled document.
+DECRYPTED = SOURCES / "decrypted"
+
 
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
@@ -84,6 +95,19 @@ def curate(form: str, verify_source: bool) -> dict:
                     f"source PDF has changed: on disk {on_disk[:12]}…, template pinned to {raw['sourceSha256'][:12]}…"
                 )
 
+    # The decrypted derivative is hashed whether or not the original is
+    # available: it is the file the fill engine opens, and a template that does
+    # not pin it cannot refuse a stale one.
+    fill_source_path = DECRYPTED / f"{form}.pdf"
+    fill_source_sha256 = ""
+    if fill_source_path.exists():
+        fill_source_sha256 = sha256_file(fill_source_path)
+    else:
+        errors.append(
+            f"decrypted source missing: forms/sources/decrypted/{form}.pdf "
+            f"(qpdf --decrypt 'forms/sources/{raw['source']}' forms/sources/decrypted/{form}.pdf)"
+        )
+
     named = curation["blanks"]
     extracted = {blank["id"]: blank for blank in raw["blanks"]}
 
@@ -123,7 +147,7 @@ def curate(form: str, verify_source: bool) -> dict:
         merged["kind"] = entry["kind"]
         # Optional per-blank fill hints. Absent for almost every blank; the fill
         # engine's defaults are derived from the bounding box.
-        for optional in ("align", "maxLength", "note"):
+        for optional in ("align", "maxLength", "flow", "note"):
             if optional in entry:
                 merged[optional] = entry[optional]
         blanks.append(merged)
@@ -133,6 +157,8 @@ def curate(form: str, verify_source: bool) -> dict:
         "revision": curation["revision"],
         "source": raw["source"],
         "sourceSha256": raw["sourceSha256"],
+        "fillSource": f"decrypted/{form}.pdf",
+        "fillSourceSha256": fill_source_sha256,
         "generator": "tools/curate_template.py",
         "coordinateSpace": raw["coordinateSpace"],
         "units": raw["units"],
@@ -152,7 +178,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument(
         "--no-verify-source",
         action="store_true",
-        help="skip hashing the PDF (for a checkout without forms/sources)",
+        help="skip hashing the OREA original (for a checkout without it); "
+        "the decrypted derivative is hashed regardless",
     )
     args = parser.parse_args(argv)
 

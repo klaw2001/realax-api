@@ -60,7 +60,13 @@ one unit of work.
   from a curated template JSON in `forms/templates/`.
 - **`pdf-lib` cannot parse the originals** until `qpdf --decrypt` has been
   run. `ignoreEncryption: true` is not sufficient — it skips the
-  permission check but leaves the object streams encrypted.
+  permission check but leaves the object streams encrypted. So each form is
+  two committed PDFs: the OREA download in `forms/sources/`, which the
+  blanks were measured on and which the form library publishes to S3, and a
+  decrypted derivative in `forms/sources/decrypted/<code>.pdf`, which is the
+  one the fill engine opens. Both are pinned — `sourceSha256` and
+  `fillSourceSha256` — and the extractor reads the original, so the two
+  cannot drift apart unnoticed.
 - **Templates are version-pinned by SHA-256.** OREA revises forms and
   coordinates shift silently. Refuse to fill on a hash mismatch rather
   than producing a plausible-looking wrong document.
@@ -70,6 +76,12 @@ one unit of work.
   into `<code>.json`, which is the only one the service loads. A form with a
   `.raw.json` and no `.json` has geometry but no names and is not fillable —
   that is deliberate, not an oversight.
+- **`flow` on a blank is the multi-line hint.** Blanks sharing a `flow` are
+  the ruled continuation lines of one field — the four under CHATTELS
+  INCLUDED — and one value wraps across them at fill time, where the font
+  metrics are. It is curated rather than inferred from the `.lineN` names:
+  an address block is printed on two lines too, but its second line is the
+  city and postal code, not the overflow of the first.
 - **`kind` on a blank is not decoration.** `data` blanks are the agent's and
   the compliance gate checks them; `signature` and `signingDate` blanks are
   filled inside the e-sign session, and counting one as missing would block
@@ -91,6 +103,8 @@ npm test
 npm run gen:openapi
 npx prisma migrate dev
 
+qpdf --decrypt "forms/sources/<the OREA file>.pdf" \
+     forms/sources/decrypted/100.pdf   # once per revision, then commit it
 python3 tools/curate_template.py 100   # re-merge a curated template
 npm run forms:seed                     # upload sources to S3, upsert FormTemplate
 ```

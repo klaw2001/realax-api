@@ -3,6 +3,8 @@
   "revision": "May 2026",
   "source": "(Ontario) 100 - Agreement of Purchase and Sale - Residential.pdf",
   "sourceSha256": "d6113e676c000472eb5b919bd64c856252dd634b986e215f49b2937766e3a671",
+  "fillSource": "decrypted/100.pdf",
+  "fillSourceSha256": "03b1f91ad5c970ac17378ba1c1cf6d834bdf1e70928ba4e98efeb1fc43a54c1f",
   "generator": "tools/curate_template.py",
   "coordinateSpace": "pdf-user-space-origin-bottom-left",
   "units": "pt",
@@ -663,7 +665,8 @@
       "label": "",
       "labelAfter": "",
       "lineText": "",
-      "kind": "data"
+      "kind": "data",
+      "flow": "chattelsIncluded"
     },
     {
       "id": "100-p2-b033",
@@ -681,7 +684,8 @@
       "label": "",
       "labelAfter": "",
       "lineText": "",
-      "kind": "data"
+      "kind": "data",
+      "flow": "chattelsIncluded"
     },
     {
       "id": "100-p2-b034",
@@ -699,7 +703,8 @@
       "label": "",
       "labelAfter": "",
       "lineText": "",
-      "kind": "data"
+      "kind": "data",
+      "flow": "chattelsIncluded"
     },
     {
       "id": "100-p2-b035",
@@ -717,7 +722,8 @@
       "label": "",
       "labelAfter": "",
       "lineText": "",
-      "kind": "data"
+      "kind": "data",
+      "flow": "chattelsIncluded"
     },
     {
       "id": "100-p2-b036",
@@ -735,7 +741,8 @@
       "label": "",
       "labelAfter": "",
       "lineText": "",
-      "kind": "data"
+      "kind": "data",
+      "flow": "fixturesExcluded"
     },
     {
       "id": "100-p2-b037",
@@ -753,7 +760,8 @@
       "label": "",
       "labelAfter": "",
       "lineText": "",
-      "kind": "data"
+      "kind": "data",
+      "flow": "fixturesExcluded"
     },
     {
       "id": "100-p2-b038",
@@ -771,7 +779,8 @@
       "label": "",
       "labelAfter": "",
       "lineText": "",
-      "kind": "data"
+      "kind": "data",
+      "flow": "fixturesExcluded"
     },
     {
       "id": "100-p2-b039",
@@ -789,7 +798,8 @@
       "label": "",
       "labelAfter": "",
       "lineText": "",
-      "kind": "data"
+      "kind": "data",
+      "flow": "fixturesExcluded"
     },
     {
       "id": "100-p2-b040",
@@ -807,7 +817,8 @@
       "label": "",
       "labelAfter": "",
       "lineText": "",
-      "kind": "data"
+      "kind": "data",
+      "flow": "rentalItems"
     },
     {
       "id": "100-p2-b041",
@@ -825,7 +836,8 @@
       "label": "",
       "labelAfter": "",
       "lineText": "",
-      "kind": "data"
+      "kind": "data",
+      "flow": "rentalItems"
     },
     {
       "id": "100-p2-b042",
@@ -843,7 +855,8 @@
       "label": "",
       "labelAfter": "",
       "lineText": "",
-      "kind": "data"
+      "kind": "data",
+      "flow": "rentalItems"
     },
     {
       "id": "100-p2-b043",

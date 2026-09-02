@@ -71,6 +71,21 @@ export const templateBlankSchema = z.object({
     // derives its defaults from the bounding box.
     align: z.enum(['left', 'center', 'right']).optional(),
     maxLength: z.number().int().positive().optional(),
+
+    /**
+     * The continuation block this blank belongs to — `chattelsIncluded` for the
+     * four ruled lines under CHATTELS INCLUDED.
+     *
+     * One value flows across the blanks sharing a `flow`, and the fill engine
+     * decides where it breaks because it is the only part of this that has the
+     * font metrics. Curated rather than inferred from the `.lineN` names: an
+     * address block is also printed on two lines, and its second line is the
+     * city and postal code rather than the overflow of the first, so a form
+     * that guessed would put a street address across both and report nothing
+     * missing.
+     */
+    flow: z.string().min(1).optional(),
+
     note: z.string().optional()
 })
 
@@ -101,6 +116,24 @@ export const formTemplateSchema = z
          * source that does not hash to this.
          */
         sourceSha256: z.string().regex(/^[0-9a-f]{64}$/),
+
+        /**
+         * The decrypted derivative the fill engine actually draws on, relative
+         * to `forms/sources/` — `decrypted/100.pdf`.
+         *
+         * OREA publishes these encrypted and `pdf-lib` refuses an encrypted
+         * document outright, so one `qpdf --decrypt` per revision produces a
+         * copy it can open. The blanks are measured on the original above; this
+         * is the same page content with the security handler removed.
+         */
+        fillSource: z.string().min(1),
+
+        /**
+         * SHA-256 of that derivative. A second pin rather than a reuse of the
+         * first: the two files have different bytes by construction, and the
+         * one that has to be right at fill time is this one.
+         */
+        fillSourceSha256: z.string().regex(/^[0-9a-f]{64}$/),
 
         generator: z.string().min(1),
         coordinateSpace: z.literal('pdf-user-space-origin-bottom-left'),

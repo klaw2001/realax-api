@@ -56,11 +56,13 @@ export class SourceHashMismatchError extends Error {
     constructor(
         public readonly formCode: string,
         public readonly expected: string,
-        public readonly actual: string
+        public readonly actual: string,
+        /** Which of the two pinned files disagreed — the OREA original, or the copy filled on. */
+        public readonly which: 'source' | 'fillSource' = 'source'
     ) {
         super(
-            `Source PDF for form ${formCode} does not match the template: ` +
-                `expected ${expected.slice(0, 12)}…, got ${actual.slice(0, 12)}…`
+            `${which === 'source' ? 'Source' : 'Decrypted source'} PDF for form ${formCode} ` +
+                `does not match the template: expected ${expected.slice(0, 12)}…, got ${actual.slice(0, 12)}…`
         )
         this.name = 'SourceHashMismatchError'
     }
@@ -163,15 +165,48 @@ export function verifySource(template: FormTemplate, bytes: Buffer | Uint8Array)
 /**
  * The blank source PDF for a template, verified.
  *
- * Reads from `forms/sources/`. The fill engine (build plan 2.3) will read the
- * copy in S3 instead; both go through `verifySource`, so neither can fill from
- * a PDF the coordinates were not measured on.
+ * Reads from `forms/sources/`. This is the OREA download — the file the blanks
+ * were measured on and the one the form library publishes to S3. It is
+ * encrypted, so it is not the file the fill engine draws on; see
+ * `readFillSourcePdf`.
  */
 export async function readSourcePdf(template: FormTemplate): Promise<Buffer> {
     const bytes = await readFile(path.join(SOURCES_DIR, template.source))
     verifySource(template, bytes)
 
     return bytes
+}
+
+/**
+ * The decrypted derivative the fill engine draws on, verified against its own
+ * pin.
+ *
+ * Two files exist because `pdf-lib` refuses an encrypted document and
+ * `ignoreEncryption` does not help — it skips the permission check and leaves
+ * the object streams encrypted. `qpdf --decrypt` produces this copy once per
+ * revision and it is committed beside the original, so nothing has to decrypt
+ * at runtime.
+ *
+ * Read from disk rather than S3 on purpose: the form library in the bucket is
+ * the published record of what OREA issued, while this is a build artefact of
+ * the repo, shipped in the image with the template that pins it. A fill that
+ * fetched it over the network could still only accept bytes matching the pin —
+ * so the round trip would buy nothing.
+ */
+export async function readFillSourcePdf(template: FormTemplate): Promise<Buffer> {
+    const bytes = await readFile(path.join(SOURCES_DIR, template.fillSource))
+    verifyFillSource(template, bytes)
+
+    return bytes
+}
+
+/** The same check for the decrypted copy, against its own pin. */
+export function verifyFillSource(template: FormTemplate, bytes: Buffer | Uint8Array): void {
+    const actual = sha256(bytes)
+
+    if (actual !== template.fillSourceSha256) {
+        throw new SourceHashMismatchError(template.form, template.fillSourceSha256, actual, 'fillSource')
+    }
 }
 
 /**
