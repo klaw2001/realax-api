@@ -173,7 +173,7 @@ describe('PUT /api/transactions/:id/entries', () => {
 
         await agent.put(`/api/transactions/${transactionId}/entries`).send(complete)
 
-        const { purchasePrice, chattelsIncluded, ...withoutThose } = complete
+        const { purchasePrice: _price, chattelsIncluded: _chattels, ...withoutThose } = complete
         const cleared = await agent
             .put(`/api/transactions/${transactionId}/entries`)
             .send(withoutThose)

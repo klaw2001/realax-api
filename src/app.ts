@@ -11,6 +11,7 @@ import { PrismaSessionStore } from '@quixo3/prisma-session-store'
 import { env, isProduction } from '@/config/env'
 import prisma from '@/lib/prisma'
 import requireAgent from '@/middleware/auth'
+import { errorHandler, notFound } from '@/middleware/error'
 import agentRoutes from '@/modules/agent/agent.routes'
 import { authRoutes, meRoutes } from '@/modules/auth/auth.routes'
 import healthRoutes from '@/modules/health/health.routes'
@@ -105,5 +106,15 @@ app.use('/api/transactions/:id/property', transactionPropertyRoutes)
 app.use('/api/transactions/:id/parties', transactionPartyRoutes)
 app.use('/api/transactions/:id/entries', transactionEntriesRoutes)
 app.use('/api/properties', propertyRoutes)
+
+// Last, and in this order. `notFound` catches a path no route matched;
+// `errorHandler` catches everything thrown by the routes above it. Both answer
+// with the same `{ error, message }` envelope every handler already uses, so
+// the frontend client reads one shape whatever happened — rather than Express'
+// HTML stack page, which it cannot parse and which puts file paths in a
+// browser. Nothing may be mounted below them: middleware added after an error
+// handler never runs.
+app.use(notFound)
+app.use(errorHandler)
 
 export default app

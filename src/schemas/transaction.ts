@@ -115,7 +115,7 @@ registry.registerPath({
     summary: 'One transaction',
     security: [{ sessionCookie: [] }],
     description:
-        "Requires a session, and the transaction must belong to the caller. A transaction someone else owns answers 404, the same as one that does not exist. The transaction alone — its property, parties and entries each have their own endpoint under this one.",
+        'Requires a session, and the transaction must belong to the caller. A transaction someone else owns answers 404, the same as one that does not exist. The transaction alone — its property, parties and entries each have their own endpoint under this one.',
     tags: ['transactions'],
     request: {
         params: z.object({
