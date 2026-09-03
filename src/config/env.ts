@@ -51,7 +51,20 @@ const envSchema = z.object({
     // OCR for identity documents (build plan 2.5). Named rather than assumed,
     // so swapping the vendor is a variable and a file under `integrations/ocr/`
     // rather than a search for every place that says Textract.
-    OCR_PROVIDER: z.enum(['textract']).default('textract'),
+    // `textract` is production.
+    //
+    // The other two exist only because this AWS account is on the Free plan,
+    // where Textract is a Paid-plan service and every `AnalyzeID` call is
+    // refused. `azure` is the free development reader — Azure AI Document
+    // Intelligence `prebuilt-idDocument`, F0 tier — and reads real cards.
+    // `mock` reads nothing at all: fixtures, no network, no key, which is what
+    // makes the identity flow demonstrable and testable offline.
+    //
+    // The refinement below forbids anything but Textract in production. A
+    // provider is added here only once its client exists — the switch in
+    // `integrations/ocr/index.ts` is exhaustive, so a name with no
+    // implementation fails to compile rather than at the first upload.
+    OCR_PROVIDER: z.enum(['textract', 'azure', 'mock']).default('textract'),
 
     // AnalyzeID runs in the same region as the bucket. Identity documents are
     // FINTRAC material and do not leave `ca-central-1` — including to be read.
@@ -71,7 +84,19 @@ const envSchema = z.object({
     // a version prefix so a re-encryption migration can tell old from new.
     IDENTITY_ENCRYPTION_KEY: z
         .string()
-        .min(32, 'IDENTITY_ENCRYPTION_KEY must decode to 32 bytes')
+        .min(32, 'IDENTITY_ENCRYPTION_KEY must decode to 32 bytes'),
+
+    // Azure AI Document Intelligence — only read when `OCR_PROVIDER=azure`,
+    // so both are optional here and required by the refinement below. Point the
+    // endpoint at a Canada Central resource: identity documents are FINTRAC
+    // material and the rest of this system is built so they do not leave the
+    // country. Nothing enforces the region, so it is checked when the resource
+    // is created.
+    //   https://<resource-name>.cognitiveservices.azure.com/
+    AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT: z.url().optional(),
+
+    // Key 1 or Key 2 from the resource's Keys and Endpoint blade.
+    AZURE_DOCUMENT_INTELLIGENCE_KEY: z.string().min(1).optional(),
 
     // AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY are deliberately absent. The
     // SDK's default credential chain reads them from the environment in
@@ -79,7 +104,46 @@ const envSchema = z.object({
     // here would make a correctly role-based deployment fail to boot.
 })
 
-const parsed = envSchema.safeParse(process.env)
+/**
+ * Cross-field rules — the ones a single variable cannot express.
+ *
+ * Both are about the OCR provider, and both fail on boot rather than at the
+ * first upload: a reader that is configured wrong should stop the service, not
+ * surface as a 502 the first time an agent photographs a licence.
+ */
+const validated = envSchema.superRefine((value, ctx) => {
+    if (value.OCR_PROVIDER === 'azure') {
+        if (value.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT === undefined) {
+            ctx.addIssue({
+                code: 'custom',
+                path: ['AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT'],
+                message: 'required when OCR_PROVIDER is azure'
+            })
+        }
+
+        if (value.AZURE_DOCUMENT_INTELLIGENCE_KEY === undefined) {
+            ctx.addIssue({
+                code: 'custom',
+                path: ['AZURE_DOCUMENT_INTELLIGENCE_KEY'],
+                message: 'required when OCR_PROVIDER is azure'
+            })
+        }
+    }
+
+    // The development readers are a free tier on an account that is not ours
+    // to make promises about, and a fixture reader that verifies nobody, while
+    // identity documents are FINTRAC material. Only Textract, in
+    // `ca-central-1`, reads a real client's document.
+    if (value.NODE_ENV === 'production' && value.OCR_PROVIDER !== 'textract') {
+        ctx.addIssue({
+            code: 'custom',
+            path: ['OCR_PROVIDER'],
+            message: 'must be textract in production'
+        })
+    }
+})
+
+const parsed = validated.safeParse(process.env)
 
 if (!parsed.success) {
     // Prints the offending variable names only. Values are never logged.

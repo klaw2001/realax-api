@@ -94,14 +94,27 @@ export interface OcrProvider {
 /**
  * An OCR call that did not produce a usable answer.
  *
- * `kind` separates the two cases a caller treats differently: `unavailable` is
- * the provider being unreachable or refusing, which is a 502 and worth
- * retrying; `unreadable` is the provider working correctly and finding no
- * document in the image, which is the agent's to fix by taking a better photo.
+ * `kind` separates the three cases a caller treats differently:
+ *
+ * - `unreadable` — the provider worked and found no document in the image.
+ *   The agent's to fix, by taking a better photo, and not an error at all as
+ *   far as the service is concerned: it stores the image and hands back an
+ *   empty form to type into.
+ * - `unavailable` — the provider is unreachable, throttled, or having an
+ *   outage. Transient. Worth retrying in a moment, and that is what the agent
+ *   is told.
+ * - `misconfigured` — the provider is reachable and is refusing us: a missing
+ *   or wrong key, a subscription the account does not have, a model that is
+ *   not enabled. **No amount of retrying fixes this**, and telling an agent to
+ *   try again in a moment sends them round a loop that cannot end. It is the
+ *   shape of the failure this project actually hit — Textract answering every
+ *   call with `SubscriptionRequiredException` on a Free-plan AWS account —
+ *   which is why it is a kind of its own rather than a flavour of
+ *   `unavailable`.
  */
 export class OcrError extends Error {
     constructor(
-        readonly kind: 'unavailable' | 'unreadable',
+        readonly kind: 'unavailable' | 'unreadable' | 'misconfigured',
         message: string,
         readonly cause?: unknown
     ) {

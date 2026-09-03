@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto'
 
 import { OcrError } from '@/integrations/ocr/provider'
 import type { OcrProvider, ScannedIdentity as RawScan } from '@/integrations/ocr/provider'
-import { ocrProvider } from '@/integrations/ocr/textract.client'
+import { ocrProvider } from '@/integrations/ocr'
 import { encryptField } from '@/lib/encryption'
 import logger from '@/lib/logger'
 import prisma from '@/lib/prisma'
@@ -271,7 +271,15 @@ const storeReadAndHold = async (
             // Zero for an image nothing could be read from, which is what the
             // confirm step reads to know the record was typed rather than read.
             confidence: scan?.confidence ?? 0,
-            fieldsRead
+            fieldsRead,
+
+            // Which reader produced it. Null when there was no reading to
+            // attribute. This is the part of the audit trail that separates a
+            // record read off a real card by the production reader from one a
+            // fixture reader invented during a demo — the environment variable
+            // that chose it is not recoverable later, and this is.
+            provider: scan?.provider ?? null,
+            modelVersion: scan?.modelVersion ?? null
         },
         select: { id: true }
     })
@@ -285,7 +293,8 @@ const storeReadAndHold = async (
         documentType: upload.documentType,
         fieldsRead,
         numberRead: scan?.documentNumber != null,
-        confidence: Math.round(scan?.confidence ?? 0)
+        confidence: Math.round(scan?.confidence ?? 0),
+        provider: scan?.provider ?? null
     })
 
     return {

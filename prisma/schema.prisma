@@ -427,6 +427,19 @@ model IdentityScan {
   /// fetching the object back out of S3.
   sha256         String
   confidence     Float
+  /// Which reader produced this reading, and its model version.
+  ///
+  /// Recorded because not every reader is the production one: `textract` is,
+  /// `azure` is the free development reader, and `mock` reads fixtures and
+  /// verifies nobody. A record whose scan says `mock` was never a reading of a
+  /// real card, and that has to stay knowable long after whoever set the
+  /// environment variable has forgotten doing it.
+  ///
+  /// Nullable for the rows written before this column existed, and null again
+  /// when nothing was read at all — an image the reader found no document in
+  /// leaves no reading to attribute.
+  provider       String?
+  modelVersion   String?
   /// How many fields the model actually returned, across the whole reading.
   ///
   /// Zero means the agent is typing the document out by hand — either the

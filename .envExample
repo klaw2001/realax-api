@@ -42,3 +42,19 @@ OCR_REGION="ca-central-1"
 # Rotating this makes every stored document number unreadable. Not a secret that
 # can be regenerated casually.
 IDENTITY_ENCRYPTION_KEY="change-me-32-bytes-base64-or-hex-0000000000="
+
+# --- Identity document OCR ---------------------------------------------------
+# textract = production (AWS, ca-central-1, Paid-plan AWS account required).
+# azure    = free development reader; reads real cards. No key needed below?
+#            then it will refuse to boot.
+# mock     = fixtures. No network, no key, verifies nobody. This is what makes
+#            the identity flow demonstrable offline while the AWS account is on
+#            the Free plan and every Textract call is refused.
+# azure and mock are both refused when NODE_ENV=production.
+OCR_PROVIDER=textract
+
+# Only when OCR_PROVIDER=azure. Create an Azure AI Document Intelligence
+# resource on the F0 (free) tier in Canada Central, then copy both values from
+# its "Keys and Endpoint" blade.
+AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=
+AZURE_DOCUMENT_INTELLIGENCE_KEY=

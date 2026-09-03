@@ -280,6 +280,25 @@ export const toScannedIdentity = (
     }
 }
 
+/**
+ * Textract errors that no retry will fix.
+ *
+ * These are the service answering, correctly, that this account may not do
+ * this — a Free-plan AWS account (`SubscriptionRequiredException`, which is
+ * what this project hit in every region), a key without the Textract policy,
+ * or credentials that are wrong or expired. Everything else — throttling, a
+ * timeout, a 5xx — is an outage and is worth retrying, so it stays
+ * `unavailable`.
+ */
+const REFUSALS = new Set([
+    'SubscriptionRequiredException',
+    'AccessDeniedException',
+    'UnrecognizedClientException',
+    'InvalidSignatureException',
+    'ExpiredTokenException',
+    'CredentialsProviderError'
+])
+
 /** The Textract implementation of the OCR boundary. */
 export const textractProvider: OcrProvider = {
     name: 'textract',
@@ -296,12 +315,23 @@ export const textractProvider: OcrProvider = {
                 })
             )
         } catch (error) {
+            const name = (error as Error).name
+
             // The key is not logged. This one names an identity scan, and rule
             // 6 in CLAUDE.md is that those never reach a log line.
             logger.error('textract analyze-id failed', {
                 region: env.OCR_REGION,
-                name: (error as Error).name
+                name,
+                kind: REFUSALS.has(name) ? 'misconfigured' : 'unavailable'
             })
+
+            if (REFUSALS.has(name)) {
+                throw new OcrError(
+                    'misconfigured',
+                    'The document reader refused the request; the AWS account or its credentials are not set up for AnalyzeID',
+                    error
+                )
+            }
 
             throw new OcrError('unavailable', 'The document reader is unavailable', error)
         }
@@ -320,19 +350,6 @@ export const textractProvider: OcrProvider = {
         })
 
         return scanned
-    }
-}
-
-/**
- * The configured provider.
- *
- * One name to change, and the enum in `env.ts` makes an unknown one fail on
- * boot rather than at the first upload.
- */
-export const ocrProvider = (): OcrProvider => {
-    switch (env.OCR_PROVIDER) {
-        case 'textract':
-            return textractProvider
     }
 }
 

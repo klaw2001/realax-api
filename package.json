@@ -41,6 +41,7 @@
     "@aws-sdk/client-s3": "^3.1123.0",
     "@aws-sdk/client-textract": "^3.1125.0",
     "@aws-sdk/s3-request-presigner": "^3.1123.0",
+    "@azure-rest/ai-document-intelligence": "^1.1.0",
     "@prisma/client": "^6.5.0",
     "@quixo3/prisma-session-store": "^3.1.21",
     "@types/cookie-parser": "^1.4.8",

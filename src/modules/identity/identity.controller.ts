@@ -29,6 +29,39 @@ const unauthorized: ErrorResponse = {
 }
 
 /**
+ * The one place a failed reading becomes an answer.
+ *
+ * Two kinds reach here, and they need opposite things said about them.
+ * `unavailable` is an outage: the reader will be back, and "try again in a
+ * moment" is true. `misconfigured` is the reader refusing us — a missing
+ * subscription, a wrong key — and telling an agent to try again sends them
+ * round a loop that cannot end. Both are 502 because both are this service's
+ * problem rather than the request's, but the code differs so the frontend can
+ * stop offering a retry button for the one where retrying is pointless.
+ *
+ * `unreadable` never reaches here: the service stores the image and answers
+ * with an empty form to type into, which is not an error.
+ */
+const sendOcrError = (error: OcrError, transactionId: string, res: Response): void => {
+    logger.warn('identity scan failed', { transactionId, kind: error.kind })
+
+    if (error.kind === 'misconfigured') {
+        res.status(502).json({
+            error: 'ocr_misconfigured',
+            message:
+                'The document reader is not set up correctly, so it cannot read this. Retrying will not help — enter the details by hand and report this.'
+        } satisfies ErrorResponse)
+
+        return
+    }
+
+    res.status(502).json({
+        error: 'ocr_unavailable',
+        message: 'The document reader is unavailable right now. Try again in a moment.'
+    } satisfies ErrorResponse)
+}
+
+/**
  * Two ways to not find something, one answer to each.
  *
  * A transaction that is not yours and one that does not exist are the same
@@ -160,12 +193,7 @@ export const postUnassignedIdentityScan = async (req: Request, res: Response) =>
         }
 
         if (error instanceof OcrError) {
-            logger.warn('identity scan failed', { transactionId, kind: error.kind })
-
-            res.status(502).json({
-                error: 'ocr_unavailable',
-                message: 'The document reader is unavailable right now. Try again in a moment.'
-            } satisfies ErrorResponse)
+            sendOcrError(error, transactionId, res)
 
             return
         }
@@ -212,20 +240,14 @@ export const postIdentityScan = async (req: Request, res: Response) => {
         }
 
         if (error instanceof OcrError) {
-            // Only `unavailable` reaches here. An image with no document in it
-            // is handled in the service, which stores it and answers with a
-            // scan the agent can type into — it is the reader being unreachable
-            // that has nothing to offer, and that is worth retrying rather than
-            // filling in by hand while a paid-for service is down.
+            // Never `unreadable`. An image with no document in it is handled in
+            // the service, which stores it and answers with a scan the agent
+            // can type into — it is the reader being unreachable or refusing
+            // that has nothing to offer.
             //
-            // The image is stored either way, deliberately, so an outage does
-            // not lose the agent's upload.
-            logger.warn('identity scan failed', { transactionId, kind: error.kind })
-
-            res.status(502).json({
-                error: 'ocr_unavailable',
-                message: 'The document reader is unavailable right now. Try again in a moment.'
-            } satisfies ErrorResponse)
+            // The image is stored either way, deliberately, so neither an
+            // outage nor a misconfiguration loses the agent's upload.
+            sendOcrError(error, transactionId, res)
 
             return
         }
