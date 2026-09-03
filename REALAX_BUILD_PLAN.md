@@ -628,6 +628,17 @@ Name and address corrections go to the `Party` through its own PATCH, which
 is where the OREA form reads them from. Confirming twice is a 409: one
 photograph is one verification.
 
+**An unreadable image is a form, not an error.** A reading that finds no
+document answers 201 with a null `scanned`; the agent types the card out and
+confirms it like any other scan. Only `unavailable` — the reader unreachable
+— is still a 502, because an outage says nothing about the document and
+turning one into a typing exercise would quietly stop using a paid service.
+`IdentityRecord.verifiedMethod` records which happened:
+`government_photo_id` when a reading assisted the record and
+`government_photo_id_manual` when a person typed every value. Same FINTRAC
+method either way — what it separates is provenance, and the service derives
+it from what the reading produced rather than from anything the caller says.
+
 **The frontend is built too.** `realax-app`: `useScanIdentityDocument` and
 `useConfirmIdentityScan` beside the existing read hook, an upload-and-review
 dialog on the parties screen, and an identity column that reads the same
