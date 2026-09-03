@@ -628,6 +628,14 @@ Name and address corrections go to the `Party` through its own PATCH, which
 is where the OREA form reads them from. Confirming twice is a 409: one
 photograph is one verification.
 
+**The frontend is built too.** `realax-app`: `useScanIdentityDocument` and
+`useConfirmIdentityScan` beside the existing read hook, an upload-and-review
+dialog on the parties screen, and an identity column that reads the same
+records the overview tile counts. Every extracted field is editable and each
+one says whether it was read or missed; the raw reading renders under the
+form in development. Nothing on that screen can show a document number,
+because no response carries one.
+
 ---
 
 # Phase 3 — E-sign, testing, pilot
