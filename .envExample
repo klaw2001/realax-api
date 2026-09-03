@@ -58,3 +58,14 @@ OCR_PROVIDER=textract
 # its "Keys and Endpoint" blade.
 AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=
 AZURE_DOCUMENT_INTELLIGENCE_KEY=
+
+# --- Demo mode -------------------------------------------------------------
+# Off unless this says "true". Turns on the demo-only button that marks a
+# party's identity verified with no document and no examination — see UX plan
+# item 02. Every record it writes carries verifiedMethod=demo_override and is
+# labelled as such wherever a verification is shown, forever.
+#
+# The API refuses to start with this on when NODE_ENV=production. The frontend
+# has its own NEXT_PUBLIC_DEMO_MODE, which only hides the button; this one is
+# what decides whether the endpoint exists at all.
+DEMO_MODE=false

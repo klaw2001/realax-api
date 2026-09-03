@@ -1,7 +1,9 @@
 import express from 'express'
 
+import { env } from '@/config/env'
 import {
     getIdentityRecords,
+    postDemoIdentityVerification,
     postIdentityScan,
     postIdentityScanConfirmation,
     postUnassignedIdentityScan
@@ -26,6 +28,17 @@ partyIdentityRoutes.get('/', (req, res, next) => {
 partyIdentityRoutes.post('/', (req, res, next) => {
     postIdentityScan(req, res).catch(next)
 })
+
+// Demo builds only, and mounted rather than gated inside the handler so that
+// on an ordinary build the route does not exist at all: no handler to reach, no
+// flag to read wrong, and a 404 from the router itself. The service checks the
+// same flag again — see `demoVerifyParty` — because a verification nobody
+// performed should take two independent mistakes to write, not one.
+if (env.DEMO_MODE) {
+    partyIdentityRoutes.post('/demo-verify', (req, res, next) => {
+        postDemoIdentityVerification(req, res).catch(next)
+    })
+}
 
 // Confirming is a POST to the reading rather than a PUT on the record: it
 // creates the record, and it is the agent's assertion about one photograph

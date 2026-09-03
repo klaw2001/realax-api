@@ -4,11 +4,14 @@ import type { UploadedFile } from 'express-fileupload'
 import { OcrError } from '@/integrations/ocr/provider'
 import logger from '@/lib/logger'
 import {
+    AlreadyVerifiedError,
+    DemoModeDisabledError,
     PartyNotFoundError,
     ScanAlreadyConfirmedError,
     ScanNotFoundError,
     UnsupportedDocumentError,
     confirmIdentityScan,
+    demoVerifyParty,
     listPartyIdentityRecords,
     scanIdentityDocument,
     scanIdentityDocumentForNewParty
@@ -19,6 +22,7 @@ import {
     confirmIdentityScanRequestSchema,
     confirmIdentityScanResponseSchema,
     identityDocumentTypeSchema,
+    demoVerifyIdentityResponseSchema,
     identityRecordListResponseSchema,
     scanIdentityResponseSchema
 } from '@/schemas/identity'
@@ -194,6 +198,58 @@ export const postUnassignedIdentityScan = async (req: Request, res: Response) =>
 
         if (error instanceof OcrError) {
             sendOcrError(error, transactionId, res)
+
+            return
+        }
+
+        throw error
+    }
+}
+
+/**
+ * `POST /api/transactions/:id/parties/:partyId/identity/demo-verify`.
+ *
+ * Demo builds only. The router does not mount this handler unless
+ * `DEMO_MODE` is on, and the service checks the same flag again — a
+ * verification nobody performed should take two independent mistakes to
+ * reach, not one line in a router.
+ *
+ * Answers 404 rather than 403 when the flag is off, so a build without demo
+ * mode looks like a build that never had the route. There is nothing useful to
+ * tell a caller that discovered it.
+ */
+export const postDemoIdentityVerification = async (req: Request, res: Response) => {
+    if (!req.agent) {
+        res.status(401).json(unauthorized)
+
+        return
+    }
+
+    const { transactionId, partyId } = params(req)
+
+    try {
+        const record = await demoVerifyParty(transactionId, req.agent.id, partyId)
+
+        res.status(201).json(demoVerifyIdentityResponseSchema.parse({ record }))
+    } catch (error) {
+        if (error instanceof DemoModeDisabledError) {
+            res.status(404).json({
+                error: 'not_found',
+                message: 'No such route'
+            } satisfies ErrorResponse)
+
+            return
+        }
+
+        if (sendNotFound(error, res)) {
+            return
+        }
+
+        if (error instanceof AlreadyVerifiedError) {
+            res.status(409).json({
+                error: 'already_verified',
+                message: error.message
+            } satisfies ErrorResponse)
 
             return
         }

@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto'
 
+import { env } from '@/config/env'
 import { OcrError } from '@/integrations/ocr/provider'
 import type { OcrProvider, ScannedIdentity as RawScan } from '@/integrations/ocr/provider'
 import { ocrProvider } from '@/integrations/ocr'
@@ -57,7 +58,20 @@ const LOW_CONFIDENCE = 90
  */
 const VERIFIED_METHOD = {
     ocrAssisted: 'government_photo_id',
-    manual: 'government_photo_id_manual'
+    manual: 'government_photo_id_manual',
+
+    /**
+     * Not a FINTRAC method, and deliberately not shaped like one.
+     *
+     * Written only by the demo override (UX plan item 02): a button that marks
+     * a party verified with no document, no reading and nobody examining
+     * anything. It is a value of its own rather than a flag beside a real
+     * method so that no query for verified parties, now or in five years, can
+     * accidentally include one — a record produced by clicking a button must
+     * never be indistinguishable from one produced by an agent examining a
+     * card.
+     */
+    demo: 'demo_override'
 } as const
 
 /** How many fields a reading actually produced. Zero means nothing was read. */
@@ -118,6 +132,28 @@ export class ScanAlreadyConfirmedError extends Error {
     constructor() {
         super('That scan has already been confirmed')
         this.name = 'ScanAlreadyConfirmedError'
+    }
+}
+
+/** The demo override, asked for on a build that does not have it. */
+export class DemoModeDisabledError extends Error {
+    constructor() {
+        super('Demo mode is not enabled')
+        this.name = 'DemoModeDisabledError'
+    }
+}
+
+/**
+ * A demo override asked for on a party that already has a record.
+ *
+ * A conflict rather than a second record. One party's identity is verified
+ * once, and a fabricated record sitting beside a real one is exactly the
+ * ambiguity item 02 exists to avoid.
+ */
+export class AlreadyVerifiedError extends Error {
+    constructor() {
+        super('That party already has an identity record')
+        this.name = 'AlreadyVerifiedError'
     }
 }
 
@@ -532,6 +568,92 @@ export const confirmIdentityScan = async (
         scanId: pending.id,
         recordId: record.id,
         documentType: confirmed.documentType,
+        verifiedMethod: record.verifiedMethod
+    })
+
+    return toIdentityRecord(record)
+}
+
+/**
+ * Mark a party verified without verifying anybody — demo only (UX plan item 02).
+ *
+ * **This writes a FINTRAC-shaped record for something that did not happen.**
+ * The identity tile blocks a transaction until every party has a record, and
+ * until the OCR account is live there is no way past it in front of a client.
+ * So there is a button. The whole design of this function is about making sure
+ * what it writes can never be mistaken for a real verification:
+ *
+ * - `env.DEMO_MODE` gates it here as well as at the route, so the check does
+ *   not depend on how the router happened to be assembled. `env.ts` refuses to
+ *   boot with the flag on in production, so in production this throws on every
+ *   call by construction.
+ * - `verifiedMethod` is `demo_override`, which is not a FINTRAC method and is
+ *   not one of ours either. A query for real verifications cannot match it.
+ * - No document number, and no `Document` row: there is no file. `s3Key` is
+ *   empty because nothing was stored, and an empty key is a great deal more
+ *   honest than one pointing at an object that does not exist.
+ * - A party that already has a record is a conflict, so a fabricated record
+ *   never lands beside a real one.
+ *
+ * The expiry is set well ahead only so the demo shows the party as verified
+ * rather than as holding an expired document; it describes nothing.
+ */
+export const demoVerifyParty = async (
+    transactionId: string,
+    agentId: string,
+    transactionPartyId: string
+): Promise<IdentityRecord> => {
+    if (!env.DEMO_MODE) {
+        throw new DemoModeDisabledError()
+    }
+
+    const personId = await ownedParty(transactionId, agentId, transactionPartyId)
+
+    const existing = await prisma.identityRecord.findFirst({
+        where: { partyId: personId },
+        select: { id: true }
+    })
+
+    if (existing) {
+        throw new AlreadyVerifiedError()
+    }
+
+    const verifiedAt = new Date()
+    const expiryDate = new Date(verifiedAt)
+
+    expiryDate.setUTCFullYear(expiryDate.getUTCFullYear() + 5)
+
+    const record = await prisma.identityRecord.create({
+        data: {
+            partyId: personId,
+            documentType: 'drivers_licence',
+
+            // Empty, exactly as it is for a reading that produced no number.
+            // `documentNumberOnFile` therefore answers false, which is true.
+            documentNumber: '',
+            expiryDate: new Date(`${expiryDate.toISOString().slice(0, 10)}T00:00:00.000Z`),
+            verifiedAt,
+            verifiedMethod: VERIFIED_METHOD.demo,
+
+            // No document was uploaded, so there is no object to name.
+            s3Key: ''
+        },
+        select: {
+            id: true,
+            partyId: true,
+            documentType: true,
+            documentNumber: true,
+            expiryDate: true,
+            verifiedAt: true,
+            verifiedMethod: true
+        }
+    })
+
+    // Loud on purpose. Every one of these in a log is a verification nobody
+    // performed, and that should be searchable.
+    logger.warn('identity verified by demo override', {
+        transactionId,
+        recordId: record.id,
         verifiedMethod: record.verifiedMethod
     })
 

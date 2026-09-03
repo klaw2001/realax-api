@@ -66,6 +66,17 @@ const envSchema = z.object({
     // implementation fails to compile rather than at the first upload.
     OCR_PROVIDER: z.enum(['textract', 'azure', 'mock']).default('textract'),
 
+    // Demo mode (UX plan item 02).
+    //
+    // Turns on the one thing a demo cannot do without and production must never
+    // have: a button that marks a party's identity verified without anybody
+    // examining a document. Off unless the variable literally says so, and the
+    // refinement below refuses to boot with it on in production.
+    //
+    // `z.stringbool` rather than `z.coerce.boolean`, which would read the
+    // string "false" as true — the exact accident this flag cannot afford.
+    DEMO_MODE: z.stringbool().default(false),
+
     // AnalyzeID runs in the same region as the bucket. Identity documents are
     // FINTRAC material and do not leave `ca-central-1` — including to be read.
     // Separate from AWS_REGION only so that a future non-AWS vendor does not
@@ -139,6 +150,18 @@ const validated = envSchema.superRefine((value, ctx) => {
             code: 'custom',
             path: ['OCR_PROVIDER'],
             message: 'must be textract in production'
+        })
+    }
+
+    // Same rule, same reason. A demo override that verifies a party without a
+    // document is a FINTRAC record of something that did not happen, and the
+    // service refusing to start is a better outcome than one deploy where the
+    // variable was set by mistake.
+    if (value.NODE_ENV === 'production' && value.DEMO_MODE) {
+        ctx.addIssue({
+            code: 'custom',
+            path: ['DEMO_MODE'],
+            message: 'must be off in production'
         })
     }
 })

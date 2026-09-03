@@ -95,7 +95,7 @@ export const identityRecordSchema = registry.register(
         verifiedAt: z.iso.datetime().openapi({ example: '2026-09-02T09:00:00.000Z' }),
         verifiedMethod: z.string().openapi({
             description:
-                'The FINTRAC method used, and how the record was filled: `government_photo_id` when a reading assisted it, `government_photo_id_manual` when a person typed every value off the card. Both are the same method — the agent looked at a government photo ID either way — and the service decides which from what the reading produced, never the caller. Left as a string rather than an enum so that a value written by an older build cannot fail to parse on the way out.',
+                'The FINTRAC method used, and how the record was filled: `government_photo_id` when a reading assisted it, `government_photo_id_manual` when a person typed every value off the card. Both are the same method — the agent looked at a government photo ID either way — and the service decides which from what the reading produced, never the caller. `demo_override` is not a FINTRAC method at all: it is written only by the demo-mode button, which marks a party verified with no document and nobody examining anything, and a record carrying it must be shown as what it is rather than as a verification. Left as a string rather than an enum so that a value written by an older build cannot fail to parse on the way out.',
             example: 'government_photo_id'
         }),
         expired: z.boolean().openapi({
@@ -182,6 +182,45 @@ export const confirmIdentityScanResponseSchema = registry.register(
 )
 
 export type ConfirmIdentityScanResponse = z.infer<typeof confirmIdentityScanResponseSchema>
+
+/**
+ * The reply to the demo override.
+ *
+ * The same shape as a confirmation, and named separately anyway: a caller
+ * reading generated types should not be able to reach for this one by accident
+ * while meaning the other.
+ */
+export const demoVerifyIdentityResponseSchema = registry.register(
+    'DemoVerifyIdentityResponse',
+    z.object({ record: identityRecordSchema })
+)
+
+export type DemoVerifyIdentityResponse = z.infer<typeof demoVerifyIdentityResponseSchema>
+
+registry.registerPath({
+    method: 'post',
+    path: '/api/transactions/{id}/parties/{partyId}/identity/demo-verify',
+    summary: 'Mark a party verified without verifying anybody — demo builds only',
+    security: [{ sessionCookie: [] }],
+    description:
+        'Requires a session, and the transaction must belong to the caller. **This exists only so the transaction can be walked end to end while there is no working document reader.** It writes an `IdentityRecord` with no document, no number and nobody having examined anything, so that the identity tile stops blocking the deal. The route is mounted only when the API runs with `DEMO_MODE=true`, and the API refuses to start with that flag on when `NODE_ENV=production`; on every other build this path does not exist and answers 404. The record it writes carries `verifiedMethod: demo_override`, which is not a FINTRAC method — it never matches a query for real verifications, and any screen showing it must show it as a demo override rather than as a verification. A party that already has a record is a conflict, so this can never leave a fabricated record sitting beside a real one.',
+    tags: ['identity'],
+    request: {
+        params: z.object({
+            id: z.string().openapi({ example: 'clx0a1b2c3d4e5f6g7h8i9j0k' }),
+            partyId: z.string().openapi({ example: 'clx9z8y7x6w5v4u3t2s1r0q9p' })
+        })
+    },
+    responses: {
+        201: {
+            description: 'The demo-override record, which verifies nobody',
+            content: { 'application/json': { schema: demoVerifyIdentityResponseSchema } }
+        },
+        401: errorContent('No session'),
+        404: errorContent('No such transaction or party — or a build without demo mode, where this route does not exist'),
+        409: errorContent('That party already has an identity record')
+    }
+})
 
 registry.registerPath({
     method: 'post',
