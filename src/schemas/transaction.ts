@@ -19,18 +19,18 @@ export type TransactionType = z.infer<typeof transactionTypeSchema>
  * Lifecycle. A transaction starts at `DRAFT` and only reaches `READY_TO_SIGN`
  * once the compliance gate passes — nothing in this phase advances it.
  */
+export const TRANSACTION_STATUSES = [
+    'DRAFT',
+    'COMPLIANCE_PENDING',
+    'READY_TO_SIGN',
+    'OUT_FOR_SIGNATURE',
+    'COMPLETED',
+    'CANCELLED'
+] as const
+
 export const transactionStatusSchema = registry.register(
     'TransactionStatus',
-    z
-        .enum([
-            'DRAFT',
-            'COMPLIANCE_PENDING',
-            'READY_TO_SIGN',
-            'OUT_FOR_SIGNATURE',
-            'COMPLETED',
-            'CANCELLED'
-        ])
-        .openapi({ example: 'DRAFT' })
+    z.enum(TRANSACTION_STATUSES).openapi({ example: 'DRAFT' })
 )
 
 export type TransactionStatus = z.infer<typeof transactionStatusSchema>
@@ -61,10 +61,139 @@ export const transactionResponseSchema = registry.register(
 
 export type TransactionResponse = z.infer<typeof transactionResponseSchema>
 
+/**
+ * The property, as much of it as a list row shows.
+ *
+ * Not the whole `Property`: a table of twenty rows does not need legal
+ * descriptions and frontage, and sending them would make the list the heaviest
+ * request in the product for the sake of two lines of text per row.
+ */
+export const transactionPropertySummarySchema = registry.register(
+    'TransactionPropertySummary',
+    z.object({
+        id: z.string().openapi({ example: 'clx0a1b2c3d4e5f6g7h8i9j0k' }),
+        address: z.string().openapi({ example: '18 Maple Grove Ave' }),
+        city: z.string().openapi({ example: 'Toronto' }),
+        mlsNumber: z.union([z.string(), z.null()]).openapi({
+            description: 'Null for a property entered by hand rather than found on the board.',
+            example: 'C8123456'
+        })
+    })
+)
+
+export type TransactionPropertySummary = z.infer<typeof transactionPropertySummarySchema>
+
+/**
+ * A transaction as a row in the list.
+ *
+ * A superset of `Transaction`, not a replacement for it: the detail endpoint
+ * still answers the plain shape. The two extra fields exist because the list is
+ * a table an agent reads at a glance, and both of them would otherwise cost a
+ * request per row — the address is what identifies a deal to a human, and the
+ * party count is how they see at a glance that a listing has no seller on it
+ * yet.
+ */
+export const transactionListItemSchema = registry.register(
+    'TransactionListItem',
+    transactionSchema.extend({
+        property: z.union([transactionPropertySummarySchema, z.null()]).openapi({
+            description: 'Null on a draft that has not had a property attached yet.'
+        }),
+        partyCount: z.number().int().openapi({
+            description: 'Parties still on the transaction. Removed ones are not counted.',
+            example: 2
+        })
+    })
+)
+
+export type TransactionListItem = z.infer<typeof transactionListItemSchema>
+
+/**
+ * What the list can be narrowed and ordered by.
+ *
+ * **Server-side, deliberately.** Filters belong next to the data: an agent with
+ * three years of deals should not be sent all of them so the browser can hide
+ * most, and the same query parameters are what makes a filtered list a link —
+ * the home page's stat tiles are links into this endpoint, not dead numbers.
+ *
+ * Every field is optional and the defaults are the unfiltered list, so an older
+ * client calling `GET /api/transactions` with no query at all still works.
+ */
+export const transactionListQuerySchema = registry.register(
+    'TransactionListQuery',
+    z.object({
+        search: z
+            .string()
+            .trim()
+            .max(200)
+            .optional()
+            .openapi({
+                description:
+                    'Free text over the property address, city and MLS number. Case-insensitive, matches anywhere in the value.',
+                example: 'maple'
+            }),
+
+        type: transactionTypeSchema.optional(),
+
+        /*
+         * Repeated rather than comma-separated: `?status=DRAFT&status=COMPLETED`
+         * is what a browser's URLSearchParams produces from a multi-select, and
+         * a comma-separated list would need escaping rules for a value that
+         * will never contain a comma. Express hands over a string for one and
+         * an array for several, so both are accepted and normalised here.
+         */
+        status: z
+            .union([transactionStatusSchema, z.array(transactionStatusSchema)])
+            .optional()
+            .transform(value => (value === undefined ? undefined : [value].flat()))
+            .openapi({
+                type: 'array',
+
+                // The values are spelled out rather than left as a bare string
+                // array. A repeated query parameter has no schema of its own to
+                // point at here, and without the enum the generated frontend
+                // type is `string[]` — which compiles for a misspelled status
+                // and answers 400 at the keyboard. Generated types exist to
+                // move that failure to build time.
+                items: { type: 'string', enum: [...TRANSACTION_STATUSES] },
+                description: 'Repeatable. Any of the given statuses matches.'
+            }),
+
+        /*
+         * Calendar dates rather than instants. An agent filtering "created in
+         * August" is not thinking in timezones, and `createdTo` covers the
+         * whole of the day named — a range ending today that excluded today
+         * would be wrong in the way nobody reports and everybody notices.
+         */
+        createdFrom: z.iso.date().optional().openapi({ example: '2026-08-01' }),
+        createdTo: z.iso.date().optional().openapi({ example: '2026-08-31' }),
+
+        sort: z.enum(['createdAt', 'updatedAt', 'status']).default('createdAt').openapi({
+            description: 'Newest first by default.'
+        }),
+        direction: z.enum(['asc', 'desc']).default('desc'),
+
+        page: z.coerce.number().int().min(1).default(1),
+        pageSize: z.coerce.number().int().min(1).max(100).default(25)
+    })
+)
+
+export type TransactionListQuery = z.infer<typeof transactionListQuerySchema>
+
 export const transactionListResponseSchema = registry.register(
     'TransactionListResponse',
     z.object({
-        transactions: z.array(transactionSchema)
+        transactions: z.array(transactionListItemSchema),
+
+        /**
+         * How many match the filters, not how many are on this page.
+         *
+         * The pager needs it, and so does the empty state: nothing matching a
+         * filter and nothing existing at all are different things to say.
+         */
+        total: z.number().int().openapi({ example: 42 }),
+        page: z.number().int().openapi({ example: 1 }),
+        pageSize: z.number().int().openapi({ example: 25 })
     })
 )
 
@@ -98,13 +227,15 @@ registry.registerPath({
     summary: "The signed-in agent's transactions",
     security: [{ sessionCookie: [] }],
     description:
-        'Requires a session. Scoped to the caller — there is no agent filter, because there is no way to read another agent\'s transactions. Newest first.',
+        'Requires a session. Scoped to the caller — there is no agent filter, because there is no way to read another agent\'s transactions. Newest first unless ordered otherwise. Every query parameter is optional; with none of them this is the whole list, one page at a time. Filtering happens here rather than in the browser so that a filtered list is a link that survives a reload, and so that an agent with years of deals is not sent all of them.',
     tags: ['transactions'],
+    request: { query: transactionListQuerySchema },
     responses: {
         200: {
-            description: 'The transactions owned by the caller',
+            description: 'One page of the transactions owned by the caller, with the total that matched',
             content: { 'application/json': { schema: transactionListResponseSchema } }
         },
+        400: errorContent('A query parameter is not valid'),
         401: errorContent('No session')
     }
 })

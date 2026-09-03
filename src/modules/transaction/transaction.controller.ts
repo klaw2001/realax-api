@@ -8,6 +8,7 @@ import {
 import type { ErrorResponse } from '@/schemas/common'
 import {
     createTransactionRequestSchema,
+    transactionListQuerySchema,
     transactionListResponseSchema,
     transactionResponseSchema
 } from '@/schemas/transaction'
@@ -17,7 +18,17 @@ const unauthorized: ErrorResponse = {
     message: 'Authentication required'
 }
 
-/** `GET /api/transactions`. Scoped to the session's agent. */
+/**
+ * `GET /api/transactions`. Scoped to the session's agent.
+ *
+ * Every filter is optional and the defaults are the whole list, newest first,
+ * so a caller that sends no query at all gets what it always did — one page of
+ * it, which is the only behaviour change for an older client.
+ *
+ * A bad parameter is a 400 rather than a silently ignored filter. A list that
+ * quietly returned everything because `status=Draft` was not a valid enum value
+ * is the kind of wrong answer nobody notices until it matters.
+ */
 export const getTransactions = async (req: Request, res: Response) => {
     if (!req.agent) {
         res.status(401).json(unauthorized)
@@ -25,9 +36,20 @@ export const getTransactions = async (req: Request, res: Response) => {
         return
     }
 
-    const transactions = await listTransactions(req.agent.id)
+    const query = transactionListQuerySchema.safeParse(req.query)
 
-    res.status(200).json(transactionListResponseSchema.parse({ transactions }))
+    if (!query.success) {
+        res.status(400).json({
+            error: 'invalid_request',
+            message: `Not a valid filter: ${query.error.issues.map(issue => issue.path.join('.')).join(', ')}`
+        } satisfies ErrorResponse)
+
+        return
+    }
+
+    const result = await listTransactions(req.agent.id, query.data)
+
+    res.status(200).json(transactionListResponseSchema.parse(result))
 }
 
 /**

@@ -408,18 +408,168 @@
           "transaction"
         ]
       },
+      "TransactionPropertySummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+          },
+          "address": {
+            "type": "string",
+            "example": "18 Maple Grove Ave"
+          },
+          "city": {
+            "type": "string",
+            "example": "Toronto"
+          },
+          "mlsNumber": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null for a property entered by hand rather than found on the board.",
+            "example": "C8123456"
+          }
+        },
+        "required": [
+          "id",
+          "address",
+          "city",
+          "mlsNumber"
+        ]
+      },
+      "TransactionListItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transaction"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "property": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/TransactionPropertySummary"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Null on a draft that has not had a property attached yet."
+              },
+              "partyCount": {
+                "type": "integer",
+                "description": "Parties still on the transaction. Removed ones are not counted.",
+                "example": 2
+              }
+            },
+            "required": [
+              "property",
+              "partyCount"
+            ]
+          }
+        ]
+      },
+      "TransactionListQuery": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Free text over the property address, city and MLS number. Case-insensitive, matches anywhere in the value.",
+            "example": "maple"
+          },
+          "type": {
+            "$ref": "#/components/schemas/TransactionType"
+          },
+          "status": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "COMPLIANCE_PENDING",
+                "READY_TO_SIGN",
+                "OUT_FOR_SIGNATURE",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            },
+            "description": "Repeatable. Any of the given statuses matches."
+          },
+          "createdFrom": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-08-01"
+          },
+          "createdTo": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-08-31"
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "createdAt",
+              "updatedAt",
+              "status"
+            ],
+            "default": "createdAt",
+            "description": "Newest first by default."
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 25
+          }
+        }
+      },
       "TransactionListResponse": {
         "type": "object",
         "properties": {
           "transactions": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Transaction"
+              "$ref": "#/components/schemas/TransactionListItem"
             }
+          },
+          "total": {
+            "type": "integer",
+            "example": 42
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 25
           }
         },
         "required": [
-          "transactions"
+          "transactions",
+          "total",
+          "page",
+          "pageSize"
         ]
       },
       "CreateTransactionRequest": {
@@ -2478,17 +2628,140 @@
             "sessionCookie": []
           }
         ],
-        "description": "Requires a session. Scoped to the caller — there is no agent filter, because there is no way to read another agent's transactions. Newest first.",
+        "description": "Requires a session. Scoped to the caller — there is no agent filter, because there is no way to read another agent's transactions. Newest first unless ordered otherwise. Every query parameter is optional; with none of them this is the whole list, one page at a time. Filtering happens here rather than in the browser so that a filtered list is a link that survives a reload, and so that an agent with years of deals is not sent all of them.",
         "tags": [
           "transactions"
         ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "description": "Free text over the property address, city and MLS number. Case-insensitive, matches anywhere in the value.",
+              "example": "maple"
+            },
+            "required": false,
+            "description": "Free text over the property address, city and MLS number. Case-insensitive, matches anywhere in the value.",
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/TransactionType"
+            },
+            "required": false,
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "DRAFT",
+                  "COMPLIANCE_PENDING",
+                  "READY_TO_SIGN",
+                  "OUT_FOR_SIGNATURE",
+                  "COMPLETED",
+                  "CANCELLED"
+                ]
+              },
+              "description": "Repeatable. Any of the given statuses matches."
+            },
+            "required": false,
+            "description": "Repeatable. Any of the given statuses matches.",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-08-01"
+            },
+            "required": false,
+            "name": "createdFrom",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-08-31"
+            },
+            "required": false,
+            "name": "createdTo",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "updatedAt",
+                "status"
+              ],
+              "default": "createdAt",
+              "description": "Newest first by default."
+            },
+            "required": false,
+            "description": "Newest first by default.",
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "required": false,
+            "name": "direction",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            },
+            "required": false,
+            "name": "pageSize",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "The transactions owned by the caller",
+            "description": "One page of the transactions owned by the caller, with the total that matched",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TransactionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A query parameter is not valid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
