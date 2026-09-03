@@ -27,7 +27,9 @@ plan given to Darren, so progress reported to him maps 1:1 to what is built.
   rather than working around it.
 - TanStack Query for server state. No global store unless a real need appears.
 
-**Third party** — Repliers (MLS), signNow (e-sign), OCR vendor TBD
+**Third party** — Repliers (MLS), signNow (e-sign), AWS Textract
+(`AnalyzeID`, `ca-central-1` — identity documents are read in the region
+they are stored in)
 
 ### Architecture note
 
@@ -84,7 +86,7 @@ realax-api/                     ← Express starter, own git repo
       documents/
     integrations/
       repliers/   client.ts  schema.ts  cache.ts
-      ocr/        provider.ts          interface only until vendor is picked
+      ocr/        provider.ts  textract.client.ts
     openapi/
       registry.ts  generate.ts
   test/
@@ -152,12 +154,17 @@ than imported. **The API is the source of truth.** Zod schemas in
 and emitted to `openapi.json`, which the frontend consumes:
 
 ```bash
-# realax-api — after any schema change
-pnpm gen:openapi          # writes openapi.json, commit it
+# realax-api (npm) — after any schema change
+npm run gen:openapi       # writes openapi.json, commit it
 
-# realax-app — regenerate the typed client
+# realax-app (pnpm) — regenerate the typed client
 pnpm gen:api              # openapi-typescript <url|file> -o src/types/api.d.ts
 ```
+
+> The two repos use different package managers on purpose: the API is on
+> npm (`package-lock.json`), the frontend on pnpm (`pnpm-lock.yaml`).
+> They share no workspace, so this costs nothing — but never add a second
+> lockfile to either repo.
 
 Rules that make this hold:
 - `src/types/api.d.ts` is **generated output**. Never hand-edit it; never
@@ -213,10 +220,10 @@ established before there is anything complicated to generate.
 `NEXT_PUBLIC_API_URL`, a `gen:api` script running `openapi-typescript`,
 and TanStack Query set up. Confirm the Vuexy theme renders untouched.
 
-*Acceptance:* both repos start independently. `gen:openapi` in the API
-writes `openapi.json`; `gen:api` in the web app regenerates
+*Acceptance:* both repos start independently. `npm run gen:openapi` in the
+API writes `openapi.json`; `pnpm gen:api` in the web app regenerates
 `src/types/api.d.ts`; the web app calls `/health` through the generated
-type and `pnpm typecheck` passes in both. Deliberately break a field name
+type and typecheck passes in both. Deliberately break a field name
 in the API schema, regenerate both, and confirm the frontend fails to
 compile — that failure is the whole point of the pipeline.
 
@@ -494,8 +501,8 @@ save persists a `Property` linked to the transaction.
 ### 1.5 — Parties
 
 Add buyers and sellers to a transaction: full legal name, email, phone,
-role. No ID scan yet — that's Phase 2's dependency, and it needs an OCR
-vendor decision that hasn't been made.
+role. No ID scan on this screen — that is 2.5, and it hangs off the party
+rather than off this form.
 
 *Acceptance:* multiple parties per transaction, correct roles, editable.
 
@@ -556,26 +563,54 @@ The `missing` array from 2.3 is the check — it comes free. Gate runs
 originally described it; the reason is that catching a missing field after
 signing forces a re-sign loop.
 
-Override policy: a documented override with a reason string, recorded in
-`ComplianceCheck.overrides` and `AuditLog`.
+**Override policy — decided: there is no override.** A failed check is a
+hard block. The form is not filled, no partial PDF is produced, and
+nothing advances to signing. Darren's call, and it settles the open
+question that used to sit here.
 
-> **Open — Darren's call, not ours:** is the gate absolute, or does a
-> documented override exist for genuinely N/A fields? Build the override
-> path; leave it feature-flagged until he decides.
+`ComplianceCheck.overrides` stays on the model and is written as an empty
+list on every check — an honest record that nothing was waived, and no
+migration to add back if the policy ever loosens. Nothing writes to it.
+The gate is a pure function and every failure carries a stable `field`,
+so an override would be one filter over the failure list before `passed`
+is computed; no shape here has to change for that.
 
-*Acceptance:* incomplete transaction blocks with a per-field list.
-Override records reason + agent + timestamp. Complete transaction passes
-and moves to `READY_TO_SIGN`.
+*Acceptance:* incomplete transaction blocks with a per-field list, and no
+path past it. Complete transaction passes and moves to `READY_TO_SIGN`.
 
-### 2.5 — ID scan *(gated on OCR vendor decision)*
+### 2.5 — ID scan — **backend built**
+
+**Vendor: AWS Textract `AnalyzeID`.** `ca-central-1` availability was
+confirmed before the integration was written; identity documents are
+FINTRAC material and do not leave the region, including to be read.
 
 Upload → S3 → OCR → extract name, document number, expiry → create
 `IdentityRecord` → reuse on future transactions for the same party.
 
-> **Do not start** until the vendor is chosen. Textract is the leading
-> candidate given S3 is already AWS, but `ca-central-1` availability for
-> ID analysis needs confirming first. Build the interface so the vendor is
-> swappable.
+Shipped:
+
+- `src/integrations/ocr/provider.ts` — the vendor-neutral boundary:
+  `OcrProvider`, `ScanRequest`, `ScannedIdentity`, `OcrError`
+  (`unavailable` = 502 and retryable, `unreadable` = a better photo).
+  Kept even though the vendor is chosen — it is what keeps a vendor's
+  field names out of the domain model.
+- `src/integrations/ocr/textract.client.ts` — the one implementation.
+- `src/modules/identity/` — service, controller, routes, mounted at
+  `/api/transactions/:id/parties/:partyId/identity` below the session
+  guard. `POST` scans, `GET` lists a party's records.
+- `test/identity-scan.test.ts`. The suite stubs the provider; nothing in
+  `npm test` calls Textract.
+
+Order is store → read → record, so the `IdentityRecord` is provably about
+the object under Object Lock rather than about bytes that were in memory.
+`documentNumber` is encrypted (`IDENTITY_ENCRYPTION_KEY`) the moment it
+exists and is never returned, logged, or put in an error message — the
+API answers `documentNumberOnFile`, not the number. Records key on the
+*person*, not the transaction row, which is what makes the reuse work.
+
+**Still open:** the upload UI. `realax-app/src/hooks/useIdentity.ts` reads
+records and `TransactionOverview` shows verified/expired counts; there is
+no scan-and-confirm screen yet.
 
 ---
 
@@ -652,7 +687,9 @@ AWS_KMS_KEY_ID=
 SIGNNOW_CLIENT_ID=
 SIGNNOW_CLIENT_SECRET=
 SIGNNOW_WEBHOOK_SECRET=
-OCR_PROVIDER=            # Phase 2.5
+OCR_PROVIDER=textract    # Phase 2.5
+OCR_REGION=ca-central-1
+IDENTITY_ENCRYPTION_KEY=  # 32 bytes, hex or base64 — IdentityRecord.documentNumber
 CORS_ORIGIN=
 
 # realax-app/.env.local
@@ -680,7 +717,5 @@ Do not build these without an explicit instruction:
 |---|---|---|
 | Repliers key is sandbox, not live TRREB | 1.3 demo realism | Darren |
 | Remaining form blanks uncurated | 2.1 | Klaw (manual) |
-| OCR vendor undecided | 2.5 | Klaw |
 | signNow API plan not purchased | 3.1 | Klaw |
-| Compliance override policy | 2.4 | Darren |
 | Provincial e-signature validity | 3.4 | Darren / legal |
