@@ -4,7 +4,7 @@ import logger from '@/lib/logger'
 import prisma from '@/lib/prisma'
 import { loadEntryInput } from '@/modules/entries/entries.service'
 import { FormTemplateNotSeededError, loadTransactionSnapshot } from '@/modules/forms/fill.service'
-import { loadTemplate } from '@/modules/forms/template.service'
+import { loadTemplate, reportableBlankNames } from '@/modules/forms/template.service'
 import type { AgentProfile } from '@/schemas/agent'
 import type {
     ComplianceArea,
@@ -210,40 +210,13 @@ const failure = (
     reason: ComplianceFailure['reason']
 ): ComplianceFailure => ({ field, label, area, areaLabel: AREA_LABELS[area], reason })
 
-/**
- * The blanks the gate is responsible for, in the order the form prints — which
- * is the order an agent works down it.
- *
- * A continuation block appears once, under the name its value arrives as, not
- * once per ruled line. Three empty lines under CHATTELS INCLUDED are not three
- * missing fields; they are one field, and telling an agent to fill in the two
- * spare lines that exist in case the first runs out would be nonsense.
- *
- * Signature and signing-date blanks are absent, and that is the whole reason
- * `kind` exists on a blank. They are filled inside the e-sign session, so
- * counting one as missing would block every transaction that ever existed.
- */
-const reportableBlanks = (template: FormTemplate): string[] => {
-    const seen = new Set<string>()
-    const names: string[] = []
-
-    for (const blank of template.blanks) {
-        if (blank.kind !== 'data') {
-            continue
-        }
-
-        const name = blank.flow ?? blank.name
-
-        if (seen.has(name)) {
-            continue
-        }
-
-        seen.add(name)
-        names.push(name)
-    }
-
-    return names
-}
+// The blanks the gate is responsible for come from `reportableBlankNames`, in
+// the order the form prints — which is the order an agent works down it. A
+// continuation block appears once, under the name its value arrives as, not
+// once per ruled line: three empty lines under CHATTELS INCLUDED are not three
+// missing fields, and telling an agent to fill in the spare lines that exist in
+// case the first runs out would be nonsense. Signature and signing-date blanks
+// are excluded there too, which is the whole reason `kind` exists on a blank.
 
 /**
  * Has this blank got anything to draw?
@@ -276,7 +249,7 @@ const missingBlanks = (
     type: TransactionType,
     excused: Set<string>
 ): ComplianceFailure[] =>
-    reportableBlanks(template)
+    reportableBlankNames(template)
         .filter(name => !excused.has(name) && !hasValue(template, merged, name))
         .map(name => {
             const { label, area } = describe(name, type)

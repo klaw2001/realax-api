@@ -226,6 +226,40 @@ export function dataBlanks(template: FormTemplate): TemplateBlank[] {
     return template.blanks.filter(blank => blank.kind === 'data')
 }
 
+/**
+ * The names a form is answerable in, in the order it prints them.
+ *
+ * Not the same list as `dataBlanks`, and the difference is the thing that
+ * caused a bug. A continuation block — the four ruled lines under CHATTELS
+ * INCLUDED — is four blanks on the page but *one* field to an agent, and one
+ * key in the merged object: the mapper emits `chattelsIncluded` and the fill
+ * engine decides how many of the four lines that text needs. So anything
+ * counting or reporting against fields has to fold a block back to its base
+ * name, and anything drawing works in blanks.
+ *
+ * Both the compliance gate and the form-status endpoint answer in fields, so
+ * they share this rather than each folding the blocks themselves. Two copies of
+ * this rule would drift, and one of them silently undercounting is exactly what
+ * happened before it lived here.
+ */
+export function reportableBlankNames(template: FormTemplate): string[] {
+    const seen = new Set<string>()
+    const names: string[] = []
+
+    for (const blank of dataBlanks(template)) {
+        const name = blank.flow ?? blank.name
+
+        if (seen.has(name)) {
+            continue
+        }
+
+        seen.add(name)
+        names.push(name)
+    }
+
+    return names
+}
+
 /** Clears the parse cache. Tests only — templates do not change at runtime. */
 export function __clearTemplateCache(): void {
     cache.clear()

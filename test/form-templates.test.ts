@@ -12,6 +12,7 @@ import {
     loadTemplate,
     paths,
     readSourcePdf,
+    reportableBlankNames,
     sha256,
     verifySource
 } from '../src/modules/forms/template.service'
@@ -150,4 +151,37 @@ describe('the seeded form library', () => {
 
 afterAll(async () => {
     await prisma.$disconnect()
+})
+
+describe('the names a form is answerable in', () => {
+    test('folds a continuation block to one field, and drops nothing else', async () => {
+        const template = await loadTemplate('100')
+        const blanks = dataBlanks(template)
+        const fields = reportableBlankNames(template)
+
+        // Form 100: 76 data blanks, of which 11 are the ruled continuation
+        // lines of 3 blocks. So 76 - 11 + 3 = 68 fields.
+        expect(blanks).toHaveLength(76)
+        expect(fields).toHaveLength(68)
+
+        // A block appears once, under the name its value arrives as — never as
+        // its lines.
+        expect(fields).toContain('chattelsIncluded')
+        expect(fields).not.toContain('chattelsIncluded.line1')
+
+        // Everything else survives unchanged, in the order the form prints.
+        expect(fields[0]).toEqual('agreement.dateDay')
+        expect(fields).toContain('completion.dateDay')
+    })
+
+    test('never names a signature or a signing date', async () => {
+        const template = await loadTemplate('100')
+        const fields = new Set(reportableBlankNames(template))
+
+        for (const blank of template.blanks) {
+            if (blank.kind !== 'data') {
+                expect(fields.has(blank.name)).toEqual(false)
+            }
+        }
+    })
 })

@@ -232,8 +232,14 @@ export const transactionFormSchema = registry.register(
             example: true
         }),
         filledCount: z.number().int().openapi({
-            description: 'Data blanks that had a value at the last fill.',
-            example: 76
+            description:
+                'Fields that had a value at the last fill, out of `fieldCount`. Fields, not blanks on the page: the four ruled lines under CHATTELS INCLUDED are one field, and how many of them the text needs is the fill engine\'s business.',
+            example: 68
+        }),
+        fieldCount: z.number().int().openapi({
+            description:
+                'Fields this form asks the agent for. The same set the compliance gate reports against, so the two agree.',
+            example: 68
         })
     })
 )

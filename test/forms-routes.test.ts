@@ -262,6 +262,14 @@ describe('a transaction the gate blocks', () => {
         expect(form.status).toEqual(200)
         expect(form.body.form.status).toEqual('DRAFT')
         expect(form.body.form.available).toEqual(false)
+        // A row already exists — the refused gate wrote one to hang its check
+        // off — so this reports partial progress rather than nothing: the
+        // domain layer has answered its fields, the agreement terms have not.
+        // The denominator is the set the gate reports against, so "n of m" on
+        // screen and the checklist beside it count the same things.
+        expect(form.body.form.fieldCount).toEqual(68)
+        expect(form.body.form.filledCount).toBeGreaterThan(0)
+        expect(form.body.form.filledCount).toBeLessThan(form.body.form.fieldCount)
 
         const download = await agent.get(url('/download'))
 
@@ -334,6 +342,13 @@ describe('a transaction the gate passes', () => {
         expect(response.body.form.available).toEqual(true)
         expect(response.body.form.formCode).toEqual(FORM)
         expect(response.body.truncated).toEqual([])
+
+        // A form the gate passed reports every field filled. This once said 65
+        // of 76: the count was taken over raw blanks, so the eleven ruled
+        // continuation lines — which are three fields, expanded by the fill
+        // engine — could never be counted, and a finished form could never
+        // reach its own total. The gate was right and the number was wrong.
+        expect(response.body.form.filledCount).toEqual(response.body.form.fieldCount)
 
         // No bucket path reaches the client. A filled agreement is read through
         // a presigned URL this service issues, never by a key a caller holds.

@@ -1,7 +1,7 @@
 import prisma from '@/lib/prisma'
 import { getSignedUrl, headObject } from '@/lib/s3'
 import { TransactionNotFoundError } from '@/modules/forms/fill.service'
-import { loadTemplate } from '@/modules/forms/template.service'
+import { loadTemplate, reportableBlankNames } from '@/modules/forms/template.service'
 import type { FormDownloadResponse, TransactionForm } from '@/schemas/form'
 
 /**
@@ -39,6 +39,14 @@ const ownedTransaction = (transactionId: string, agentId: string) =>
  * `filledCount` is counted from the merged object stored beside the key rather
  * than kept as a counter, so it describes the fill that produced the PDF
  * sitting in the bucket and cannot drift from it.
+ *
+ * It counts *fields*, not blanks on the page, and that distinction is the whole
+ * reason `reportableBlankNames` exists. The four ruled lines under CHATTELS
+ * INCLUDED are four blanks and one field: the merged object holds
+ * `chattelsIncluded`, and the fill engine decides how many of the four lines
+ * that text needs. Counting against the raw blank list therefore missed all
+ * eleven continuation lines and reported a complete Form 100 as 65 of 76 — a
+ * number that could never reach its own total however finished the form was.
  */
 export const getTransactionForm = async (
     transactionId: string,
@@ -69,19 +77,21 @@ export const getTransactionForm = async (
             revision: template.revision,
             status: 'DRAFT',
             available: false,
-            filledCount: 0
+            filledCount: 0,
+            fieldCount: reportableBlankNames(template).length
         }
     }
 
     const values = (row.values ?? {}) as Record<string, unknown>
-    const names = new Set(template.blanks.filter(blank => blank.kind === 'data').map(b => b.name))
+    const fields = reportableBlankNames(template)
 
     return {
         formCode: template.form,
         revision: template.revision,
         status: row.status,
         available: row.filledS3Key !== null,
-        filledCount: Object.keys(values).filter(key => names.has(key)).length
+        filledCount: fields.filter(name => name in values).length,
+        fieldCount: fields.length
     }
 }
 
