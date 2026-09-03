@@ -50,7 +50,12 @@ IDENTITY_ENCRYPTION_KEY="change-me-32-bytes-base64-or-hex-0000000000="
 # mock     = fixtures. No network, no key, verifies nobody. This is what makes
 #            the identity flow demonstrable offline while the AWS account is on
 #            the Free plan and every Textract call is refused.
-# azure and mock are both refused when NODE_ENV=production.
+# barcode  = the PDF417 on the BACK of a driver's licence. Not OCR: the fields
+#            are text the issuing authority encoded, so nothing can be misread.
+#            Free, offline, and the document never leaves the process. Needs the
+#            back of the card — a photo of the front yields nothing — and cannot
+#            read a passport at all.
+# Everything except textract is refused when NODE_ENV=production.
 OCR_PROVIDER=textract
 
 # Only when OCR_PROVIDER=azure. Create an Azure AI Document Intelligence

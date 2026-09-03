@@ -60,11 +60,17 @@ const envSchema = z.object({
     // `mock` reads nothing at all: fixtures, no network, no key, which is what
     // makes the identity flow demonstrable and testable offline.
     //
+    // `barcode` is not OCR at all: it decodes the PDF417 on the back of a
+    // driver's licence, which is text the issuing authority encoded rather than
+    // characters recognised from an image. Free, offline, and the document
+    // never leaves the process — but it needs the *back* of the card, so it is
+    // a cross-check rather than a replacement.
+    //
     // The refinement below forbids anything but Textract in production. A
     // provider is added here only once its client exists — the switch in
     // `integrations/ocr/index.ts` is exhaustive, so a name with no
     // implementation fails to compile rather than at the first upload.
-    OCR_PROVIDER: z.enum(['textract', 'azure', 'mock']).default('textract'),
+    OCR_PROVIDER: z.enum(['textract', 'azure', 'mock', 'barcode']).default('textract'),
 
     // Demo mode (UX plan item 02).
     //

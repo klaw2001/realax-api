@@ -1,5 +1,6 @@
 import { env } from '@/config/env'
 import { azureProvider } from '@/integrations/ocr/azure.client'
+import { barcodeProvider } from '@/integrations/ocr/barcode.client'
 import { mockProvider } from '@/integrations/ocr/mock.client'
 import { type OcrProvider } from '@/integrations/ocr/provider'
 import { textractProvider } from '@/integrations/ocr/textract.client'
@@ -26,5 +27,7 @@ export const ocrProvider = (): OcrProvider => {
             return azureProvider
         case 'mock':
             return mockProvider
+        case 'barcode':
+            return barcodeProvider
     }
 }
