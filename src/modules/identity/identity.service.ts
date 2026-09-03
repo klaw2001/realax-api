@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 
 import { OcrError } from '@/integrations/ocr/provider'
 import type { OcrProvider, ScannedIdentity as RawScan } from '@/integrations/ocr/provider'
@@ -199,13 +199,10 @@ export interface ScanUpload {
 }
 
 /**
- * Store one identity document and read it. Nothing is verified here.
+ * Store one identity document, read it, and hold the reading.
  *
- * The result is an `IdentityScan` — a proposal awaiting a person. The image is
- * stored before it is read, so what comes back describes the object under
- * Object Lock rather than bytes that passed through this process, and the row
- * carries the encrypted number and the file's digest so that confirming needs
- * neither a second Textract call nor a fetch back out of S3.
+ * The part both entry points share. `personId` is null for a reading taken
+ * before there is a person to attach it to — see `scanIdentityDocumentForNewParty`.
  *
  * **A reading that produced nothing is still a scan.** An image the reader
  * cannot find a document in is not an error to hand back: the file is stored,
@@ -218,36 +215,14 @@ export interface ScanUpload {
  * unreachable says nothing about the document, and silently turning an outage
  * into a manual-entry form would quietly stop using a service we are paying
  * for. That one is a 502 and worth retrying.
- *
- * `provider` is a parameter with a default rather than a module-level import so
- * the tests can pass a stub. Nothing calls Textract in the suite: an OCR call
- * against a real driver’s licence is billed, slow, and needs a real driver’s
- * licence, none of which belongs in `npm test`.
  */
-export const scanIdentityDocument = async (
+const storeReadAndHold = async (
     transactionId: string,
-    agentId: string,
-    transactionPartyId: string,
+    personId: string | null,
+    s3Key: string,
     upload: ScanUpload,
-    provider: OcrProvider = ocrProvider()
+    provider: OcrProvider
 ): Promise<ScanIdentityResponse> => {
-    const personId = await ownedParty(transactionId, agentId, transactionPartyId)
-
-    if (!ACCEPTED_MIME.has(upload.mimeType)) {
-        throw new UnsupportedDocumentError('An identity document must be a JPEG or a PNG')
-    }
-
-    // Stored before it is read, so the record that eventually results is about
-    // the object under Object Lock rather than about bytes that passed through
-    // here. The key convention is the one in `lib/s3.ts`; nothing builds a key
-    // by hand.
-    const s3Key = keys.identityDocument(
-        transactionId,
-        personId,
-        upload.documentType,
-        EXTENSION[upload.mimeType]
-    )
-
     await putObject({ key: s3Key, body: upload.bytes, contentType: upload.mimeType })
 
     let scan: RawScan | null = null
@@ -306,6 +281,7 @@ export const scanIdentityDocument = async (
     logger.info('identity document read, awaiting confirmation', {
         transactionId,
         scanId: pending.id,
+        attached: personId !== null,
         documentType: upload.documentType,
         fieldsRead,
         numberRead: scan?.documentNumber != null,
@@ -320,6 +296,91 @@ export const scanIdentityDocument = async (
         // things to tell an agent about.
         scanned: scan === null ? null : toScannedResponse(scan)
     }
+}
+
+/**
+ * Read the identity document of somebody already on the transaction.
+ *
+ * The image is stored before it is read, so the record that eventually results
+ * describes the object under Object Lock rather than bytes that passed through
+ * this process, and the row carries the encrypted number and the file's digest
+ * so that confirming needs neither a second Textract call nor a fetch back out
+ * of S3.
+ *
+ * `provider` is a parameter with a default rather than a module-level import so
+ * the tests can pass a stub. Nothing calls Textract in the suite: an OCR call
+ * against a real driver’s licence is billed, slow, and needs a real driver’s
+ * licence, none of which belongs in `npm test`.
+ */
+export const scanIdentityDocument = async (
+    transactionId: string,
+    agentId: string,
+    transactionPartyId: string,
+    upload: ScanUpload,
+    provider: OcrProvider = ocrProvider()
+): Promise<ScanIdentityResponse> => {
+    const personId = await ownedParty(transactionId, agentId, transactionPartyId)
+
+    if (!ACCEPTED_MIME.has(upload.mimeType)) {
+        throw new UnsupportedDocumentError('An identity document must be a JPEG or a PNG')
+    }
+
+    // The key convention is the one in `lib/s3.ts`; nothing builds a key by hand.
+    const s3Key = keys.identityDocument(
+        transactionId,
+        personId,
+        upload.documentType,
+        EXTENSION[upload.mimeType]
+    )
+
+    return storeReadAndHold(transactionId, personId, s3Key, upload, provider)
+}
+
+/**
+ * Read an identity document before the person exists.
+ *
+ * The scan-first flow: an agent adding a party photographs the licence, and the
+ * reading fills the form that creates them. Which means the reading has to come
+ * first — the name is the thing being read, and it is also the one field a
+ * party cannot be created without.
+ *
+ * The scan is held with no `partyId` and attaches to the person when it is
+ * confirmed. Nothing is verified in the meantime, and an abandoned scan stays
+ * an unattached row rather than becoming a party nobody meant to create.
+ *
+ * Only the transaction is checked, because there is no party to check yet.
+ */
+export const scanIdentityDocumentForNewParty = async (
+    transactionId: string,
+    agentId: string,
+    upload: ScanUpload,
+    provider: OcrProvider = ocrProvider()
+): Promise<ScanIdentityResponse> => {
+    const transaction = await prisma.transaction.findFirst({
+        where: { id: transactionId, agentId },
+        select: { id: true }
+    })
+
+    if (!transaction) {
+        throw new TransactionNotFoundError()
+    }
+
+    if (!ACCEPTED_MIME.has(upload.mimeType)) {
+        throw new UnsupportedDocumentError('An identity document must be a JPEG or a PNG')
+    }
+
+    // Keyed by a value minted for this upload alone. Two unassigned scans on
+    // one transaction are two different people until somebody says otherwise,
+    // so they must not overwrite each other the way two scans of one party's
+    // licence deliberately do.
+    const s3Key = keys.unassignedIdentityDocument(
+        transactionId,
+        randomUUID(),
+        upload.documentType,
+        EXTENSION[upload.mimeType]
+    )
+
+    return storeReadAndHold(transactionId, null, s3Key, upload, provider)
 }
 
 /** What the agent checked against the card, and is willing to stand behind. */
@@ -343,6 +404,12 @@ export interface ConfirmedIdentity {
  * produced nothing from confirms just as well, and the record says it was
  * typed by hand rather than read.
  *
+ * A scan taken before the party existed arrives here unattached, and this is
+ * where it is attached: the party the agent just created is the person it was
+ * always about. A scan already attached to somebody else is not confirmable
+ * here at all — one photograph belongs to one person, and the alternative is a
+ * scan of one client's licence being filed against another's name.
+ *
  * One database transaction, because a record without its `Document` row is a
  * verification whose evidence is not indexed, and a scan marked confirmed with
  * no record is a scan that can never be confirmed.
@@ -356,12 +423,13 @@ export const confirmIdentityScan = async (
 ): Promise<IdentityRecord> => {
     const personId = await ownedParty(transactionId, agentId, transactionPartyId)
 
-    // Scoped to the transaction *and* the person: a scan id from another deal
-    // is not found here rather than confirmable from the wrong screen.
+    // Scoped to the transaction: a scan id from another deal is not found here
+    // rather than confirmable from the wrong screen.
     const pending = await prisma.identityScan.findFirst({
-        where: { id: scanId, transactionId, partyId: personId },
+        where: { id: scanId, transactionId },
         select: {
             id: true,
+            partyId: true,
             documentNumber: true,
             s3Key: true,
             sha256: true,
@@ -370,7 +438,12 @@ export const confirmIdentityScan = async (
         }
     })
 
-    if (!pending) {
+    // Either it is this person's, or it is nobody's yet and is about to become
+    // theirs. One that belongs to a different party on the same transaction is
+    // not found, which is the same answer as one that never existed — filing a
+    // scan of one client's licence under another client's name is the failure
+    // this rules out.
+    if (!pending || (pending.partyId !== null && pending.partyId !== personId)) {
         throw new ScanNotFoundError()
     }
 
@@ -434,10 +507,12 @@ export const confirmIdentityScan = async (
         })
 
         // Marked with what it became, so an unconfirmed row is visibly
-        // unconfirmed and this one cannot be confirmed a second time.
+        // unconfirmed and this one cannot be confirmed a second time. A scan
+        // taken before the party existed gets its person here, in the same
+        // transaction that creates the record — the two facts are one event.
         await tx.identityScan.update({
             where: { id: pending.id },
-            data: { confirmedAt: verifiedAt, recordId: created.id }
+            data: { confirmedAt: verifiedAt, recordId: created.id, partyId: personId }
         })
 
         return created

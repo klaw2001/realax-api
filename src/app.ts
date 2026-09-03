@@ -17,7 +17,7 @@ import { authRoutes, meRoutes } from '@/modules/auth/auth.routes'
 import healthRoutes from '@/modules/health/health.routes'
 import { transactionEntriesRoutes } from '@/modules/entries/entries.routes'
 import { transactionFormRoutes } from '@/modules/forms/forms.routes'
-import { partyIdentityRoutes } from '@/modules/identity/identity.routes'
+import { partyIdentityRoutes, transactionIdentityRoutes } from '@/modules/identity/identity.routes'
 import { transactionPartyRoutes } from '@/modules/party/party.routes'
 import { propertyRoutes, transactionPropertyRoutes } from '@/modules/property/property.routes'
 import transactionRoutes from '@/modules/transaction/transaction.routes'
@@ -106,6 +106,7 @@ app.use('/api/transactions', transactionRoutes)
 // module owns these handlers, and a route lives in the module that owns it.
 app.use('/api/transactions/:id/property', transactionPropertyRoutes)
 app.use('/api/transactions/:id/parties', transactionPartyRoutes)
+app.use('/api/transactions/:id/identity', transactionIdentityRoutes)
 app.use('/api/transactions/:id/parties/:partyId/identity', partyIdentityRoutes)
 app.use('/api/transactions/:id/entries', transactionEntriesRoutes)
 app.use('/api/transactions/:id/forms', transactionFormRoutes)

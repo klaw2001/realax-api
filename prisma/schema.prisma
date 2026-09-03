@@ -410,8 +410,13 @@ model IdentityScan {
   transactionId  String
   transaction    Transaction @relation(fields: [transactionId], references: [id])
   /// The person, not the party-on-a-transaction row — same key as IdentityRecord.
-  partyId        String
-  party          Party       @relation(fields: [partyId], references: [id])
+  ///
+  /// Null while a reading has no person yet: the scan-first flow photographs
+  /// the licence in order to fill the form that creates the party, so the
+  /// reading exists before the person does. Confirming is what attaches it, and
+  /// a record is never created without one.
+  partyId        String?
+  party          Party?      @relation(fields: [partyId], references: [id])
   /// What the agent declared at upload. The confirmed type lives on the record.
   documentType   String
   /// Encrypted at rest, exactly as on IdentityRecord. "" when none was read.

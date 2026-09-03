@@ -13,7 +13,11 @@ import { disconnect as disconnectRedis } from '../src/lib/redis'
 import s3, { keys } from '../src/lib/s3'
 import { DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { hashPassword } from '../src/modules/auth/auth.service'
-import { confirmIdentityScan, scanIdentityDocument } from '../src/modules/identity/identity.service'
+import {
+    confirmIdentityScan,
+    scanIdentityDocument,
+    scanIdentityDocumentForNewParty
+} from '../src/modules/identity/identity.service'
 
 // Build plan 2.5. **Textract is never called here.** An AnalyzeID call is
 // billed, is slow, and needs a real driver's licence to be worth anything —
@@ -143,14 +147,26 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-    await s3
-        .send(
-            new DeleteObjectCommand({
-                Bucket: process.env.AWS_S3_BUCKET,
-                Key: keys.identityDocument(transactionId, personId, 'drivers_licence', 'png')
-            })
+    // Every object this suite wrote, taken from the rows that name them rather
+    // than rebuilt by hand: the unassigned scans are keyed by a value minted
+    // per upload, so there is no key to reconstruct after the fact.
+    const written = await prisma.identityScan.findMany({
+        where: { transactionId },
+        select: { s3Key: true }
+    })
+
+    const objectKeys = new Set([
+        ...written.map(row => row.s3Key),
+        keys.identityDocument(transactionId, personId, 'drivers_licence', 'png')
+    ])
+
+    await Promise.all(
+        [...objectKeys].map(Key =>
+            s3
+                .send(new DeleteObjectCommand({ Bucket: process.env.AWS_S3_BUCKET, Key }))
+                .catch(() => undefined)
         )
-        .catch(() => undefined)
+    )
 
     await prisma.identityRecord.deleteMany({ where: { partyId: personId } })
     await prisma.identityScan.deleteMany({ where: { transactionId } })
@@ -744,6 +760,173 @@ describe('an image nothing could be read from', () => {
         // The outage is still advertised. It is the one OCR failure a caller
         // still has to handle.
         expect(Object.keys(responses)).toContain('502')
+    })
+})
+
+describe('reading a document before the party exists', () => {
+    const scanned: ScannedIdentity = {
+        documentType: 'drivers_licence' as const,
+        fullName: 'MARGARET ANNE WHITFIELD',
+        firstName: 'MARGARET',
+        middleName: 'ANNE',
+        lastName: 'WHITFIELD',
+        dateOfBirth: '1979-04-17',
+        expiryDate: '2029-04-17',
+        dateOfIssue: '2024-04-17',
+        documentNumber: DOCUMENT_NUMBER,
+        address: '18 MAPLE GROVE AVE',
+        city: 'TORONTO',
+        province: 'ON',
+        postalCode: 'M4K 2R7',
+        confidence: 94.2,
+        provider: 'stub',
+        modelVersion: '1.0'
+    }
+
+    const upload = {
+        bytes: Buffer.from('a png would be here'),
+        mimeType: 'image/png',
+        documentType: 'drivers_licence' as const
+    }
+
+    const readOne = async (result: ScannedIdentity = scanned) =>
+        scanIdentityDocumentForNewParty(transactionId, agentId, upload, stubProvider(result))
+
+    test('is held with nobody attached, under a key of its own', async () => {
+        const { scanId, scanned: reading } = await readOne()
+
+        expect(reading?.fullName).toEqual('MARGARET ANNE WHITFIELD')
+
+        const row = await prisma.identityScan.findUniqueOrThrow({ where: { id: scanId } })
+
+        // The name is what is being read, and it is also the one field a party
+        // cannot be created without — so the reading has to come first, with
+        // nobody on it.
+        expect(row.partyId).toBeNull()
+
+        // Not the per-party key: two unassigned scans on one transaction are
+        // two different people until somebody says otherwise, and must not
+        // overwrite each other.
+        expect(row.s3Key).toMatch(
+            new RegExp(`^transactions/${transactionId}/ids/unassigned/[0-9a-f-]{36}/drivers_licence\\.png$`)
+        )
+    }, 30000)
+
+    test('the number is encrypted in the unattached row too', async () => {
+        const { scanId } = await readOne()
+
+        const row = await prisma.identityScan.findUniqueOrThrow({ where: { id: scanId } })
+
+        // Having no owner yet is not a reason to hold a licence number in the
+        // clear for the length of a form being filled in.
+        expect(isEncrypted(row.documentNumber)).toEqual(true)
+        expect(decryptField(row.documentNumber)).toEqual(DOCUMENT_NUMBER)
+    }, 30000)
+
+    test('confirming attaches it to the party the agent just created', async () => {
+        const { scanId } = await readOne()
+
+        const record = await confirmIdentityScan(transactionId, agentId, transactionPartyId, scanId, {
+            documentType: 'drivers_licence',
+            expiryDate: '2029-04-17'
+        })
+
+        expect(record.partyId).toEqual(personId)
+        expect(record.verifiedMethod).toEqual('government_photo_id')
+
+        const row = await prisma.identityScan.findUniqueOrThrow({ where: { id: scanId } })
+
+        // Attached in the same database transaction that created the record:
+        // the person it is about and the verification it became are one event.
+        expect(row.partyId).toEqual(personId)
+        expect(row.recordId).toEqual(record.id)
+    }, 30000)
+
+    test('an unreadable image still reaches a form, with nobody attached', async () => {
+        const blind: OcrProvider = {
+            name: 'stub',
+            scanIdentityDocument: async () => {
+                throw new OcrError('unreadable', 'No identity document was found in the image')
+            }
+        }
+
+        const result = await scanIdentityDocumentForNewParty(transactionId, agentId, upload, blind)
+
+        expect(result.scanned).toBeNull()
+
+        const record = await confirmIdentityScan(
+            transactionId,
+            agentId,
+            transactionPartyId,
+            result.scanId,
+            { documentType: 'drivers_licence', expiryDate: null }
+        )
+
+        // Typed out in the add-party form, which is the review step for this
+        // flow — so the record says a person entered every value.
+        expect(record.verifiedMethod).toEqual('government_photo_id_manual')
+    }, 30000)
+
+    test('a transaction that is not the caller’s is refused before anything is stored', async () => {
+        await expect(
+            scanIdentityDocumentForNewParty('not_a_transaction', agentId, upload, stubProvider(scanned))
+        ).rejects.toMatchObject({ name: 'TransactionNotFoundError' })
+    })
+
+    test('a scan already attached to another party is not confirmable through this one', async () => {
+        const other = await prisma.transactionParty.create({
+            data: {
+                // Nested on both sides: Prisma refuses a scalar foreign key
+                // alongside a nested create.
+                transaction: { connect: { id: transactionId } },
+                role: 'BUYER',
+                signingOrder: 2,
+                party: { create: { fullLegalName: 'Somebody Else Entirely' } }
+            },
+            select: { id: true, partyId: true }
+        })
+
+        const { scanId } = await scanIdentityDocument(
+            transactionId,
+            agentId,
+            other.id,
+            upload,
+            stubProvider(scanned)
+        )
+
+        // Filing a scan of one client's licence under another client's name is
+        // the failure this rules out, and it answers the same way as a scan
+        // that never existed.
+        await expect(
+            confirmIdentityScan(transactionId, agentId, transactionPartyId, scanId, {
+                documentType: 'drivers_licence',
+                expiryDate: null
+            })
+        ).rejects.toMatchObject({ name: 'ScanNotFoundError' })
+
+        await prisma.identityScan.deleteMany({ where: { partyId: other.partyId } })
+        await prisma.transactionParty.delete({ where: { id: other.id } })
+        await prisma.party.delete({ where: { id: other.partyId } })
+    }, 30000)
+
+    test('the route exists with no party in the path', async () => {
+        const agent = await signIn()
+
+        const response = await agent.post(`/api/transactions/${transactionId}/identity/scans`).send({})
+
+        // No file attached: the shape of the failure is what is asserted here,
+        // because a real upload on this route would reach the real provider and
+        // this suite does not call Textract.
+        expect(response.status).toEqual(400)
+        expect(response.body.error).toEqual('invalid_request')
+    }, 30000)
+
+    test('without a session it is 401', async () => {
+        const response = await request(app)
+            .post(`/api/transactions/${transactionId}/identity/scans`)
+            .send({})
+
+        expect(response.status).toEqual(401)
     })
 })
 

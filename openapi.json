@@ -3853,6 +3853,107 @@
         }
       }
     },
+    "/api/transactions/{id}/identity/scans": {
+      "post": {
+        "summary": "Read an identity document before the party exists",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. The scan-first flow: an agent adding a party photographs the licence, and the reading fills the form that creates them — which has to happen in this order, because the name is the thing being read and it is also the one field a party cannot be created without. The scan is held with no party attached and becomes that person’s when it is confirmed through their party. Identical to the per-party scan in every other respect, including that it verifies nobody and that an image with no document in it answers 201 with a null `scanned`.",
+        "tags": [
+          "identity"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "document": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "JPEG or PNG, at most 5 MB."
+                  },
+                  "documentType": {
+                    "$ref": "#/components/schemas/IdentityDocumentType"
+                  }
+                },
+                "required": [
+                  "document",
+                  "documentType"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "What was read — or null when nothing could be — awaiting a party and a confirmation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanIdentityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No file, an unsupported type, or a document type that is not accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The document reader is unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/transactions/{id}/parties/{partyId}/identity/scans/{scanId}/confirm": {
       "post": {
         "summary": "Confirm a reading, creating the identity record",
@@ -3861,7 +3962,7 @@
             "sessionCookie": []
           }
         ],
-        "description": "Requires a session, and the transaction must belong to the caller. The agent has read the document and checked it against the card; this writes the `IdentityRecord` from what they confirmed. Nothing is verified until this call — an uploaded scan that is never confirmed stays a reading. Confirming twice is a conflict rather than a second record: the reading is one event.",
+        "description": "Requires a session, and the transaction must belong to the caller. The agent has read the document and checked it against the card; this writes the `IdentityRecord` from what they confirmed. Nothing is verified until this call — an uploaded scan that is never confirmed stays a reading. Confirming twice is a conflict rather than a second record: the reading is one event. A scan taken before the party existed is attached to the party here; one already attached to a different party on the same transaction is not confirmable through this one, and answers 404.",
         "tags": [
           "identity"
         ],
@@ -3936,7 +4037,7 @@
             }
           },
           "404": {
-            "description": "No such transaction, party, or scan on that party",
+            "description": "No such transaction or party, or no such scan available to this party",
             "content": {
               "application/json": {
                 "schema": {

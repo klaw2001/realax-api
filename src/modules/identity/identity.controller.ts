@@ -10,7 +10,8 @@ import {
     UnsupportedDocumentError,
     confirmIdentityScan,
     listPartyIdentityRecords,
-    scanIdentityDocument
+    scanIdentityDocument,
+    scanIdentityDocumentForNewParty
 } from '@/modules/identity/identity.service'
 import { TransactionNotFoundError } from '@/modules/transaction/transaction.service'
 import type { ErrorResponse } from '@/schemas/common'
@@ -82,18 +83,12 @@ const uploadedFile = (req: Request): UploadedFile | null => {
 }
 
 /**
- * `POST /api/transactions/:id/parties/:partyId/identity`.
+ * The upload both scan endpoints read, validated once.
  *
- * Multipart, because the thing being sent is a photograph of a card.
+ * Returns null once it has answered for itself, so a caller stops on null
+ * rather than repeating which of the two things was wrong with the request.
  */
-export const postIdentityScan = async (req: Request, res: Response) => {
-    if (!req.agent) {
-        res.status(401).json(unauthorized)
-
-        return
-    }
-
-    const { transactionId, partyId } = params(req)
+const uploadFromRequest = (req: Request, res: Response) => {
     const file = uploadedFile(req)
 
     if (!file) {
@@ -102,7 +97,7 @@ export const postIdentityScan = async (req: Request, res: Response) => {
             message: 'Attach the document as `document`'
         } satisfies ErrorResponse)
 
-        return
+        return null
     }
 
     const documentType = identityDocumentTypeSchema.safeParse(
@@ -115,15 +110,91 @@ export const postIdentityScan = async (req: Request, res: Response) => {
             message: 'documentType must be drivers_licence or passport'
         } satisfies ErrorResponse)
 
+        return null
+    }
+
+    return {
+        bytes: file.data,
+        mimeType: file.mimetype,
+        documentType: documentType.data
+    }
+}
+
+/**
+ * `POST /api/transactions/:id/identity/scans`.
+ *
+ * Reading a document before there is anybody to attach it to — the agent is
+ * adding a party and the licence is what the form will be filled from. The scan
+ * comes back unattached and becomes that person's when it is confirmed.
+ */
+export const postUnassignedIdentityScan = async (req: Request, res: Response) => {
+    if (!req.agent) {
+        res.status(401).json(unauthorized)
+
+        return
+    }
+
+    const { transactionId } = params(req)
+    const upload = uploadFromRequest(req, res)
+
+    if (!upload) {
         return
     }
 
     try {
-        const result = await scanIdentityDocument(transactionId, req.agent.id, partyId, {
-            bytes: file.data,
-            mimeType: file.mimetype,
-            documentType: documentType.data
-        })
+        const result = await scanIdentityDocumentForNewParty(transactionId, req.agent.id, upload)
+
+        res.status(201).json(scanIdentityResponseSchema.parse(result))
+    } catch (error) {
+        if (sendNotFound(error, res)) {
+            return
+        }
+
+        if (error instanceof UnsupportedDocumentError) {
+            res.status(400).json({
+                error: 'unsupported_document',
+                message: error.message
+            } satisfies ErrorResponse)
+
+            return
+        }
+
+        if (error instanceof OcrError) {
+            logger.warn('identity scan failed', { transactionId, kind: error.kind })
+
+            res.status(502).json({
+                error: 'ocr_unavailable',
+                message: 'The document reader is unavailable right now. Try again in a moment.'
+            } satisfies ErrorResponse)
+
+            return
+        }
+
+        throw error
+    }
+}
+
+/**
+ * `POST /api/transactions/:id/parties/:partyId/identity`.
+ *
+ * Multipart, because the thing being sent is a photograph of a card.
+ */
+export const postIdentityScan = async (req: Request, res: Response) => {
+    if (!req.agent) {
+        res.status(401).json(unauthorized)
+
+        return
+    }
+
+    const { transactionId, partyId } = params(req)
+    const upload = uploadFromRequest(req, res)
+
+    if (!upload) {
+        return
+    }
+
+    try {
+        const result = await scanIdentityDocument(transactionId, req.agent.id, partyId, upload)
 
         res.status(201).json(scanIdentityResponseSchema.parse(result))
     } catch (error) {

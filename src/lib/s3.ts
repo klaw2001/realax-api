@@ -60,6 +60,7 @@ function revisionSlug(revision: string): string {
  *
  *   forms/sources/{formCode}/{revision}.pdf
  *   transactions/{txId}/ids/{partyId}/{docType}.jpg
+ *   transactions/{txId}/ids/unassigned/{scanRef}/{docType}.jpg
  *   transactions/{txId}/forms/{formCode}/filled.pdf
  *   transactions/{txId}/forms/{formCode}/signed.pdf
  *   transactions/{txId}/audit/{envelopeId}.pdf
@@ -70,6 +71,35 @@ export const keys = {
         return (
             `transactions/${segment(txId, 'txId')}` +
             `/ids/${segment(partyId, 'partyId')}` +
+            `/${segment(docType, 'docType')}.${segment(extension, 'extension')}`
+        )
+    },
+
+    /**
+     * An identity document read before there is a person to attach it to.
+     *
+     * The scan-first flow: the agent photographs the licence and the reading
+     * fills the form that creates the party, so at the moment the object is
+     * written there is no party id to key it by. `scanRef` is a value minted
+     * for this upload alone, which keeps two unassigned scans on one
+     * transaction from overwriting each other the way two scans of the same
+     * party's licence deliberately do.
+     *
+     * Still under `transactions/{txId}/ids/`, so the retention and lifecycle
+     * rules that are expressed as that prefix apply to it unchanged. The key is
+     * not rewritten when the scan is later attached to a party: it records
+     * where the object was written, and moving an object under Object Lock to
+     * make a path prettier is not a trade worth making.
+     */
+    unassignedIdentityDocument(
+        txId: string,
+        scanRef: string,
+        docType: string,
+        extension = 'jpg'
+    ): string {
+        return (
+            `transactions/${segment(txId, 'txId')}` +
+            `/ids/unassigned/${segment(scanRef, 'scanRef')}` +
             `/${segment(docType, 'docType')}.${segment(extension, 'extension')}`
         )
     },

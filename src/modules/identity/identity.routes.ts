@@ -3,7 +3,8 @@ import express from 'express'
 import {
     getIdentityRecords,
     postIdentityScan,
-    postIdentityScanConfirmation
+    postIdentityScanConfirmation,
+    postUnassignedIdentityScan
 } from '@/modules/identity/identity.controller'
 
 /**
@@ -31,6 +32,17 @@ partyIdentityRoutes.post('/', (req, res, next) => {
 // rather than an edit of anything that already exists.
 partyIdentityRoutes.post('/scans/:scanId/confirm', (req, res, next) => {
     postIdentityScanConfirmation(req, res).catch(next)
+})
+
+/**
+ * Readings taken before there is a party, mounted at
+ * `/api/transactions/:id/identity` — the same module, one level up, because a
+ * scan with nobody attached to it is not addressable through a party.
+ */
+export const transactionIdentityRoutes = express.Router({ mergeParams: true })
+
+transactionIdentityRoutes.post('/scans', (req, res, next) => {
+    postUnassignedIdentityScan(req, res).catch(next)
 })
 
 export default partyIdentityRoutes

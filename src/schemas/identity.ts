@@ -226,11 +226,49 @@ registry.registerPath({
 
 registry.registerPath({
     method: 'post',
+    path: '/api/transactions/{id}/identity/scans',
+    summary: 'Read an identity document before the party exists',
+    security: [{ sessionCookie: [] }],
+    description:
+        'Requires a session, and the transaction must belong to the caller. The scan-first flow: an agent adding a party photographs the licence, and the reading fills the form that creates them — which has to happen in this order, because the name is the thing being read and it is also the one field a party cannot be created without. The scan is held with no party attached and becomes that person’s when it is confirmed through their party. Identical to the per-party scan in every other respect, including that it verifies nobody and that an image with no document in it answers 201 with a null `scanned`.',
+    tags: ['identity'],
+    request: {
+        params: z.object({ id: z.string().openapi({ example: 'clx0a1b2c3d4e5f6g7h8i9j0k' }) }),
+        body: {
+            required: true,
+            content: {
+                'multipart/form-data': {
+                    schema: z.object({
+                        document: z.string().openapi({
+                            type: 'string',
+                            format: 'binary',
+                            description: 'JPEG or PNG, at most 5 MB.'
+                        }),
+                        documentType: identityDocumentTypeSchema
+                    })
+                }
+            }
+        }
+    },
+    responses: {
+        201: {
+            description: 'What was read — or null when nothing could be — awaiting a party and a confirmation',
+            content: { 'application/json': { schema: scanIdentityResponseSchema } }
+        },
+        400: errorContent('No file, an unsupported type, or a document type that is not accepted'),
+        401: errorContent('No session'),
+        404: errorContent('No such transaction'),
+        502: errorContent('The document reader is unavailable')
+    }
+})
+
+registry.registerPath({
+    method: 'post',
     path: '/api/transactions/{id}/parties/{partyId}/identity/scans/{scanId}/confirm',
     summary: 'Confirm a reading, creating the identity record',
     security: [{ sessionCookie: [] }],
     description:
-        'Requires a session, and the transaction must belong to the caller. The agent has read the document and checked it against the card; this writes the `IdentityRecord` from what they confirmed. Nothing is verified until this call — an uploaded scan that is never confirmed stays a reading. Confirming twice is a conflict rather than a second record: the reading is one event.',
+        'Requires a session, and the transaction must belong to the caller. The agent has read the document and checked it against the card; this writes the `IdentityRecord` from what they confirmed. Nothing is verified until this call — an uploaded scan that is never confirmed stays a reading. Confirming twice is a conflict rather than a second record: the reading is one event. A scan taken before the party existed is attached to the party here; one already attached to a different party on the same transaction is not confirmable through this one, and answers 404.',
     tags: ['identity'],
     request: {
         params: z.object({
@@ -252,7 +290,7 @@ registry.registerPath({
         },
         400: errorContent('The confirmed values are not valid'),
         401: errorContent('No session'),
-        404: errorContent('No such transaction, party, or scan on that party'),
+        404: errorContent('No such transaction or party, or no such scan available to this party'),
         409: errorContent('That scan has already been confirmed')
     }
 })
