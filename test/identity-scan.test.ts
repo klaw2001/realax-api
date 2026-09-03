@@ -2,7 +2,7 @@ import type { AnalyzeIDResponse } from '@aws-sdk/client-textract'
 import request from 'supertest'
 
 import app from '../src/app'
-import { OcrError, type OcrProvider } from '../src/integrations/ocr/provider'
+import { OcrError, type OcrProvider, type ScannedIdentity } from '../src/integrations/ocr/provider'
 import { __setTextractClient, textractProvider, toScannedIdentity } from '../src/integrations/ocr/textract.client'
 import { decryptField, isEncrypted } from '../src/lib/encryption'
 import prisma from '../src/lib/prisma'
@@ -10,7 +10,7 @@ import { disconnect as disconnectRedis } from '../src/lib/redis'
 import s3, { keys } from '../src/lib/s3'
 import { DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { hashPassword } from '../src/modules/auth/auth.service'
-import { scanIdentityDocument } from '../src/modules/identity/identity.service'
+import { confirmIdentityScan, scanIdentityDocument } from '../src/modules/identity/identity.service'
 
 // Build plan 2.5. **Textract is never called here.** An AnalyzeID call is
 // billed, is slow, and needs a real driver's licence to be worth anything —
@@ -113,6 +113,7 @@ beforeAll(async () => {
     await prisma.identityRecord.deleteMany({
         where: { partyId: { in: existing.map(p => p.partyId) } }
     })
+    await prisma.identityScan.deleteMany({ where: { transaction: { agentId } } })
     await prisma.document.deleteMany({ where: { transaction: { agentId } } })
     await prisma.transactionParty.deleteMany({ where: { transaction: { agentId } } })
     await prisma.transaction.deleteMany({ where: { agentId } })
@@ -149,6 +150,7 @@ afterAll(async () => {
         .catch(() => undefined)
 
     await prisma.identityRecord.deleteMany({ where: { partyId: personId } })
+    await prisma.identityScan.deleteMany({ where: { transactionId } })
     await prisma.document.deleteMany({ where: { transactionId } })
     await prisma.transactionParty.deleteMany({ where: { transactionId } })
     await prisma.transaction.deleteMany({ where: { agentId } })
@@ -292,8 +294,8 @@ describe('the Textract client itself', () => {
     })
 })
 
-describe('recording a scan', () => {
-    const scanned = {
+describe('reading a document, which verifies nobody', () => {
+    const scanned: ScannedIdentity = {
         documentType: 'drivers_licence' as const,
         fullName: 'MARGARET ANNE WHITFIELD',
         firstName: 'MARGARET',
@@ -312,8 +314,8 @@ describe('recording a scan', () => {
         modelVersion: '1.0'
     }
 
-    test('the document number reaches its column encrypted, and decrypts to itself', async () => {
-        await scanIdentityDocument(
+    const scan = (overrides: Partial<ScannedIdentity> = {}) =>
+        scanIdentityDocument(
             transactionId,
             agentId,
             transactionPartyId,
@@ -322,15 +324,38 @@ describe('recording a scan', () => {
                 mimeType: 'image/png',
                 documentType: 'drivers_licence'
             },
-            stubProvider(scanned)
+            stubProvider({ ...scanned, ...overrides })
         )
 
-        const row = await prisma.identityRecord.findFirstOrThrow({
-            where: { partyId: personId }
-        })
+    test('an upload creates a reading and no record at all', async () => {
+        const result = await scan()
 
-        // The failure this whole step was about: a column labelled encrypted
-        // holding a licence number in plain text.
+        expect(result.scanId).toEqual(expect.any(String))
+
+        // The point of build plan 2.5's split. Textract's AnalyzeID is trained
+        // on US documents and an Ontario licence is not one it was verified
+        // against, so a reading nobody has looked at is not a verification —
+        // and until an agent says so, there is nothing in the records table to
+        // say one happened.
+        const records = await prisma.identityRecord.count({ where: { partyId: personId } })
+
+        expect(records).toEqual(0)
+
+        // Nor a Document row: the evidence index describes verifications, and
+        // there is not one yet.
+        const documents = await prisma.document.count({ where: { transactionId, kind: 'id_scan' } })
+
+        expect(documents).toEqual(0)
+    }, 30000)
+
+    test('the document number reaches the pending row encrypted', async () => {
+        const result = await scan()
+
+        const row = await prisma.identityScan.findUniqueOrThrow({ where: { id: result.scanId } })
+
+        // The failure this step was about: a column labelled encrypted holding
+        // a licence number in plain text. It is true of the waiting row too —
+        // waiting is not a reason to hold a number in the clear.
         expect(row.documentNumber).not.toEqual(DOCUMENT_NUMBER)
         expect(row.documentNumber).not.toContain('W1234')
         expect(isEncrypted(row.documentNumber)).toEqual(true)
@@ -338,30 +363,19 @@ describe('recording a scan', () => {
     }, 30000)
 
     test('the object went to the Canadian bucket under the key convention', async () => {
-        const document = await prisma.document.findFirstOrThrow({
-            where: { transactionId, kind: 'id_scan' }
-        })
+        const result = await scan()
 
-        expect(document.s3Key).toEqual(
+        const row = await prisma.identityScan.findUniqueOrThrow({ where: { id: result.scanId } })
+
+        expect(row.s3Key).toEqual(
             keys.identityDocument(transactionId, personId, 'drivers_licence', 'png')
         )
-        expect(document.sha256).toMatch(/^[0-9a-f]{64}$/)
-    })
+        expect(row.sha256).toMatch(/^[0-9a-f]{64}$/)
+    }, 30000)
 
-    test('the reply says a number is held and never what it is', async () => {
-        const result = await scanIdentityDocument(
-            transactionId,
-            agentId,
-            transactionPartyId,
-            {
-                bytes: Buffer.from('a png would be here'),
-                mimeType: 'image/png',
-                documentType: 'drivers_licence'
-            },
-            stubProvider(scanned)
-        )
+    test('the reply says a number was read and never what it is', async () => {
+        const result = await scan()
 
-        expect(result.record.documentNumberOnFile).toEqual(true)
         expect(result.scanned.documentNumberRead).toEqual(true)
         expect(result.scanned.lowConfidence).toEqual(false)
 
@@ -370,22 +384,15 @@ describe('recording a scan', () => {
         expect(JSON.stringify(result)).not.toContain('W1234')
     }, 30000)
 
-    test('a scan that read no number is recorded as one without', async () => {
-        const result = await scanIdentityDocument(
-            transactionId,
-            agentId,
-            transactionPartyId,
-            {
-                bytes: Buffer.from('a png would be here'),
-                mimeType: 'image/png',
-                documentType: 'drivers_licence'
-            },
-            stubProvider({ ...scanned, documentNumber: null, confidence: 61 })
-        )
+    test('a scan that read no number says so, and is still a reading', async () => {
+        const result = await scan({ documentNumber: null, confidence: 61 })
 
-        expect(result.record.documentNumberOnFile).toEqual(false)
         expect(result.scanned.documentNumberRead).toEqual(false)
         expect(result.scanned.lowConfidence).toEqual(true)
+
+        const row = await prisma.identityScan.findUniqueOrThrow({ where: { id: result.scanId } })
+
+        expect(row.documentNumber).toEqual('')
     }, 30000)
 
     test('a file that is not an image is refused before anything is stored', async () => {
@@ -421,6 +428,259 @@ describe('recording a scan', () => {
     })
 })
 
+describe('confirming a reading, which is what verifies somebody', () => {
+    const scanned: ScannedIdentity = {
+        documentType: 'drivers_licence' as const,
+        fullName: 'MARGARET ANNE WHITFIELD',
+        firstName: 'MARGARET',
+        middleName: 'ANNE',
+        lastName: 'WHITFIELD',
+        dateOfBirth: '1979-04-17',
+        expiryDate: '2029-04-17',
+        dateOfIssue: '2024-04-17',
+        documentNumber: DOCUMENT_NUMBER,
+        address: '18 MAPLE GROVE AVE',
+        city: 'TORONTO',
+        province: 'ON',
+        postalCode: 'M4K 2R7',
+        confidence: 94.2,
+        provider: 'stub',
+        modelVersion: '1.0'
+    }
+
+    const readOne = async (overrides: Partial<ScannedIdentity> = {}) =>
+        (
+            await scanIdentityDocument(
+                transactionId,
+                agentId,
+                transactionPartyId,
+                {
+                    bytes: Buffer.from('a png would be here'),
+                    mimeType: 'image/png',
+                    documentType: 'drivers_licence'
+                },
+                stubProvider({ ...scanned, ...overrides })
+            )
+        ).scanId
+
+    test('the record is written from what the agent confirmed, not what was read', async () => {
+        const scanId = await readOne()
+
+        // The agent read the card and the model had the year wrong. Theirs is
+        // the value that counts — this is the whole reason a person is asked.
+        const record = await confirmIdentityScan(transactionId, agentId, transactionPartyId, scanId, {
+            documentType: 'drivers_licence',
+            expiryDate: '2031-04-17'
+        })
+
+        expect(record.expiryDate).toEqual('2031-04-17')
+        expect(record.verifiedMethod).toEqual('government_photo_id')
+        expect(record.expired).toEqual(false)
+
+        const row = await prisma.identityRecord.findUniqueOrThrow({ where: { id: record.id } })
+
+        expect(row.expiryDate?.toISOString().slice(0, 10)).toEqual('2031-04-17')
+    }, 30000)
+
+    test('a document type the agent corrects is the type recorded', async () => {
+        const scanId = await readOne()
+
+        const record = await confirmIdentityScan(transactionId, agentId, transactionPartyId, scanId, {
+            documentType: 'passport',
+            expiryDate: null
+        })
+
+        expect(record.documentType).toEqual('passport')
+        expect(record.expiryDate).toBeNull()
+    }, 30000)
+
+    test('the number moves across as ciphertext and still decrypts to itself', async () => {
+        const scanId = await readOne()
+
+        const record = await confirmIdentityScan(transactionId, agentId, transactionPartyId, scanId, {
+            documentType: 'drivers_licence',
+            expiryDate: '2029-04-17'
+        })
+
+        expect(record.documentNumberOnFile).toEqual(true)
+
+        const row = await prisma.identityRecord.findUniqueOrThrow({ where: { id: record.id } })
+
+        expect(isEncrypted(row.documentNumber)).toEqual(true)
+        expect(decryptField(row.documentNumber)).toEqual(DOCUMENT_NUMBER)
+
+        // And it is not in what the agent gets back, in any form.
+        expect(JSON.stringify(record)).not.toContain(DOCUMENT_NUMBER)
+        expect(JSON.stringify(record)).not.toContain('W1234')
+    }, 30000)
+
+    test('confirming writes the Document row, and marks the reading spent', async () => {
+        const scanId = await readOne()
+
+        const record = await confirmIdentityScan(transactionId, agentId, transactionPartyId, scanId, {
+            documentType: 'drivers_licence',
+            expiryDate: '2029-04-17'
+        })
+
+        const row = await prisma.identityScan.findUniqueOrThrow({ where: { id: scanId } })
+
+        expect(row.confirmedAt).not.toBeNull()
+        expect(row.recordId).toEqual(record.id)
+
+        const document = await prisma.document.findFirstOrThrow({
+            where: { transactionId, kind: 'id_scan', s3Key: row.s3Key }
+        })
+
+        expect(document.sha256).toEqual(row.sha256)
+    }, 30000)
+
+    test('confirming the same reading twice is a conflict, not a second record', async () => {
+        const scanId = await readOne()
+
+        await confirmIdentityScan(transactionId, agentId, transactionPartyId, scanId, {
+            documentType: 'drivers_licence',
+            expiryDate: '2029-04-17'
+        })
+
+        await expect(
+            confirmIdentityScan(transactionId, agentId, transactionPartyId, scanId, {
+                documentType: 'drivers_licence',
+                expiryDate: '2029-04-17'
+            })
+        ).rejects.toMatchObject({ name: 'ScanAlreadyConfirmedError' })
+
+        // One photograph, one verification. A retried request does not make two.
+        const confirmed = await prisma.identityRecord.count({
+            where: { partyId: personId, id: { not: undefined } }
+        })
+
+        expect(confirmed).toBeGreaterThan(0)
+    }, 30000)
+
+    test('a scan id that is not this party’s is not found', async () => {
+        await expect(
+            confirmIdentityScan(transactionId, agentId, transactionPartyId, 'not_a_scan', {
+                documentType: 'drivers_licence',
+                expiryDate: null
+            })
+        ).rejects.toMatchObject({ name: 'ScanNotFoundError' })
+    })
+
+    test('an expired document is recorded as expired rather than as a verification', async () => {
+        const scanId = await readOne()
+
+        const record = await confirmIdentityScan(transactionId, agentId, transactionPartyId, scanId, {
+            documentType: 'drivers_licence',
+            expiryDate: '2019-04-17'
+        })
+
+        // A verification on an expired document is not one, and the API says so
+        // rather than leaving the screen to work it out from a date.
+        expect(record.expired).toEqual(true)
+    }, 30000)
+})
+
+describe('the confirm endpoint', () => {
+    const scanned: ScannedIdentity = {
+        documentType: 'drivers_licence' as const,
+        fullName: 'MARGARET ANNE WHITFIELD',
+        firstName: 'MARGARET',
+        middleName: 'ANNE',
+        lastName: 'WHITFIELD',
+        dateOfBirth: '1979-04-17',
+        expiryDate: '2029-04-17',
+        dateOfIssue: '2024-04-17',
+        documentNumber: DOCUMENT_NUMBER,
+        address: '18 MAPLE GROVE AVE',
+        city: 'TORONTO',
+        province: 'ON',
+        postalCode: 'M4K 2R7',
+        confidence: 94.2,
+        provider: 'stub',
+        modelVersion: '1.0'
+    }
+
+    const readOne = async () =>
+        (
+            await scanIdentityDocument(
+                transactionId,
+                agentId,
+                transactionPartyId,
+                {
+                    bytes: Buffer.from('a png would be here'),
+                    mimeType: 'image/png',
+                    documentType: 'drivers_licence'
+                },
+                stubProvider(scanned)
+            )
+        ).scanId
+
+    test('confirms over HTTP and answers with the record, number-free', async () => {
+        const scanId = await readOne()
+        const agent = await signIn()
+
+        const response = await agent
+            .post(
+                `/api/transactions/${transactionId}/parties/${transactionPartyId}/identity/scans/${scanId}/confirm`
+            )
+            .send({ documentType: 'drivers_licence', expiryDate: '2029-04-17' })
+
+        expect(response.status).toEqual(201)
+        expect(response.body.record.documentNumberOnFile).toEqual(true)
+        expect(JSON.stringify(response.body)).not.toContain(DOCUMENT_NUMBER)
+        expect(JSON.stringify(response.body)).not.toContain('transactions/')
+    }, 30000)
+
+    test('a second confirmation of the same scan is 409', async () => {
+        const scanId = await readOne()
+        const agent = await signIn()
+
+        const path = `/api/transactions/${transactionId}/parties/${transactionPartyId}/identity/scans/${scanId}/confirm`
+        const body = { documentType: 'drivers_licence', expiryDate: '2029-04-17' }
+
+        expect((await agent.post(path).send(body)).status).toEqual(201)
+
+        const again = await agent.post(path).send(body)
+
+        expect(again.status).toEqual(409)
+        expect(again.body.error).toEqual('scan_already_confirmed')
+    }, 30000)
+
+    test('an unknown scan is 404, and no session is 401', async () => {
+        const agent = await signIn()
+
+        const notFound = await agent
+            .post(
+                `/api/transactions/${transactionId}/parties/${transactionPartyId}/identity/scans/not_a_scan/confirm`
+            )
+            .send({ documentType: 'drivers_licence', expiryDate: null })
+
+        expect(notFound.status).toEqual(404)
+        expect(notFound.body.error).toEqual('scan_not_found')
+
+        const unauthenticated = await request(app)
+            .post(
+                `/api/transactions/${transactionId}/parties/${transactionPartyId}/identity/scans/whatever/confirm`
+            )
+            .send({ documentType: 'drivers_licence', expiryDate: null })
+
+        expect(unauthenticated.status).toEqual(401)
+    }, 30000)
+
+    test('a body without a confirmed document type is refused', async () => {
+        const scanId = await readOne()
+        const agent = await signIn()
+
+        const response = await agent
+            .post(
+                `/api/transactions/${transactionId}/parties/${transactionPartyId}/identity/scans/${scanId}/confirm`
+            )
+            .send({ expiryDate: '2029-04-17' })
+
+        expect(response.status).toEqual(400)
+    }, 30000)
+})
+
 describe('reading the records back', () => {
     test('the endpoint lists them without a document number anywhere in the body', async () => {
         const agent = await signIn()
@@ -430,14 +690,16 @@ describe('reading the records back', () => {
         )
 
         expect(response.status).toEqual(200)
-        // Three scans were recorded above and all three are held: identity
-        // records accumulate rather than replace, because each one is evidence
-        // that a check happened on a particular day.
         const records = response.body.records as { documentNumberOnFile: boolean; expired: boolean }[]
 
         expect(records.length).toBeGreaterThan(0)
         expect(records.some(record => record.documentNumberOnFile)).toEqual(true)
-        expect(records.every(record => record.expired === false)).toEqual(true)
+
+        // Records accumulate rather than replace: each one is evidence that a
+        // check happened on a particular day, and the expired one confirmed
+        // above is still listed. Hiding it would hide that it was relied on.
+        expect(records.some(record => record.expired)).toEqual(true)
+        expect(records.some(record => !record.expired)).toEqual(true)
 
         expect(JSON.stringify(response.body)).not.toContain(DOCUMENT_NUMBER)
         expect(JSON.stringify(response.body)).not.toContain('W1234')

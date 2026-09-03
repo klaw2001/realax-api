@@ -2129,15 +2129,56 @@
       "ScanIdentityResponse": {
         "type": "object",
         "properties": {
+          "scanId": {
+            "type": "string",
+            "description": "Identifies this reading while it awaits confirmation. Confirming it is what creates the record.",
+            "example": "clx4s5c6a7n8i9d0e1f2g3h4i"
+          },
           "scanned": {
             "$ref": "#/components/schemas/ScannedIdentity"
+          }
+        },
+        "required": [
+          "scanId",
+          "scanned"
+        ]
+      },
+      "ConfirmIdentityScanRequest": {
+        "type": "object",
+        "properties": {
+          "documentType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IdentityDocumentType"
+              },
+              {
+                "description": "As confirmed by the agent, which may not be what was uploaded or read."
+              }
+            ]
           },
+          "expiryDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "description": "As confirmed by the agent. Null when the document has no expiry or none could be read and the agent left it blank.",
+            "example": "2029-04-17"
+          }
+        },
+        "required": [
+          "documentType",
+          "expiryDate"
+        ]
+      },
+      "ConfirmIdentityScanResponse": {
+        "type": "object",
+        "properties": {
           "record": {
             "$ref": "#/components/schemas/IdentityRecord"
           }
         },
         "required": [
-          "scanned",
           "record"
         ]
       }
@@ -3638,7 +3679,7 @@
             "sessionCookie": []
           }
         ],
-        "description": "Requires a session, and the transaction must belong to the caller. Multipart: `document` is the image and `documentType` says what it is. The file is stored in the Canadian bucket under SSE-KMS first and read from there, so the record is provably about the stored object. The document number is encrypted before it reaches a column and is never returned.",
+        "description": "Requires a session, and the transaction must belong to the caller. Multipart: `document` is the image and `documentType` says what it is. The file is stored in the Canadian bucket under SSE-KMS first and read from there, so the record is provably about the stored object. The document number is encrypted before it reaches a column and is never returned. **This does not verify anybody:** it answers with what was read and a `scanId`, and the `IdentityRecord` is created only when the agent confirms that reading.",
         "tags": [
           "identity"
         ],
@@ -3688,7 +3729,7 @@
         },
         "responses": {
           "201": {
-            "description": "What was read, and the record it created",
+            "description": "What was read, awaiting the agent’s confirmation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3803,6 +3844,111 @@
           },
           "404": {
             "description": "No such transaction, or no such party on it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{id}/parties/{partyId}/identity/scans/{scanId}/confirm": {
+      "post": {
+        "summary": "Confirm a reading, creating the identity record",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session, and the transaction must belong to the caller. The agent has read the document and checked it against the card; this writes the `IdentityRecord` from what they confirmed. Nothing is verified until this call — an uploaded scan that is never confirmed stays a reading. Confirming twice is a conflict rather than a second record: the reading is one event.",
+        "tags": [
+          "identity"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx9z8y7x6w5v4u3t2s1r0q9p"
+            },
+            "required": true,
+            "name": "partyId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "example": "clx4s5c6a7n8i9d0e1f2g3h4i"
+            },
+            "required": true,
+            "name": "scanId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmIdentityScanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The identity record the agent’s confirmation created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmIdentityScanResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The confirmed values are not valid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction, party, or scan on that party",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "That scan has already been confirmed",
             "content": {
               "application/json": {
                 "schema": {

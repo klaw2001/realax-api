@@ -29,9 +29,12 @@ export type IdentityDocumentType = z.infer<typeof identityDocumentTypeSchema>
 /**
  * What a scan read, for the agent to confirm.
  *
- * Returned once, in the reply to the upload, and never stored in this shape —
- * the agent corrects it and the corrected values are what become a `Party` and
- * an `IdentityRecord`. OCR is a head start on typing, not an authority.
+ * A proposal, not a record. It is returned once, in the reply to the upload,
+ * and nothing in it is believed until an agent confirms it: the corrected
+ * values are what become a `Party` and an `IdentityRecord`. OCR is a head start
+ * on typing, not an authority — and AnalyzeID is trained on US documents, so an
+ * Ontario licence is read by a model that was never verified against one. Every
+ * field here can be wrong or absent, including the ones that look certain.
  */
 export const scannedIdentitySchema = registry.register(
     'ScannedIdentity',
@@ -110,15 +113,61 @@ export const identityRecordListResponseSchema = registry.register(
 
 export type IdentityRecordListResponse = z.infer<typeof identityRecordListResponseSchema>
 
+/**
+ * The reply to an upload: an id, and what was read under it.
+ *
+ * Deliberately **not** an `IdentityRecord`. Uploading reads a document; it does
+ * not verify anybody. The record appears when the agent confirms the reading,
+ * which is what `POST .../identity/scans/{scanId}/confirm` is for.
+ */
 export const scanIdentityResponseSchema = registry.register(
     'ScanIdentityResponse',
     z.object({
-        scanned: scannedIdentitySchema,
-        record: identityRecordSchema
+        scanId: z.string().openapi({
+            description:
+                'Identifies this reading while it awaits confirmation. Confirming it is what creates the record.',
+            example: 'clx4s5c6a7n8i9d0e1f2g3h4i'
+        }),
+        scanned: scannedIdentitySchema
     })
 )
 
 export type ScanIdentityResponse = z.infer<typeof scanIdentityResponseSchema>
+
+/**
+ * What the agent confirms.
+ *
+ * Only the two fields that live on the record and that a person can check
+ * against the card in their hand. The name and address corrections go to the
+ * `Party` through its own PATCH, because that is where they are used — the
+ * OREA name blanks are filled from the party, not from a scan.
+ *
+ * The document number is deliberately not here, in either direction. It was
+ * encrypted when it was read and it stays that way; there is no request in this
+ * API that carries one, so there is no request that can log one.
+ */
+export const confirmIdentityScanRequestSchema = registry.register(
+    'ConfirmIdentityScanRequest',
+    z.object({
+        documentType: identityDocumentTypeSchema.openapi({
+            description: 'As confirmed by the agent, which may not be what was uploaded or read.'
+        }),
+        expiryDate: z.iso.date().nullable().openapi({
+            description:
+                'As confirmed by the agent. Null when the document has no expiry or none could be read and the agent left it blank.',
+            example: '2029-04-17'
+        })
+    })
+)
+
+export type ConfirmIdentityScanRequest = z.infer<typeof confirmIdentityScanRequestSchema>
+
+export const confirmIdentityScanResponseSchema = registry.register(
+    'ConfirmIdentityScanResponse',
+    z.object({ record: identityRecordSchema })
+)
+
+export type ConfirmIdentityScanResponse = z.infer<typeof confirmIdentityScanResponseSchema>
 
 registry.registerPath({
     method: 'post',
@@ -126,7 +175,7 @@ registry.registerPath({
     summary: 'Upload and read a party’s identity document',
     security: [{ sessionCookie: [] }],
     description:
-        'Requires a session, and the transaction must belong to the caller. Multipart: `document` is the image and `documentType` says what it is. The file is stored in the Canadian bucket under SSE-KMS first and read from there, so the record is provably about the stored object. The document number is encrypted before it reaches a column and is never returned.',
+        'Requires a session, and the transaction must belong to the caller. Multipart: `document` is the image and `documentType` says what it is. The file is stored in the Canadian bucket under SSE-KMS first and read from there, so the record is provably about the stored object. The document number is encrypted before it reaches a column and is never returned. **This does not verify anybody:** it answers with what was read and a `scanId`, and the `IdentityRecord` is created only when the agent confirms that reading.',
     tags: ['identity'],
     request: {
         params: z.object({
@@ -151,7 +200,7 @@ registry.registerPath({
     },
     responses: {
         201: {
-            description: 'What was read, and the record it created',
+            description: 'What was read, awaiting the agent’s confirmation',
             content: { 'application/json': { schema: scanIdentityResponseSchema } }
         },
         400: errorContent('No file, an unsupported type, or a document type that is not accepted'),
@@ -159,6 +208,39 @@ registry.registerPath({
         404: errorContent('No such transaction, or no such party on it'),
         422: errorContent('The image was stored but no identity document could be read from it'),
         502: errorContent('The document reader is unavailable')
+    }
+})
+
+registry.registerPath({
+    method: 'post',
+    path: '/api/transactions/{id}/parties/{partyId}/identity/scans/{scanId}/confirm',
+    summary: 'Confirm a reading, creating the identity record',
+    security: [{ sessionCookie: [] }],
+    description:
+        'Requires a session, and the transaction must belong to the caller. The agent has read the document and checked it against the card; this writes the `IdentityRecord` from what they confirmed. Nothing is verified until this call — an uploaded scan that is never confirmed stays a reading. Confirming twice is a conflict rather than a second record: the reading is one event.',
+    tags: ['identity'],
+    request: {
+        params: z.object({
+            id: z.string().openapi({ example: 'clx0a1b2c3d4e5f6g7h8i9j0k' }),
+            partyId: z.string().openapi({ example: 'clx9z8y7x6w5v4u3t2s1r0q9p' }),
+            scanId: z.string().openapi({ example: 'clx4s5c6a7n8i9d0e1f2g3h4i' })
+        }),
+        body: {
+            required: true,
+            content: {
+                'application/json': { schema: confirmIdentityScanRequestSchema }
+            }
+        }
+    },
+    responses: {
+        201: {
+            description: 'The identity record the agent’s confirmation created',
+            content: { 'application/json': { schema: confirmIdentityScanResponseSchema } }
+        },
+        400: errorContent('The confirmed values are not valid'),
+        401: errorContent('No session'),
+        404: errorContent('No such transaction, party, or scan on that party'),
+        409: errorContent('That scan has already been confirmed')
     }
 })
 

@@ -5,13 +5,18 @@ import { OcrError } from '@/integrations/ocr/provider'
 import logger from '@/lib/logger'
 import {
     PartyNotFoundError,
+    ScanAlreadyConfirmedError,
+    ScanNotFoundError,
     UnsupportedDocumentError,
+    confirmIdentityScan,
     listPartyIdentityRecords,
     scanIdentityDocument
 } from '@/modules/identity/identity.service'
 import { TransactionNotFoundError } from '@/modules/transaction/transaction.service'
 import type { ErrorResponse } from '@/schemas/common'
 import {
+    confirmIdentityScanRequestSchema,
+    confirmIdentityScanResponseSchema,
     identityDocumentTypeSchema,
     identityRecordListResponseSchema,
     scanIdentityResponseSchema
@@ -43,6 +48,15 @@ const sendNotFound = (error: unknown, res: Response): boolean => {
         res.status(404).json({
             error: 'party_not_found',
             message: 'No such party on this transaction'
+        } satisfies ErrorResponse)
+
+        return true
+    }
+
+    if (error instanceof ScanNotFoundError) {
+        res.status(404).json({
+            error: 'scan_not_found',
+            message: 'No such scan for this party'
         } satisfies ErrorResponse)
 
         return true
@@ -145,6 +159,60 @@ export const postIdentityScan = async (req: Request, res: Response) => {
             res.status(502).json({
                 error: 'ocr_unavailable',
                 message: 'The document reader is unavailable right now. Try again in a moment.'
+            } satisfies ErrorResponse)
+
+            return
+        }
+
+        throw error
+    }
+}
+
+/**
+ * `POST /api/transactions/:id/parties/:partyId/identity/scans/:scanId/confirm`.
+ *
+ * The agent has read what came back, corrected it against the card, and is
+ * saying so. This is the call that creates the record; the upload before it
+ * created nothing but a reading.
+ */
+export const postIdentityScanConfirmation = async (req: Request, res: Response) => {
+    if (!req.agent) {
+        res.status(401).json(unauthorized)
+
+        return
+    }
+
+    const { transactionId, partyId } = params(req)
+    const confirmed = confirmIdentityScanRequestSchema.safeParse(req.body)
+
+    if (!confirmed.success) {
+        res.status(400).json({
+            error: 'invalid_request',
+            message: 'Confirm a document type, and an expiry date or null'
+        } satisfies ErrorResponse)
+
+        return
+    }
+
+    try {
+        const record = await confirmIdentityScan(
+            transactionId,
+            req.agent.id,
+            partyId,
+            req.params.scanId ?? '',
+            confirmed.data
+        )
+
+        res.status(201).json(confirmIdentityScanResponseSchema.parse({ record }))
+    } catch (error) {
+        if (sendNotFound(error, res)) {
+            return
+        }
+
+        if (error instanceof ScanAlreadyConfirmedError) {
+            res.status(409).json({
+                error: 'scan_already_confirmed',
+                message: 'That scan has already been confirmed'
             } satisfies ErrorResponse)
 
             return

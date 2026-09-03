@@ -18,14 +18,25 @@ import type {
  * Identity documents (build plan 2.5).
  *
  * The flow, in this order and for a reason: store the image, read the stored
- * image, write the record. Storing first means the `IdentityRecord` is provably
- * about the object sitting in the bucket under Object Lock, rather than about
- * some bytes that were in memory when a request came in. A FINTRAC record whose
- * document cannot be produced later is not a record.
+ * image, hold the reading, and write the record only when an agent has
+ * confirmed it. Storing first means the record is provably about the object
+ * sitting in the bucket under Object Lock, rather than about some bytes that
+ * were in memory when a request came in. A FINTRAC record whose document cannot
+ * be produced later is not a record.
+ *
+ * **Reading a document does not verify anybody.** Textract's AnalyzeID is
+ * trained on US identity documents, and an Ontario driver's licence is not one
+ * it was verified against — a field can be misread, transposed, or absent while
+ * the model reports it confidently. So a scan produces an `IdentityScan`, which
+ * is a proposal, and `confirmIdentityScan` turns one into an `IdentityRecord`
+ * once a person has checked it against the card. A scan nobody confirms stays a
+ * scan; it never becomes a verification that did not happen.
  *
  * The document number is encrypted the moment it exists and is never returned,
- * never logged, and never put in an error message. Everything in this module is
- * arranged so that reaching it takes deliberate effort rather than a `SELECT *`.
+ * never logged, and never put in an error message. It moves from the scan row
+ * to the record row as ciphertext and is not decrypted on the way. Everything in
+ * this module is arranged so that reaching it takes deliberate effort rather
+ * than a `SELECT *`.
  */
 
 /** Below this, the agent should read every field rather than skim. */
@@ -50,6 +61,27 @@ export class PartyNotFoundError extends Error {
     constructor() {
         super('No such party on this transaction')
         this.name = 'PartyNotFoundError'
+    }
+}
+
+export class ScanNotFoundError extends Error {
+    constructor() {
+        super('No such scan for this party')
+        this.name = 'ScanNotFoundError'
+    }
+}
+
+/**
+ * A scan that has already become a record.
+ *
+ * A conflict rather than a second record: one reading of one document is one
+ * event, and confirming it twice — a double-submitted form, a retried request —
+ * must not produce two verifications of the same photograph.
+ */
+export class ScanAlreadyConfirmedError extends Error {
+    constructor() {
+        super('That scan has already been confirmed')
+        this.name = 'ScanAlreadyConfirmedError'
     }
 }
 
@@ -131,11 +163,17 @@ export interface ScanUpload {
 }
 
 /**
- * Store, read, and record one identity document.
+ * Store one identity document and read it. Nothing is verified here.
+ *
+ * The result is an `IdentityScan` — a proposal awaiting a person. The image is
+ * stored before it is read, so what comes back describes the object under
+ * Object Lock rather than bytes that passed through this process, and the row
+ * carries the encrypted number and the file's digest so that confirming needs
+ * neither a second Textract call nor a fetch back out of S3.
  *
  * `provider` is a parameter with a default rather than a module-level import so
  * the tests can pass a stub. Nothing calls Textract in the suite: an OCR call
- * against a real driver's licence is billed, slow, and needs a real driver's
+ * against a real driver’s licence is billed, slow, and needs a real driver’s
  * licence, none of which belongs in `npm test`.
  */
 export const scanIdentityDocument = async (
@@ -151,9 +189,10 @@ export const scanIdentityDocument = async (
         throw new UnsupportedDocumentError('An identity document must be a JPEG or a PNG')
     }
 
-    // Stored before it is read, so the record that results is about the object
-    // under Object Lock rather than about bytes that passed through here. The
-    // key convention is the one in `lib/s3.ts`; nothing builds a key by hand.
+    // Stored before it is read, so the record that eventually results is about
+    // the object under Object Lock rather than about bytes that passed through
+    // here. The key convention is the one in `lib/s3.ts`; nothing builds a key
+    // by hand.
     const s3Key = keys.identityDocument(
         transactionId,
         personId,
@@ -172,57 +211,153 @@ export const scanIdentityDocument = async (
     // variable beyond this expression. An empty string when nothing was read:
     // the column is not nullable, and "" is distinguishable from a ciphertext
     // in a way that a plaintext placeholder would not be.
+    //
+    // It is written here and copied to the record as ciphertext at confirm
+    // time. Nothing between the two calls decrypts it.
     const documentNumber =
         scan.documentNumber === null ? '' : encryptField(scan.documentNumber)
 
-    const record = await prisma.identityRecord.create({
+    const pending = await prisma.identityScan.create({
         data: {
+            transactionId,
             partyId: personId,
             documentType: upload.documentType,
             documentNumber,
             expiryDate: scan.expiryDate === null ? null : new Date(`${scan.expiryDate}T00:00:00.000Z`),
-            verifiedAt: new Date(),
-
-            // The FINTRAC method this satisfies. Recorded as what was done
-            // rather than left implicit — the method is the thing an examiner
-            // asks about, not the vendor.
-            verifiedMethod: 'government_photo_id',
-            s3Key
-        },
-        select: {
-            id: true,
-            partyId: true,
-            documentType: true,
-            documentNumber: true,
-            expiryDate: true,
-            verifiedAt: true,
-            verifiedMethod: true
-        }
-    })
-
-    await prisma.document.create({
-        data: {
-            transactionId,
-            kind: 'id_scan',
             s3Key,
-            sha256: createHash('sha256').update(upload.bytes).digest('hex')
-        }
+
+            // Of the bytes as uploaded, so the `Document` row written at
+            // confirm time describes the file rather than a re-read of it.
+            sha256: createHash('sha256').update(upload.bytes).digest('hex'),
+            confidence: scan.confidence
+        },
+        select: { id: true }
     })
 
-    // Ids and outcomes. Never the party's name, never the number, never the
+    // Ids and outcomes. Never the party’s name, never the number, never the
     // key — CLAUDE.md rule 6 names all three.
-    logger.info('identity document recorded', {
+    logger.info('identity document read, awaiting confirmation', {
         transactionId,
-        recordId: record.id,
+        scanId: pending.id,
         documentType: upload.documentType,
         numberRead: scan.documentNumber !== null,
         confidence: Math.round(scan.confidence)
     })
 
     return {
-        scanned: toScannedResponse(scan),
-        record: toIdentityRecord(record)
+        scanId: pending.id,
+        scanned: toScannedResponse(scan)
     }
+}
+
+/** What the agent checked against the card, and is willing to stand behind. */
+export interface ConfirmedIdentity {
+    documentType: IdentityDocumentType
+
+    /** `YYYY-MM-DD`, or null for a document with no expiry the agent could give. */
+    expiryDate: string | null
+}
+
+/**
+ * Turn a reading into a record, on an agent’s say-so.
+ *
+ * This is the only place an `IdentityRecord` is created. The values written are
+ * the agent’s, not the model’s — the two differ exactly when OCR got something
+ * wrong, which is the case this whole split exists for. What is carried over
+ * unchanged is the encrypted number and the object it was read from: the agent
+ * confirms what the document says, not which file it was.
+ *
+ * One database transaction, because a record without its `Document` row is a
+ * verification whose evidence is not indexed, and a scan marked confirmed with
+ * no record is a scan that can never be confirmed.
+ */
+export const confirmIdentityScan = async (
+    transactionId: string,
+    agentId: string,
+    transactionPartyId: string,
+    scanId: string,
+    confirmed: ConfirmedIdentity
+): Promise<IdentityRecord> => {
+    const personId = await ownedParty(transactionId, agentId, transactionPartyId)
+
+    // Scoped to the transaction *and* the person: a scan id from another deal
+    // is not found here rather than confirmable from the wrong screen.
+    const pending = await prisma.identityScan.findFirst({
+        where: { id: scanId, transactionId, partyId: personId },
+        select: { id: true, documentNumber: true, s3Key: true, sha256: true, confirmedAt: true }
+    })
+
+    if (!pending) {
+        throw new ScanNotFoundError()
+    }
+
+    if (pending.confirmedAt !== null) {
+        throw new ScanAlreadyConfirmedError()
+    }
+
+    const verifiedAt = new Date()
+
+    const record = await prisma.$transaction(async tx => {
+        const created = await tx.identityRecord.create({
+            data: {
+                partyId: personId,
+                documentType: confirmed.documentType,
+
+                // Ciphertext, moved rather than re-encrypted. Decrypting it to
+                // write it again would put a licence number in a variable for
+                // no reason at all.
+                documentNumber: pending.documentNumber,
+
+                expiryDate:
+                    confirmed.expiryDate === null
+                        ? null
+                        : new Date(`${confirmed.expiryDate}T00:00:00.000Z`),
+                verifiedAt,
+
+                // The FINTRAC method this satisfies. Recorded as what was done
+                // rather than left implicit — the method is the thing an
+                // examiner asks about, not the vendor.
+                verifiedMethod: 'government_photo_id',
+                s3Key: pending.s3Key
+            },
+            select: {
+                id: true,
+                partyId: true,
+                documentType: true,
+                documentNumber: true,
+                expiryDate: true,
+                verifiedAt: true,
+                verifiedMethod: true
+            }
+        })
+
+        await tx.document.create({
+            data: {
+                transactionId,
+                kind: 'id_scan',
+                s3Key: pending.s3Key,
+                sha256: pending.sha256
+            }
+        })
+
+        // Marked with what it became, so an unconfirmed row is visibly
+        // unconfirmed and this one cannot be confirmed a second time.
+        await tx.identityScan.update({
+            where: { id: pending.id },
+            data: { confirmedAt: verifiedAt, recordId: created.id }
+        })
+
+        return created
+    })
+
+    logger.info('identity document confirmed', {
+        transactionId,
+        scanId: pending.id,
+        recordId: record.id,
+        documentType: confirmed.documentType
+    })
+
+    return toIdentityRecord(record)
 }
 
 /**

@@ -597,7 +597,8 @@ Shipped:
 - `src/integrations/ocr/textract.client.ts` — the one implementation.
 - `src/modules/identity/` — service, controller, routes, mounted at
   `/api/transactions/:id/parties/:partyId/identity` below the session
-  guard. `POST` scans, `GET` lists a party's records.
+  guard. `POST` reads a document, `POST .../scans/:scanId/confirm` turns a
+  reading into a record, `GET` lists a party's records.
 - `test/identity-scan.test.ts`. The suite stubs the provider; nothing in
   `npm test` calls Textract.
 
@@ -608,9 +609,24 @@ exists and is never returned, logged, or put in an error message — the
 API answers `documentNumberOnFile`, not the number. Records key on the
 *person*, not the transaction row, which is what makes the reuse work.
 
-**Still open:** the upload UI. `realax-app/src/hooks/useIdentity.ts` reads
-records and `TransactionOverview` shows verified/expired counts; there is
-no scan-and-confirm screen yet.
+**Reading is not verifying — the two are separate calls.** `POST` stores the
+image, reads it, and writes an `IdentityScan`: a proposal, holding the
+encrypted number and the file's digest, that has verified nobody. The
+`IdentityRecord` is created only by the confirm call, from the values the
+agent confirmed rather than the ones the model returned. Nothing is
+auto-accepted, and a scan nobody confirms stays a scan rather than becoming
+a verification that never happened.
+
+The reason is the vendor: AnalyzeID is trained on US identity documents and
+an Ontario licence is not one it was verified against, so any field can be
+wrong or absent while the model reports it confidently. A pending scan is a
+table rather than a Redis key because `lib/redis.ts` is a cache whose
+contents must stay reproducible from Postgres, and reproducing a reading
+means paying for a second Textract call.
+
+Name and address corrections go to the `Party` through its own PATCH, which
+is where the OREA form reads them from. Confirming twice is a 409: one
+photograph is one verification.
 
 ---
 

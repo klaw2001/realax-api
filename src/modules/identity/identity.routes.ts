@@ -1,6 +1,10 @@
 import express from 'express'
 
-import { getIdentityRecords, postIdentityScan } from '@/modules/identity/identity.controller'
+import {
+    getIdentityRecords,
+    postIdentityScan,
+    postIdentityScanConfirmation
+} from '@/modules/identity/identity.controller'
 
 /**
  * A party's identity documents, mounted at
@@ -20,6 +24,13 @@ partyIdentityRoutes.get('/', (req, res, next) => {
 
 partyIdentityRoutes.post('/', (req, res, next) => {
     postIdentityScan(req, res).catch(next)
+})
+
+// Confirming is a POST to the reading rather than a PUT on the record: it
+// creates the record, and it is the agent's assertion about one photograph
+// rather than an edit of anything that already exists.
+partyIdentityRoutes.post('/scans/:scanId/confirm', (req, res, next) => {
+    postIdentityScanConfirmation(req, res).catch(next)
 })
 
 export default partyIdentityRoutes

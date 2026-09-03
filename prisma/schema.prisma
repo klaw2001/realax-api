@@ -87,6 +87,7 @@ model Party {
   // another timezone is still the date printed on the card.
   dateOfBirth     DateTime?          @db.Date
   identityRecords IdentityRecord[]
+  identityScans   IdentityScan[]
   roles           TransactionParty[]
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
@@ -159,6 +160,7 @@ model Transaction {
   forms      TransactionForm[]
   envelopes  SigningEnvelope[]
   documents  Document[]
+  identityScans IdentityScan[]
   createdAt  DateTime            @default(now())
   updatedAt  DateTime            @updatedAt
 }
@@ -385,4 +387,45 @@ model TransactionEntries {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+/// A document that has been stored and read, but that no agent has confirmed
+/// yet (build plan 2.5).
+///
+/// The reading is not the record. Textract's AnalyzeID is trained on US
+/// documents and an Ontario licence is not a document it is verified against,
+/// so every field it returns is a proposal. This row is where a proposal waits
+/// while the agent checks it against the card in their hand; confirming turns
+/// it into an `IdentityRecord`, and a scan nobody confirms simply stays here
+/// unconfirmed rather than becoming a verification that never happened.
+///
+/// It holds the encrypted document number between the two requests. That is the
+/// reason this is a table and not a Redis key: `lib/redis.ts` is a cache whose
+/// contents must always be reproducible from Postgres, and re-reading a licence
+/// to reproduce a value is a second billed Textract call. Keeping it here also
+/// means an unconfirmed scan is answerable to an examiner — the object exists in
+/// the bucket either way, and this says why.
+model IdentityScan {
+  id             String      @id @default(cuid())
+  transactionId  String
+  transaction    Transaction @relation(fields: [transactionId], references: [id])
+  /// The person, not the party-on-a-transaction row — same key as IdentityRecord.
+  partyId        String
+  party          Party       @relation(fields: [partyId], references: [id])
+  /// What the agent declared at upload. The confirmed type lives on the record.
+  documentType   String
+  /// Encrypted at rest, exactly as on IdentityRecord. "" when none was read.
+  documentNumber String
+  expiryDate     DateTime?
+  s3Key          String
+  /// Of the uploaded bytes, so confirming can write the Document row without
+  /// fetching the object back out of S3.
+  sha256         String
+  confidence     Float
+  confirmedAt    DateTime?
+  /// The IdentityRecord this became, once it became one.
+  recordId       String?
+  createdAt      DateTime    @default(now())
+
+  @@index([transactionId, partyId])
 }
