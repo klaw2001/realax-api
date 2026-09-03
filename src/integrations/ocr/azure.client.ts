@@ -245,6 +245,24 @@ export const toScannedIdentity = (
         }
     }
 
+    // Names only, never values — rule 6, and a licence number in a log line is
+    // exactly what it forbids. This is here because the keys inside `fields`
+    // are the model's own schema for `prebuilt-idDocument`, they are untyped,
+    // and `FIELD` above is written from Azure's documentation rather than from
+    // a reading. One real card produces this line, and it says immediately
+    // whether the mapping was right: `matched` should hold every name the
+    // product uses, and anything the model returned under a different spelling
+    // shows up in `ignored`.
+    //
+    // Worth keeping after the mapping is confirmed. A prebuilt model is
+    // versioned by Azure, not by us, and a renamed field would otherwise
+    // surface as a form that quietly stopped filling one blank.
+    logger.info('azure id-document field names', {
+        matched: [...wanted.keys()],
+        ignored: Object.keys(raw).filter(name => !(name in FIELD) && name !== 'Address'),
+        addressPresent: raw.Address !== undefined
+    })
+
     const firstName = asText(wanted.get('firstName'))
     const middleName = asText(wanted.get('middleName'))
     const lastName = asText(wanted.get('lastName'))

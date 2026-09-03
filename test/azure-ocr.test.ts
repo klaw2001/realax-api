@@ -5,6 +5,7 @@ import type {
 
 import { OcrError } from '../src/integrations/ocr/provider'
 import { toScannedIdentity } from '../src/integrations/ocr/azure.client'
+import logger from '../src/lib/logger'
 
 // UX plan item 10 — the free development reader.
 //
@@ -178,6 +179,34 @@ describe('an Azure response becomes a scanned identity', () => {
                 'provider'
             ].sort()
         )
+    })
+
+    test('the field names are reported, and the values are not', () => {
+        // The mapping cannot be confirmed without a real reading, so the first
+        // one has to say what it saw. Names only: a licence number in a log
+        // line is what rule 6 exists to prevent.
+        const logged: unknown[] = []
+        const spy = jest.spyOn(logger, 'info').mockImplementation(((...args: unknown[]) => {
+            logged.push(args)
+
+            return logger
+        }) as never)
+
+        const chatty = analysis({
+            FirstName: field({ valueString: 'MARGARET', confidence: 0.99 }),
+            EyeColor: field({ valueString: 'BRO', confidence: 0.99 })
+        })
+
+        toScannedIdentity(chatty, 'drivers_licence')
+
+        const line = JSON.stringify(logged)
+
+        expect(line).toContain('firstName')
+        expect(line).toContain('EyeColor')
+        expect(line).not.toContain('MARGARET')
+        expect(line).not.toContain('BRO')
+
+        spy.mockRestore()
     })
 
     test('a field the model named but read nothing into is not a field', () => {
