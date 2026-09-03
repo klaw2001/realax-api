@@ -647,6 +647,15 @@ one says whether it was read or missed; the raw reading renders under the
 form in development. Nothing on that screen can show a document number,
 because no response carries one.
 
+**Two ways in, and scan-first is the main one.** `POST
+/api/transactions/:id/identity/scans` reads a document before the party
+exists, holding it with no `partyId`; the Add party form fills itself from
+the reading and confirming on submit is what attaches it. That order is
+forced rather than chosen — the name is what is being read, and it is the one
+field a party cannot be created without. The per-party scan on the row stays,
+for somebody already on the transaction. A scan attached to one party is not
+confirmable through another.
+
 ---
 
 # Phase 3 — E-sign, testing, pilot
