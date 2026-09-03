@@ -422,6 +422,17 @@ model IdentityScan {
   /// fetching the object back out of S3.
   sha256         String
   confidence     Float
+  /// How many fields the model actually returned, across the whole reading.
+  ///
+  /// Zero means the agent is typing the document out by hand — either the
+  /// reader found no document in the image at all, or it found one and could
+  /// read nothing off it. That is what makes a fully manual record
+  /// distinguishable from an OCR-assisted one at confirm time.
+  ///
+  /// Nullable for the rows written before this column existed: back then a scan
+  /// row only came into being when a reading had succeeded, so null means
+  /// "something was read", not "nothing was".
+  fieldsRead     Int?
   confirmedAt    DateTime?
   /// The IdentityRecord this became, once it became one.
   recordId       String?

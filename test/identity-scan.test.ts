@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 import type { AnalyzeIDResponse } from '@aws-sdk/client-textract'
 import request from 'supertest'
 
@@ -376,8 +379,11 @@ describe('reading a document, which verifies nobody', () => {
     test('the reply says a number was read and never what it is', async () => {
         const result = await scan()
 
-        expect(result.scanned.documentNumberRead).toEqual(true)
-        expect(result.scanned.lowConfidence).toEqual(false)
+        // A reading that succeeded is not null — the null is reserved for an
+        // image the reader found no document in.
+        expect(result.scanned).not.toBeNull()
+        expect(result.scanned?.documentNumberRead).toEqual(true)
+        expect(result.scanned?.lowConfidence).toEqual(false)
 
         // Not masked, not truncated, not last-four. Absent.
         expect(JSON.stringify(result)).not.toContain(DOCUMENT_NUMBER)
@@ -387,8 +393,9 @@ describe('reading a document, which verifies nobody', () => {
     test('a scan that read no number says so, and is still a reading', async () => {
         const result = await scan({ documentNumber: null, confidence: 61 })
 
-        expect(result.scanned.documentNumberRead).toEqual(false)
-        expect(result.scanned.lowConfidence).toEqual(true)
+        expect(result.scanned).not.toBeNull()
+        expect(result.scanned?.documentNumberRead).toEqual(false)
+        expect(result.scanned?.lowConfidence).toEqual(true)
 
         const row = await prisma.identityScan.findUniqueOrThrow({ where: { id: result.scanId } })
 
@@ -474,8 +481,10 @@ describe('confirming a reading, which is what verifies somebody', () => {
         })
 
         expect(record.expiryDate).toEqual('2031-04-17')
-        expect(record.verifiedMethod).toEqual('government_photo_id')
         expect(record.expired).toEqual(false)
+
+        // A reading assisted this one, however much of it the agent corrected.
+        expect(record.verifiedMethod).toEqual('government_photo_id')
 
         const row = await prisma.identityRecord.findUniqueOrThrow({ where: { id: record.id } })
 
@@ -578,6 +587,164 @@ describe('confirming a reading, which is what verifies somebody', () => {
         // rather than leaving the screen to work it out from a date.
         expect(record.expired).toEqual(true)
     }, 30000)
+})
+
+describe('an image nothing could be read from', () => {
+    /** A provider that works, finds no document, and says so. */
+    const blindProvider: OcrProvider = {
+        name: 'stub',
+        scanIdentityDocument: async () => {
+            throw new OcrError('unreadable', 'No identity document was found in the image')
+        }
+    }
+
+    /** A provider that is not reachable at all. A different thing entirely. */
+    const downProvider: OcrProvider = {
+        name: 'stub',
+        scanIdentityDocument: async () => {
+            throw new OcrError('unavailable', 'ThrottlingException: rate exceeded')
+        }
+    }
+
+    const upload = {
+        bytes: Buffer.from('a png would be here'),
+        mimeType: 'image/png',
+        documentType: 'drivers_licence' as const
+    }
+
+    test('is still a scan, with no reading on it', async () => {
+        const result = await scanIdentityDocument(
+            transactionId,
+            agentId,
+            transactionPartyId,
+            upload,
+            blindProvider
+        )
+
+        // Not an error handed back. The file is stored, the agent has the card,
+        // and the only thing missing is the head start on typing.
+        expect(result.scanId).toEqual(expect.any(String))
+
+        // Null rather than a shape full of nulls: there was no reading, and
+        // "found nothing" and "never ran" are different things to be told.
+        expect(result.scanned).toBeNull()
+
+        const row = await prisma.identityScan.findUniqueOrThrow({ where: { id: result.scanId } })
+
+        expect(row.fieldsRead).toEqual(0)
+        expect(row.documentNumber).toEqual('')
+        expect(row.expiryDate).toBeNull()
+        expect(row.confidence).toEqual(0)
+
+        // Stored regardless, so the record that follows is about an object
+        // under Object Lock rather than about a photograph nobody kept.
+        expect(row.s3Key).toEqual(
+            keys.identityDocument(transactionId, personId, 'drivers_licence', 'png')
+        )
+    }, 30000)
+
+    test('confirms into a record marked as typed by hand', async () => {
+        const { scanId } = await scanIdentityDocument(
+            transactionId,
+            agentId,
+            transactionPartyId,
+            upload,
+            blindProvider
+        )
+
+        const record = await confirmIdentityScan(transactionId, agentId, transactionPartyId, scanId, {
+            documentType: 'passport',
+            expiryDate: '2030-01-31'
+        })
+
+        // The same FINTRAC method — the agent looked at a government photo ID
+        // either way — but a record whose every value a person typed off the
+        // card, which is a thing an examiner can now tell apart.
+        expect(record.verifiedMethod).toEqual('government_photo_id_manual')
+        expect(record.documentType).toEqual('passport')
+        expect(record.expiryDate).toEqual('2030-01-31')
+        expect(record.documentNumberOnFile).toEqual(false)
+    }, 30000)
+
+    test('a document found but read blank is manual too', async () => {
+        const nothingRead: ScannedIdentity = {
+            documentType: null,
+            fullName: null,
+            firstName: null,
+            middleName: null,
+            lastName: null,
+            dateOfBirth: null,
+            expiryDate: null,
+            dateOfIssue: null,
+            documentNumber: null,
+            address: null,
+            city: null,
+            province: null,
+            postalCode: null,
+            confidence: 0,
+            provider: 'stub',
+            modelVersion: '1.0'
+        }
+
+        const { scanId, scanned } = await scanIdentityDocument(
+            transactionId,
+            agentId,
+            transactionPartyId,
+            upload,
+            stubProvider(nothingRead)
+        )
+
+        // A reading happened and produced nothing, so there is a reading to
+        // show — every field of it marked as not read.
+        expect(scanned).not.toBeNull()
+
+        const record = await confirmIdentityScan(transactionId, agentId, transactionPartyId, scanId, {
+            documentType: 'drivers_licence',
+            expiryDate: null
+        })
+
+        // Nothing on the record came from the model, so it is manual by the
+        // same rule: the count of what was read is what decides, not whether
+        // the reader managed to return an envelope.
+        expect(record.verifiedMethod).toEqual('government_photo_id_manual')
+    }, 30000)
+
+    test('a reader outage is still an error, and is not filed as manual entry', async () => {
+        const before = await prisma.identityScan.count({ where: { transactionId, partyId: personId } })
+
+        await expect(
+            scanIdentityDocument(transactionId, agentId, transactionPartyId, upload, downProvider)
+        ).rejects.toMatchObject({ name: 'OcrError', kind: 'unavailable' })
+
+        // No scan at all, rather than one waiting to be typed into. Silently
+        // turning an outage into a typing exercise would stop using a service
+        // we pay for without anybody noticing.
+        const after = await prisma.identityScan.count({ where: { transactionId, partyId: personId } })
+
+        expect(after).toEqual(before)
+    }, 30000)
+
+    test('the contract no longer offers a 422 for it', () => {
+        // Asserted against the generated document rather than by posting an
+        // image: the POST route uses the real provider, and this suite does not
+        // call Textract — an AnalyzeID call is billed, is slow, and needs a
+        // real driver's licence to mean anything. The behaviour behind the
+        // route is covered by the service tests above; what is left to check is
+        // that the contract stopped advertising a failure that no longer
+        // happens.
+        const spec = JSON.parse(
+            readFileSync(join(__dirname, '..', 'openapi.json'), 'utf8')
+        ) as { paths: Record<string, { post: { responses: Record<string, unknown> } }> }
+
+        const responses = spec.paths['/api/transactions/{id}/parties/{partyId}/identity'].post.responses
+
+        expect(Object.keys(responses)).toContain('201')
+        expect(Object.keys(responses)).not.toContain('422')
+
+        // The outage is still advertised. It is the one OCR failure a caller
+        // still has to handle.
+        expect(Object.keys(responses)).toContain('502')
+    })
 })
 
 describe('the confirm endpoint', () => {

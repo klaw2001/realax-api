@@ -94,7 +94,8 @@ export const identityRecordSchema = registry.register(
         expiryDate: z.iso.date().nullable().openapi({ example: '2029-04-17' }),
         verifiedAt: z.iso.datetime().openapi({ example: '2026-09-02T09:00:00.000Z' }),
         verifiedMethod: z.string().openapi({
-            description: 'The FINTRAC method used.',
+            description:
+                'The FINTRAC method used, and how the record was filled: `government_photo_id` when a reading assisted it, `government_photo_id_manual` when a person typed every value off the card. Both are the same method — the agent looked at a government photo ID either way — and the service decides which from what the reading produced, never the caller. Left as a string rather than an enum so that a value written by an older build cannot fail to parse on the way out.',
             example: 'government_photo_id'
         }),
         expired: z.boolean().openapi({
@@ -128,7 +129,20 @@ export const scanIdentityResponseSchema = registry.register(
                 'Identifies this reading while it awaits confirmation. Confirming it is what creates the record.',
             example: 'clx4s5c6a7n8i9d0e1f2g3h4i'
         }),
-        scanned: scannedIdentitySchema
+        /*
+         * A union rather than `.nullable()`. Calling `.nullable()` on a
+         * registered schema emits the `$ref` wrapped in an `allOf` beside a
+         * `type: [object, null]`, and `openapi-typescript` turns that into an
+         * intersection — `ScannedIdentity & (Record<string, never> | null)` —
+         * in which the null case is not expressible at all. The frontend would
+         * then be typed as though this field is never null while the API
+         * returns null, which is the one failure the generated pipeline exists
+         * to prevent. A union emits `anyOf` and generates cleanly.
+         */
+        scanned: z.union([scannedIdentitySchema, z.null()]).openapi({
+            description:
+                'What the reader made of the image, or null when it could find no document in it. Null is not an error: the file is stored and the scan is confirmable, the agent simply types the document out instead of correcting a reading, and the record then says it was filled by hand.'
+        })
     })
 )
 
@@ -175,7 +189,7 @@ registry.registerPath({
     summary: 'Upload and read a party’s identity document',
     security: [{ sessionCookie: [] }],
     description:
-        'Requires a session, and the transaction must belong to the caller. Multipart: `document` is the image and `documentType` says what it is. The file is stored in the Canadian bucket under SSE-KMS first and read from there, so the record is provably about the stored object. The document number is encrypted before it reaches a column and is never returned. **This does not verify anybody:** it answers with what was read and a `scanId`, and the `IdentityRecord` is created only when the agent confirms that reading.',
+        'Requires a session, and the transaction must belong to the caller. Multipart: `document` is the image and `documentType` says what it is. The file is stored in the Canadian bucket under SSE-KMS first and read from there, so the record is provably about the stored object. The document number is encrypted before it reaches a column and is never returned. **This does not verify anybody:** it answers with what was read and a `scanId`, and the `IdentityRecord` is created only when the agent confirms that reading. An image no document could be read from is not an error — it answers 201 with a null `scanned`, and the agent types the document out and confirms that.',
     tags: ['identity'],
     request: {
         params: z.object({
@@ -200,13 +214,12 @@ registry.registerPath({
     },
     responses: {
         201: {
-            description: 'What was read, awaiting the agent’s confirmation',
+            description: 'What was read — or null when nothing could be — awaiting the agent’s confirmation',
             content: { 'application/json': { schema: scanIdentityResponseSchema } }
         },
         400: errorContent('No file, an unsupported type, or a document type that is not accepted'),
         401: errorContent('No session'),
         404: errorContent('No such transaction, or no such party on it'),
-        422: errorContent('The image was stored but no identity document could be read from it'),
         502: errorContent('The document reader is unavailable')
     }
 })

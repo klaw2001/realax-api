@@ -141,20 +141,15 @@ export const postIdentityScan = async (req: Request, res: Response) => {
         }
 
         if (error instanceof OcrError) {
-            // The image is already stored — deliberately, so the agent's upload
-            // is not lost to a reader outage and the record can be completed by
-            // hand. What did not happen is the reading.
+            // Only `unavailable` reaches here. An image with no document in it
+            // is handled in the service, which stores it and answers with a
+            // scan the agent can type into — it is the reader being unreachable
+            // that has nothing to offer, and that is worth retrying rather than
+            // filling in by hand while a paid-for service is down.
+            //
+            // The image is stored either way, deliberately, so an outage does
+            // not lose the agent's upload.
             logger.warn('identity scan failed', { transactionId, kind: error.kind })
-
-            if (error.kind === 'unreadable') {
-                res.status(422).json({
-                    error: 'document_unreadable',
-                    message:
-                        'No identity document could be read from that image. Try a straight-on photo in good light.'
-                } satisfies ErrorResponse)
-
-                return
-            }
 
             res.status(502).json({
                 error: 'ocr_unavailable',

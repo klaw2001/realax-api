@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 
+import { OcrError } from '@/integrations/ocr/provider'
 import type { OcrProvider, ScannedIdentity as RawScan } from '@/integrations/ocr/provider'
 import { ocrProvider } from '@/integrations/ocr/textract.client'
 import { encryptField } from '@/lib/encryption'
@@ -41,6 +42,41 @@ import type {
 
 /** Below this, the agent should read every field rather than skim. */
 const LOW_CONFIDENCE = 90
+
+/**
+ * The FINTRAC method recorded on a record, and how the values got onto it.
+ *
+ * Both are the same method — the agent looked at a government photo ID either
+ * way, which is the thing an examiner asks about. What the two values separate
+ * is provenance: whether any value on the record started as a machine reading,
+ * or whether a person typed every one of them off the card.
+ *
+ * That distinction is the service's to make, never the caller's. It is derived
+ * from what the reading actually produced, so a client cannot claim a reading
+ * assisted a record it did not assist.
+ */
+const VERIFIED_METHOD = {
+    ocrAssisted: 'government_photo_id',
+    manual: 'government_photo_id_manual'
+} as const
+
+/** How many fields a reading actually produced. Zero means nothing was read. */
+const countFieldsRead = (scan: RawScan): number =>
+    [
+        scan.documentType,
+        scan.fullName,
+        scan.firstName,
+        scan.middleName,
+        scan.lastName,
+        scan.dateOfBirth,
+        scan.expiryDate,
+        scan.dateOfIssue,
+        scan.documentNumber,
+        scan.address,
+        scan.city,
+        scan.province,
+        scan.postalCode
+    ].filter(field => field !== null && field !== '').length
 
 /** What we accept. Anything else is a scan of something that is not identity. */
 const ACCEPTED_MIME = new Set(['image/jpeg', 'image/png'])
@@ -171,6 +207,18 @@ export interface ScanUpload {
  * carries the encrypted number and the file's digest so that confirming needs
  * neither a second Textract call nor a fetch back out of S3.
  *
+ * **A reading that produced nothing is still a scan.** An image the reader
+ * cannot find a document in is not an error to hand back: the file is stored,
+ * the agent has the card in their hand, and the only thing missing is the head
+ * start on typing. So `unreadable` becomes a scan with no reading on it — the
+ * agent types the document out and confirms it like any other, and the record
+ * that results says it was filled by hand.
+ *
+ * `unavailable` is not treated that way and is still thrown. The reader being
+ * unreachable says nothing about the document, and silently turning an outage
+ * into a manual-entry form would quietly stop using a service we are paying
+ * for. That one is a 502 and worth retrying.
+ *
  * `provider` is a parameter with a default rather than a module-level import so
  * the tests can pass a stub. Nothing calls Textract in the suite: an OCR call
  * against a real driver’s licence is billed, slow, and needs a real driver’s
@@ -202,10 +250,20 @@ export const scanIdentityDocument = async (
 
     await putObject({ key: s3Key, body: upload.bytes, contentType: upload.mimeType })
 
-    const scan = await provider.scanIdentityDocument({
-        s3Key,
-        declaredType: upload.documentType
-    })
+    let scan: RawScan | null = null
+
+    try {
+        scan = await provider.scanIdentityDocument({
+            s3Key,
+            declaredType: upload.documentType
+        })
+    } catch (error) {
+        // The provider worked and found no document. Null here, and the agent
+        // gets an empty form to type into rather than an error to work around.
+        if (!(error instanceof OcrError) || error.kind !== 'unreadable') {
+            throw error
+        }
+    }
 
     // Encrypted the moment it exists, and the plaintext is not held in a
     // variable beyond this expression. An empty string when nothing was read:
@@ -215,7 +273,9 @@ export const scanIdentityDocument = async (
     // It is written here and copied to the record as ciphertext at confirm
     // time. Nothing between the two calls decrypts it.
     const documentNumber =
-        scan.documentNumber === null ? '' : encryptField(scan.documentNumber)
+        scan === null || scan.documentNumber === null ? '' : encryptField(scan.documentNumber)
+
+    const fieldsRead = scan === null ? 0 : countFieldsRead(scan)
 
     const pending = await prisma.identityScan.create({
         data: {
@@ -223,13 +283,20 @@ export const scanIdentityDocument = async (
             partyId: personId,
             documentType: upload.documentType,
             documentNumber,
-            expiryDate: scan.expiryDate === null ? null : new Date(`${scan.expiryDate}T00:00:00.000Z`),
+            expiryDate:
+                scan === null || scan.expiryDate === null
+                    ? null
+                    : new Date(`${scan.expiryDate}T00:00:00.000Z`),
             s3Key,
 
             // Of the bytes as uploaded, so the `Document` row written at
             // confirm time describes the file rather than a re-read of it.
             sha256: createHash('sha256').update(upload.bytes).digest('hex'),
-            confidence: scan.confidence
+
+            // Zero for an image nothing could be read from, which is what the
+            // confirm step reads to know the record was typed rather than read.
+            confidence: scan?.confidence ?? 0,
+            fieldsRead
         },
         select: { id: true }
     })
@@ -240,13 +307,18 @@ export const scanIdentityDocument = async (
         transactionId,
         scanId: pending.id,
         documentType: upload.documentType,
-        numberRead: scan.documentNumber !== null,
-        confidence: Math.round(scan.confidence)
+        fieldsRead,
+        numberRead: scan?.documentNumber != null,
+        confidence: Math.round(scan?.confidence ?? 0)
     })
 
     return {
         scanId: pending.id,
-        scanned: toScannedResponse(scan)
+
+        // Null rather than a shape full of nulls: there was no reading, and a
+        // reading that found nothing and one that never happened are different
+        // things to tell an agent about.
+        scanned: scan === null ? null : toScannedResponse(scan)
     }
 }
 
@@ -267,6 +339,10 @@ export interface ConfirmedIdentity {
  * unchanged is the encrypted number and the object it was read from: the agent
  * confirms what the document says, not which file it was.
  *
+ * `verifiedMethod` records which of the two happened. A scan the reader
+ * produced nothing from confirms just as well, and the record says it was
+ * typed by hand rather than read.
+ *
  * One database transaction, because a record without its `Document` row is a
  * verification whose evidence is not indexed, and a scan marked confirmed with
  * no record is a scan that can never be confirmed.
@@ -284,7 +360,14 @@ export const confirmIdentityScan = async (
     // is not found here rather than confirmable from the wrong screen.
     const pending = await prisma.identityScan.findFirst({
         where: { id: scanId, transactionId, partyId: personId },
-        select: { id: true, documentNumber: true, s3Key: true, sha256: true, confirmedAt: true }
+        select: {
+            id: true,
+            documentNumber: true,
+            s3Key: true,
+            sha256: true,
+            fieldsRead: true,
+            confirmedAt: true
+        }
     })
 
     if (!pending) {
@@ -314,10 +397,20 @@ export const confirmIdentityScan = async (
                         : new Date(`${confirmed.expiryDate}T00:00:00.000Z`),
                 verifiedAt,
 
-                // The FINTRAC method this satisfies. Recorded as what was done
-                // rather than left implicit — the method is the thing an
-                // examiner asks about, not the vendor.
-                verifiedMethod: 'government_photo_id',
+                // The FINTRAC method this satisfies, and how it was filled.
+                // Recorded as what was done rather than left implicit — the
+                // method is the thing an examiner asks about, not the vendor.
+                //
+                // Derived from the reading, not taken from the request: a
+                // record where the model produced nothing was typed off the
+                // card by a person, and that is worth being able to tell
+                // apart later. A null `fieldsRead` is a row written before the
+                // column existed, and back then a scan only existed when a
+                // reading had succeeded.
+                verifiedMethod:
+                    (pending.fieldsRead ?? 1) > 0
+                        ? VERIFIED_METHOD.ocrAssisted
+                        : VERIFIED_METHOD.manual,
                 s3Key: pending.s3Key
             },
             select: {
@@ -354,7 +447,8 @@ export const confirmIdentityScan = async (
         transactionId,
         scanId: pending.id,
         recordId: record.id,
-        documentType: confirmed.documentType
+        documentType: confirmed.documentType,
+        verifiedMethod: record.verifiedMethod
     })
 
     return toIdentityRecord(record)
