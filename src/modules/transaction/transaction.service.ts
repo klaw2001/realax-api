@@ -44,7 +44,7 @@ const toTransaction = (record: TransactionRecord): Transaction => ({
  * The extra columns a list row carries: the address that identifies the deal to
  * a person, and how many parties are still on it.
  */
-const listItemSelect = {
+export const listItemSelect = {
     ...transactionSelect,
     property: { select: { id: true, address: true, city: true, mlsNumber: true } },
 
@@ -112,7 +112,7 @@ const nextDay = (date: string): Date => {
     return at
 }
 
-const toListItem = (record: {
+export const toListItem = (record: {
     property: { id: string; address: string; city: string; mlsNumber: string | null } | null
     _count: { parties: number }
 } & TransactionRecord): TransactionListItem => ({

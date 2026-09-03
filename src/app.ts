@@ -14,6 +14,7 @@ import requireAgent from '@/middleware/auth'
 import { errorHandler, notFound } from '@/middleware/error'
 import agentRoutes from '@/modules/agent/agent.routes'
 import { authRoutes, meRoutes } from '@/modules/auth/auth.routes'
+import dashboardRoutes from '@/modules/dashboard/dashboard.routes'
 import healthRoutes from '@/modules/health/health.routes'
 import { transactionEntriesRoutes } from '@/modules/entries/entries.routes'
 import { transactionFormRoutes } from '@/modules/forms/forms.routes'
@@ -99,6 +100,10 @@ app.use('/api/auth', authRoutes)
 app.use('/api', requireAgent)
 
 app.use('/api/me', meRoutes)
+
+// Also under `/api/me`, and in its own module: the dashboard is an aggregate
+// over transactions, compliance and identity, and belongs to none of them.
+app.use('/api/me', dashboardRoutes)
 app.use('/api/agent', agentRoutes)
 app.use('/api/transactions', transactionRoutes)
 
