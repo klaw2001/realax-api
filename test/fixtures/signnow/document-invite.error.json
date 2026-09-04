@@ -1,0 +1,11 @@
+{
+  "status": 400,
+  "body": {
+    "errors": [
+      {
+        "code": 65585,
+        "message": "Email is invalid"
+      }
+    ]
+  }
+}

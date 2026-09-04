@@ -1,0 +1,13 @@
+{
+  "id": "e98acd28cdb64664878ed1db136f0acf8d6a3f24",
+  "active": "1",
+  "verified": true,
+  "type": 1,
+  "pro": 0,
+  "created": "1788241573",
+  "emails": [
+    "redacted-27f38a8c@example.test"
+  ],
+  "primary_email": "redacted-27f38a8c@example.test",
+  "locale": "en"
+}

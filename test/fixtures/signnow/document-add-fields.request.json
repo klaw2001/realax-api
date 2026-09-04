@@ -1,0 +1,48 @@
+{
+  "fields": [
+    {
+      "name": "execution.seller1.signature",
+      "page_number": 4,
+      "type": "signature",
+      "role": "Seller",
+      "required": true,
+      "x": 257,
+      "y": 183,
+      "width": 177,
+      "height": 8
+    },
+    {
+      "name": "execution.seller1.date",
+      "page_number": 4,
+      "type": "text",
+      "role": "Seller",
+      "required": true,
+      "x": 473,
+      "y": 183,
+      "width": 99,
+      "height": 8
+    },
+    {
+      "name": "execution.buyer1.signature",
+      "page_number": 4,
+      "type": "signature",
+      "role": "Buyer",
+      "required": true,
+      "x": 257,
+      "y": 76,
+      "width": 177,
+      "height": 8
+    },
+    {
+      "name": "execution.buyer1.date",
+      "page_number": 4,
+      "type": "text",
+      "role": "Buyer",
+      "required": true,
+      "x": 473,
+      "y": 76,
+      "width": 99,
+      "height": 8
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "timestamp": 1788517889,
+    "event": "user.document.fieldinvite.sent",
+    "environment": "https://api.signnow.com",
+    "callback_url": "https://c41hgx1c-4000.inc1.devtunnels.ms/webhooks/signnow",
+    "access_token": "c0fc836901f695418572be14f35b361adbcf91b582dbf677b0142c9bdbfd1fb1",
+    "initiator_id": "42d9bd431d754c85986f2548cba6d4d861ab2aef"
+  },
+  "content": {
+    "document_id": "08ba14321d484b30a3dd74a0bf3cd40d8dee71b8",
+    "invite_id": "e1aaf652e1244c9d92043355e7b824ecc5058b7a",
+    "signer": "signer2@example.test",
+    "status": "pending"
+  }
+}

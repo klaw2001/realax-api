@@ -1,0 +1,24 @@
+{
+  "document_id": "08ba14321d484b30a3dd74a0bf3cd40d8dee71b8",
+  "to": [
+    {
+      "email": "signer1@example.test",
+      "role": "Seller",
+      "role_id": "37ed677080714cf3a3940eb45ab23080b11bb6be",
+      "order": 1,
+      "subject": "REALAX capture — signer 1",
+      "message": "Capture run. Not a real transaction."
+    },
+    {
+      "email": "signer2@example.test",
+      "role": "Buyer",
+      "role_id": "d57ef45a3b554e55854b066a57178461bf212554",
+      "order": 2,
+      "subject": "REALAX capture — signer 2",
+      "message": "Capture run. Not a real transaction."
+    }
+  ],
+  "from": "redacted-27f38a8c@example.test",
+  "subject": "REALAX capture",
+  "message": "Capture run. Not a real transaction."
+}

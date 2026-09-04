@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "timestamp": 1788517965,
+    "event": "user.document.complete",
+    "environment": "https://api.signnow.com",
+    "callback_url": "https://c41hgx1c-4000.inc1.devtunnels.ms/webhooks/signnow",
+    "access_token": "18e2a7b1f1bdcdee8586feb79eb0c7055626317983ce36ea73710d0fb5fb108a",
+    "initiator_id": "9d41ffa297f54ec2988167c08f35b13abbf08fd2"
+  },
+  "content": {
+    "document_id": "08ba14321d484b30a3dd74a0bf3cd40d8dee71b8",
+    "document_name": "OREA-100-blank",
+    "user_id": "e98acd28cdb64664878ed1db136f0acf8d6a3f24"
+  }
+}
