@@ -74,3 +74,42 @@ AZURE_DOCUMENT_INTELLIGENCE_KEY=
 # has its own NEXT_PUBLIC_DEMO_MODE, which only hides the button; this one is
 # what decides whether the endpoint exists at all.
 DEMO_MODE=false
+
+# --- signNow (e-sign, phase 3) ----------------------------------------------
+# mock = no network, no key, no invite quota, no email. Returns a deterministic
+#        document id and runs the real HMAC, so the signing flow is testable and
+#        demonstrable without an API plan.
+# signnow = the real vendor.
+#
+# Defaulted to mock, unlike OCR_PROVIDER: signNow API access is a separate
+# annual commitment and the trial lapses, so a fresh checkout must boot without
+# a key. The API refuses to start with anything but signnow when
+# NODE_ENV=production.
+SIGNNOW_PROVIDER=mock
+SIGNNOW_BASE_URL=https://api.signnow.com
+
+# Both required when SIGNNOW_PROVIDER=signnow.
+#
+# A non-expiring bearer token from API Dashboard > Apps and Keys > your app >
+# API Keys. NOT an OAuth client secret: client_credentials is not a grant
+# signNow supports, and the password grant would put the account's own login
+# password in this file. An API key does not expire, so there is no refresh
+# logic, and it is revoked by deleting it in the dashboard.
+SIGNNOW_API_KEY=
+
+# The secret signNow signs each webhook body with. You choose the value —
+# signNow does not issue it. Any string up to 300 characters; generate with:
+#   openssl rand -hex 32
+#
+# It must ALSO be set on every subscription, which the dashboard does not do for
+# you. Use tools/signnow_subscriptions.ts:
+#   npx ts-node -r dotenv/config tools/signnow_subscriptions.ts sync <url> --prune
+#
+# Without it signNow sends no X-SignNow-Signature header, and /webhooks/signnow
+# — which sits outside the session guard because signNow has no session — has
+# nothing to authenticate with.
+SIGNNOW_WEBHOOK_SECRET=
+
+# Capture tooling only (tools/capture_signnow.ts). Never read by the service.
+SIGNNOW_CAPTURE_SIGNER_1=
+SIGNNOW_CAPTURE_SIGNER_2=

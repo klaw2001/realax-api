@@ -115,6 +115,48 @@ const envSchema = z.object({
     // Key 1 or Key 2 from the resource's Keys and Endpoint blade.
     AZURE_DOCUMENT_INTELLIGENCE_KEY: z.string().min(1).optional(),
 
+    // signNow (e-sign, build plan phase 3).
+    //
+    // `mock` signs nothing and talks to nobody: it returns a deterministic
+    // document id and runs the real HMAC, so the whole signing flow is
+    // testable and demonstrable without an API plan. The refinement below
+    // forbids it in production.
+    //
+    // Defaulted to `mock` rather than to the real vendor — the opposite of
+    // OCR_PROVIDER — because signNow API access is a separate annual
+    // commitment and the trial lapses. A fresh checkout must boot without a
+    // key; production is forced to `signnow` below, so the loose default costs
+    // nothing.
+    SIGNNOW_PROVIDER: z.enum(['signnow', 'mock']).default('mock'),
+
+    SIGNNOW_BASE_URL: z.url().default('https://api.signnow.com'),
+
+    // A non-expiring bearer token from API Dashboard → Apps and Keys → API
+    // Keys, sent as `Authorization: Bearer`.
+    //
+    // Not OAuth. `client_credentials` is not a grant signNow supports (it
+    // answers 400; the response is captured in
+    // `test/fixtures/signnow/oauth-token-unsupported-grant.json`), and the
+    // password grant would put the account's own login password in this file
+    // and only ever work for the application owner. signNow's own guidance for
+    // a backend acting as one account is an API key, which also means there is
+    // no token to refresh and nothing to cache.
+    //
+    // Optional here, required by the refinement below when the provider is
+    // `signnow`.
+    SIGNNOW_API_KEY: z.string().min(1).optional(),
+
+    // The shared secret signNow signs each webhook body with, sent back as
+    // `X-SignNow-Signature`. We choose the value; signNow does not issue it. It
+    // is set per subscription — `tools/signnow_subscriptions.ts` puts it on all
+    // five — and without it signNow sends no signature header at all.
+    //
+    // This is the *only* authentication on `/webhooks/signnow`, which by
+    // necessity sits outside the session guard: signNow has no session. An
+    // unset secret means an unauthenticated public endpoint that writes to the
+    // database, which is why the refinement requires it alongside the key.
+    SIGNNOW_WEBHOOK_SECRET: z.string().min(1).optional(),
+
     // AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY are deliberately absent. The
     // SDK's default credential chain reads them from the environment in
     // development and from the instance role in production; requiring them
@@ -168,6 +210,39 @@ const validated = envSchema.superRefine((value, ctx) => {
             code: 'custom',
             path: ['DEMO_MODE'],
             message: 'must be off in production'
+        })
+    }
+
+    // The real signNow client needs both: the key to send anything, and the
+    // webhook secret to believe anything that comes back. Neither is optional
+    // once the provider is real — an envelope that can be created but whose
+    // callbacks cannot be verified is worse than one that cannot be created.
+    if (value.SIGNNOW_PROVIDER === 'signnow') {
+        if (value.SIGNNOW_API_KEY === undefined) {
+            ctx.addIssue({
+                code: 'custom',
+                path: ['SIGNNOW_API_KEY'],
+                message: 'required when SIGNNOW_PROVIDER is signnow'
+            })
+        }
+
+        if (value.SIGNNOW_WEBHOOK_SECRET === undefined) {
+            ctx.addIssue({
+                code: 'custom',
+                path: ['SIGNNOW_WEBHOOK_SECRET'],
+                message: 'required when SIGNNOW_PROVIDER is signnow'
+            })
+        }
+    }
+
+    // The mock returns a fabricated document id and invites nobody. Running it
+    // in production would let an agent believe a real Agreement of Purchase and
+    // Sale had been sent for signature when nothing left the building.
+    if (value.NODE_ENV === 'production' && value.SIGNNOW_PROVIDER !== 'signnow') {
+        ctx.addIssue({
+            code: 'custom',
+            path: ['SIGNNOW_PROVIDER'],
+            message: 'must be signnow in production'
         })
     }
 })
