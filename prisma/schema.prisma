@@ -224,6 +224,12 @@ model TransactionForm {
   filledS3Key    String?
   status         FormStatus        @default(DRAFT)
   checks         ComplianceCheck[]
+
+  // Two relations to the same model: every envelope ever raised for this form,
+  // and the at-most-one currently out for signature. The second is what the
+  // unique constraint on `SigningEnvelope.activeFormId` enforces.
+  envelopes       SigningEnvelope[] @relation("EnvelopeForm")
+  activeEnvelope  SigningEnvelope?  @relation("EnvelopeActiveForm")
 }
 
 model ComplianceCheck {
@@ -241,15 +247,47 @@ model ComplianceCheck {
 // ---------------------------------------------------------------------------
 
 model SigningEnvelope {
-  id             String        @id @default(cuid())
-  transactionId  String
-  transaction    Transaction   @relation(fields: [transactionId], references: [id])
-  provider       String        @default("signnow")
-  externalId     String        @unique
-  status         String
+  id            String      @id @default(cuid())
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+
+  // Which filled form this envelope carries. Nullable because the column is
+  // added to an existing table, and because a document-group envelope spanning
+  // several forms (3.4+) legitimately has no single one. `keys.signedForm()`
+  // needs a form code, and the transaction cannot supply one.
+  transactionFormId String?
+  transactionForm   TransactionForm? @relation("EnvelopeForm", fields: [transactionFormId], references: [id])
+
+  // The same value as `transactionFormId` while the envelope is live, NULL once
+  // it reaches a terminal state. Postgres permits many NULLs under a UNIQUE
+  // constraint, so this is a database-level guarantee that one form has at most
+  // one envelope out for signature — which is what makes a double-clicked Send
+  // impossible rather than merely unlikely. A check-then-act in the service
+  // cannot promise that: two concurrent requests both pass the check.
+  //
+  // Cleared on decline or expiry, which releases the form for a fresh envelope.
+  activeFormId String?          @unique
+  activeForm   TransactionForm? @relation("EnvelopeActiveForm", fields: [activeFormId], references: [id])
+
+  provider   String @default("signnow")
+  externalId String @unique
+  status     String
+
+  // [{ transactionPartyId, role, order, externalRoleId }]
+  //
+  // Json rather than a table because the vendor-side identifiers it holds are
+  // exactly what the capture settled, and a table designed before that capture
+  // would have had a column for an invite id that does not exist — signNow's
+  // invite response carries no ids at all. No email and no legal name here:
+  // rule 6, and the party rows already have both.
+  signers Json?
+
   auditCertS3Key String?
   events         SignerEvent[]
   createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([transactionId])
 }
 
 model SignerEvent {
@@ -257,8 +295,21 @@ model SignerEvent {
   envelopeId String
   envelope   SigningEnvelope @relation(fields: [envelopeId], references: [id])
   eventType  String
+
+  // The idempotency key, and the reason replaying a webhook produces one state
+  // change rather than two.
+  //
+  // signNow redelivers the identical payload on retry — 5 attempts 10s apart,
+  // then 5 more 4h apart — so a sha256 of the raw body is a correct key on its
+  // own. That is what let this be built before we knew whether the payload
+  // carried a vendor event id; it does not. UNIQUE, so a concurrent redelivery
+  // loses at the database rather than racing a SELECT.
+  dedupeKey String @unique
+
   payload    Json
-  receivedAt DateTime        @default(now())
+  receivedAt DateTime @default(now())
+
+  @@index([envelopeId])
 }
 
 // ---------------------------------------------------------------------------
