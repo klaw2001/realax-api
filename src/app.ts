@@ -20,6 +20,7 @@ import { transactionEntriesRoutes } from '@/modules/entries/entries.routes'
 import { transactionFormRoutes } from '@/modules/forms/forms.routes'
 import { partyIdentityRoutes, transactionIdentityRoutes } from '@/modules/identity/identity.routes'
 import { transactionPartyRoutes } from '@/modules/party/party.routes'
+import { transactionSigningRoutes } from '@/modules/signing/signing.routes'
 import { propertyRoutes, transactionPropertyRoutes } from '@/modules/property/property.routes'
 import transactionRoutes from '@/modules/transaction/transaction.routes'
 
@@ -115,6 +116,7 @@ app.use('/api/transactions/:id/identity', transactionIdentityRoutes)
 app.use('/api/transactions/:id/parties/:partyId/identity', partyIdentityRoutes)
 app.use('/api/transactions/:id/entries', transactionEntriesRoutes)
 app.use('/api/transactions/:id/forms', transactionFormRoutes)
+app.use('/api/transactions/:id/signing', transactionSigningRoutes)
 app.use('/api/properties', propertyRoutes)
 
 // Last, and in this order. `notFound` catches a path no route matched;

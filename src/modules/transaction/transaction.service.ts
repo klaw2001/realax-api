@@ -222,3 +222,32 @@ export const createListingTransaction = async (agentId: string): Promise<Transac
 
     return toTransaction(record)
 }
+
+/**
+ * Move a transaction from one of a set of expected statuses to another.
+ *
+ * The first thing in this codebase to change a transaction's status: until
+ * phase 3, `DRAFT` was written at creation and never touched again.
+ *
+ * One guarded `updateMany` rather than a read followed by a write. The `where`
+ * on `status` makes the transition atomic — two concurrent callers cannot both
+ * see the old status and both act — and idempotent, since a second attempt
+ * matches nothing and reports it. Returning whether it moved matters more than
+ * it looks: a webhook arriving out of order must not walk a completed
+ * transaction backwards, and the caller needs to know it did not.
+ *
+ * `updatedAt` is bumped by `@updatedAt`, which is load-bearing rather than
+ * incidental: `dashboard.service.ts` counts this month's closings by it.
+ */
+export const setTransactionStatus = async (
+    transactionId: string,
+    from: TransactionStatus[],
+    to: TransactionStatus
+): Promise<boolean> => {
+    const { count } = await prisma.transaction.updateMany({
+        where: { id: transactionId, status: { in: from } },
+        data: { status: to }
+    })
+
+    return count > 0
+}
