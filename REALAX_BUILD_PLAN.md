@@ -692,10 +692,18 @@ redirect.** The redirect fires on browser events that don't reliably mean
 the document was signed.
 
 Signature-verify every payload. Persist to `SignerEvent`. Idempotent by
-external event id — assume redelivery.
+**sha256 of the raw body** — the captured payloads carry no vendor event id,
+and a retry redelivers identical bytes, so the body hash is a correct key.
+
+**A refused payload still answers 200.** signNow gives 4xx responses no
+retries and unsubscribes a callback URL after 30 of them in 60 minutes,
+emailing a cancellation. So "rejected" means *persist nothing and return
+200*; only a genuine internal fault may surface as a 5xx, which signNow
+retries and which never unsubscribes. A 401 here would cost us the
+subscription within an afternoon of any bug that triggered it.
 
 *Acceptance:* replaying the same webhook twice produces one state change.
-An unsigned payload is rejected.
+An unsigned payload is recorded nowhere — and is still answered 200.
 
 ### 3.4 — Completion + audit trail
 
@@ -761,5 +769,5 @@ Do not build these without an explicit instruction:
 |---|---|---|
 | Repliers key is sandbox, not live TRREB | 1.3 demo realism | Darren |
 | Remaining form blanks uncurated | 2.1 | Klaw (manual) |
-| signNow API plan not purchased | 3.1 | Klaw |
+| signNow paid plan not purchased — **trial documents are watermarked "Development mode" on every page**, so no real APS can be executed on it | 3.5 pilot | Klaw |
 | Provincial e-signature validity | 3.4 | Darren / legal |
