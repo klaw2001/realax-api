@@ -370,3 +370,115 @@ export const listEnvelopes = async (
 
     return records.map(record => toView(record, record.transactionForm?.formTemplate.formCode ?? ''))
 }
+
+/**
+ * How far along an envelope is, for deciding whether an event moves it.
+ *
+ * signNow retries a failed delivery five times ten seconds apart and then five
+ * more four hours apart, so events arriving out of order is not hypothetical: a
+ * `fieldinvite.sent` that failed twice can land after the document is already
+ * complete. Comparing rank means a late event is recorded and ignored rather
+ * than walking the envelope backwards.
+ */
+const STATUS_RANK: Record<string, number> = {
+    created: 0,
+    sent: 1,
+    signed: 2,
+    completed: 3
+}
+
+/** Terminal states, which are reachable from anywhere and go no further. */
+const TERMINAL = new Set(['declined', 'expired'])
+
+/**
+ * What each subscribed event means for the envelope.
+ *
+ * `fieldinvite.signed` is one signer finishing, not the document — with
+ * sequential signing the vendor invites the next one itself, and only
+ * `document.complete` means every required field is filled.
+ */
+const STATUS_FOR_EVENT: Record<string, string> = {
+    'user.document.fieldinvite.sent': 'sent',
+    'user.document.fieldinvite.signed': 'signed',
+    'user.document.complete': 'completed',
+    'user.document.fieldinvite.decline': 'declined',
+    'user.invite.expired': 'expired'
+}
+
+export type WebhookOutcome = 'recorded' | 'replayed' | 'unknown_document' | 'ignored'
+
+/**
+ * Record a verified webhook, once.
+ *
+ * Idempotency is the unique index on `dedupeKey`, not a `findFirst` before
+ * inserting: two concurrent redeliveries would both pass a read. The insert
+ * either lands or loses, and losing is a normal outcome rather than an error.
+ *
+ * The status only moves on a first-time insert, and only forwards. A terminal
+ * event also clears `activeFormId`, which releases the form so the agent can
+ * send a fresh envelope after a decline.
+ *
+ * `Transaction.status` is deliberately untouched. Moving it to COMPLETED is
+ * 3.4's acceptance criterion, along with storing the signed PDF and the audit
+ * certificate — doing it here would mark a transaction closed with neither.
+ */
+export const recordSignerEvent = async (
+    externalId: string,
+    eventType: string,
+    payload: unknown,
+    dedupeKey: string
+): Promise<WebhookOutcome> => {
+    const envelope = await prisma.signingEnvelope.findUnique({ where: { externalId } })
+
+    if (envelope === null) {
+        return 'unknown_document'
+    }
+
+    try {
+        await prisma.signerEvent.create({
+            data: {
+                envelopeId: envelope.id,
+                eventType,
+                payload: payload as Prisma.InputJsonValue,
+                dedupeKey
+            }
+        })
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+            return 'replayed'
+        }
+
+        // A real database fault. Thrown, so the route answers 500 and signNow
+        // retries — which is the one case where a retry is what we want.
+        throw error
+    }
+
+    const next = STATUS_FOR_EVENT[eventType]
+
+    if (next === undefined) {
+        // Subscribed to something we do not act on, or a new event type. The
+        // row is kept; the envelope does not move.
+        return 'recorded'
+    }
+
+    if (TERMINAL.has(next)) {
+        await prisma.signingEnvelope.updateMany({
+            where: { id: envelope.id, status: { notIn: [...TERMINAL] } },
+            // Clearing activeFormId releases the form for another envelope.
+            data: { status: next, activeFormId: null }
+        })
+
+        return 'recorded'
+    }
+
+    const behind = Object.entries(STATUS_RANK)
+        .filter(([, rank]) => rank < (STATUS_RANK[next] ?? 0))
+        .map(([status]) => status)
+
+    await prisma.signingEnvelope.updateMany({
+        where: { id: envelope.id, status: { in: behind } },
+        data: { status: next }
+    })
+
+    return 'recorded'
+}

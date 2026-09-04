@@ -21,6 +21,7 @@ import { transactionFormRoutes } from '@/modules/forms/forms.routes'
 import { partyIdentityRoutes, transactionIdentityRoutes } from '@/modules/identity/identity.routes'
 import { transactionPartyRoutes } from '@/modules/party/party.routes'
 import { transactionSigningRoutes } from '@/modules/signing/signing.routes'
+import { signingWebhookRoutes } from '@/modules/signing/webhook.routes'
 import { propertyRoutes, transactionPropertyRoutes } from '@/modules/property/property.routes'
 import transactionRoutes from '@/modules/transaction/transaction.routes'
 
@@ -35,6 +36,25 @@ if (isProduction) {
 }
 
 app.use(express.static('public'))
+
+// signNow signs the *bytes* it sent, so the HMAC has to be computed over the
+// unparsed body. `bodyParser.json` consumes the stream, and by the time a
+// handler runs the original bytes are gone — re-serialising `req.body` gives a
+// different byte sequence and therefore a different digest.
+//
+// Path-scoped, and mounted ABOVE the JSON parser: body-parser marks a consumed
+// request with `req._body` (read.js:46) and `json()` returns early when it is
+// set (json.js:102), so the JSON parser skips this one path and every other
+// route keeps the identical parser chain. The alternative — a `verify`
+// callback on the global parser — would retain a Buffer copy of every request
+// body in the application, up to the 5 MB limit, to serve one endpoint.
+//
+// The 2 MB limit is lower than the global one because a callback is a few
+// kilobytes. An oversized one raises `PayloadTooLargeError`, which
+// `errorHandler` answers 500 — a 5xx, which signNow retries and which never
+// costs us the subscription.
+app.use('/webhooks/signnow', express.raw({ type: '*/*', limit: '2mb' }))
+
 app.use(bodyParser.json({ limit: '5mb' }))
 
 // The frontend is a separate origin and will send a session cookie, so the
@@ -85,6 +105,12 @@ app.use(
 )
 
 app.use('/health', healthRoutes)
+
+// Above the session guard, and deliberately outside `/api`: signNow has no
+// session and never will. It authenticates by HMAC over the raw body, which
+// the route does for itself. Mounted under `/api` it would 401 every callback,
+// and 30 of those in an hour unsubscribes the webhook.
+app.use('/webhooks/signnow', signingWebhookRoutes)
 
 // Served so the frontend can run `gen:api` against a running dev server
 // instead of reaching across repos for the file.
