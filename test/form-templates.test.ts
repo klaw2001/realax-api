@@ -4,6 +4,7 @@ import path from 'node:path'
 import prisma from '../src/lib/prisma'
 import { getObjectBytes, keys } from '../src/lib/s3'
 import {
+
     SourceHashMismatchError,
     TemplateNotFoundError,
     blanksByName,
@@ -16,6 +17,14 @@ import {
     sha256,
     verifySource
 } from '../src/modules/forms/template.service'
+
+// These tests talk to the real bucket in ca-central-1. Individual cases measure
+// 2.5-5s, which sits right on Jest's 5-second default — so the suite passed
+// alone and failed under the parallel load of a full run, which is the worst
+// kind of failing test: one that is right about the code and wrong about the
+// day. The latency is real and worth waiting for; an integration test that
+// mocked S3 would confirm a bucket configuration it never checked.
+jest.setTimeout(30_000)
 
 // Build plan 2.1. Two halves: the curated template file is what it claims to
 // be, and the row plus the S3 object seeded from it agree with it. The second

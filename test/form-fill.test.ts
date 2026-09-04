@@ -8,6 +8,15 @@ import { fillTransactionForm, renderFilledForm } from '../src/modules/forms/fill
 import { buildMergedValues, type MergedValues, type TransactionSnapshot } from '../src/modules/forms/mapper.service'
 import { SourceHashMismatchError, dataBlanks, loadTemplate } from '../src/modules/forms/template.service'
 
+// These tests talk to the real bucket in ca-central-1. Individual cases measure
+// 2.5-5s, which sits right on Jest's 5-second default — so the suite passed
+// alone and failed under the parallel load of a full run, which is the worst
+// kind of failing test: one that is right about the code and wrong about the
+// day. The latency is real and worth waiting for; an integration test that
+// mocked S3 would confirm a bucket configuration it never checked.
+jest.setTimeout(30_000)
+
+
 // Build plan 2.3. Two halves, the same split the storage and template suites
 // use: the drawing itself is a pure function of a template and a merged object
 // and is tested as one, and the end of the task — a filled Form 100 an agent can

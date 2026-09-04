@@ -14,10 +14,19 @@ import s3, { keys } from '../src/lib/s3'
 import { DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { hashPassword } from '../src/modules/auth/auth.service'
 import {
+
     confirmIdentityScan,
     scanIdentityDocument,
     scanIdentityDocumentForNewParty
 } from '../src/modules/identity/identity.service'
+
+// These tests talk to the real bucket in ca-central-1. Individual cases measure
+// 2.5-5s, which sits right on Jest's 5-second default — so the suite passed
+// alone and failed under the parallel load of a full run, which is the worst
+// kind of failing test: one that is right about the code and wrong about the
+// day. The latency is real and worth waiting for; an integration test that
+// mocked S3 would confirm a bucket configuration it never checked.
+jest.setTimeout(30_000)
 
 // Build plan 2.5. **Textract is never called here.** An AnalyzeID call is
 // billed, is slow, and needs a real driver's licence to be worth anything —

@@ -5,6 +5,15 @@ import { DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { env } from '../src/config/env'
 import s3, { getSignedUrl, headObject, keys, putObject } from '../src/lib/s3'
 
+// These tests talk to the real bucket in ca-central-1. Individual cases measure
+// 2.5-5s, which sits right on Jest's 5-second default — so the suite passed
+// alone and failed under the parallel load of a full run, which is the worst
+// kind of failing test: one that is right about the code and wrong about the
+// day. The latency is real and worth waiting for; an integration test that
+// mocked S3 would confirm a bucket configuration it never checked.
+jest.setTimeout(30_000)
+
+
 // An integration test — it talks to the real bucket. It is here because the
 // things worth checking (SSE-KMS actually applied, an unsigned GET actually
 // refused) are properties of the bucket configuration, not of this code, and a

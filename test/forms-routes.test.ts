@@ -7,6 +7,15 @@ import { disconnect as disconnectRedis } from '../src/lib/redis'
 import s3, { headObject, keys } from '../src/lib/s3'
 import { hashPassword } from '../src/modules/auth/auth.service'
 
+// These tests talk to the real bucket in ca-central-1. Individual cases measure
+// 2.5-5s, which sits right on Jest's 5-second default — so the suite passed
+// alone and failed under the parallel load of a full run, which is the worst
+// kind of failing test: one that is right about the code and wrong about the
+// day. The latency is real and worth waiting for; an integration test that
+// mocked S3 would confirm a bucket configuration it never checked.
+jest.setTimeout(30_000)
+
+
 // Build plan 2.3 and 2.4, at the boundary. The gate itself is unit-tested in
 // compliance.test.ts; what this suite is about is that it is actually in front
 // of the fill, and that a transaction which fails it produces no document at
