@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "event": "user.document.fieldinvite.signed",
+    "timestamp": 1788730500
+  },
+  "content": {
+    "signer": "signer1@example.test-bd7e53e8e5e14750b31dbffc5824c1e30ec4b00d",
+    "status": "fulfilled",
+    "invite_id": "d025587c3aed4139be472de949e83777b243ee4f",
+    "document_id": "e4d3e7bd64ba4c7a9dddea74bbc701d818cd54c6"
+  }
+}

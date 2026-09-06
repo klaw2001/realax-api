@@ -191,6 +191,35 @@ describe('captured signNow responses still match the schemas', () => {
         }
     })
 
+    /*
+     * Finding 24. The guess going in was that `fieldinvite.sent` would not fire
+     * for a delivery that sends nothing, which would have meant an
+     * embedded-specific branch in `STATUS_FOR_EVENT`. It fires, so there is no
+     * branch — and this test is what would catch the vendor changing its mind.
+     */
+    it('sends the same webhooks for an embedded signature, carrying our own invite ids', () => {
+        const sent = webhookEventSchema.parse(
+            fixture('webhook.embedded.01.user.document.fieldinvite.sent.json')
+        )
+        const signed = webhookEventSchema.parse(
+            fixture('webhook.embedded.02.user.document.fieldinvite.signed.json')
+        )
+
+        expect(sent.meta.event).toEqual('user.document.fieldinvite.sent')
+        expect(signed.meta.event).toEqual('user.document.fieldinvite.signed')
+
+        // The ids the create call handed back, come home again. This is what
+        // makes per-signer progress possible on the embedded path and
+        // impossible on the email one, where the invite returns nothing.
+        expect(sent.content.invite_id).toMatch(/^[a-f0-9]{40}$/)
+        expect(signed.content.invite_id).toMatch(/^[a-f0-9]{40}$/)
+        expect(sent.content.invite_id).not.toEqual(signed.content.invite_id)
+
+        // One signature produced both: signer 1 finishing, and signNow asking
+        // signer 2 without being told to.
+        expect(sent.content.document_id).toEqual(signed.content.document_id)
+    })
+
     it('parses every captured webhook, including the one with a different content shape', () => {
         const fieldInvite = webhookEventSchema.parse(fixture('webhook.04.user.document.fieldinvite.signed.json'))
 

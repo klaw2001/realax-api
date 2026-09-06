@@ -40,6 +40,14 @@ the one above keeps its "fields but no invite" property:
 | `embedded-invite-link-order2.error.json` | the same for signer 2, out of turn → **403** |
 | `embedded-invite-link.error.json` | the same for an invite id that does not exist → **404** |
 | `embedded-document-get-after-invite.json` | `GET /document/{id}`, with the embedded invites on it |
+| `webhook.embedded.01`–`.02` | the callbacks from signing one embedded envelope |
+
+The two webhook files came from a different route than the rest: they were not
+written by `capture_signnow_webhooks.ts` but read back out of `SignerEvent.payload`
+after a real signature went through the running app, and redacted the same way
+by hand. So there is no matching raw body in `logs/` and no signature to verify
+against — the HMAC is already covered by `webhook.04`–`webhook.07`. What these
+are evidence of is the event *sequence*, which is finding 24.
 
 Embedded document id: `ded43080263d4830ba0172afbd0692bfe0248cad`. Unlike the one
 above it **does** hold a live invite set — see the Open section before deleting
@@ -316,6 +324,30 @@ readable from `GET /document/{id}` without keeping it ourselves.
 `short_link_url` is `null` on them — there is no short link, because there is no
 email to put one in.
 
+**24. The webhooks are identical for an embedded signature, and the invite ids
+match.** Captured by signing a real embedded envelope through the app:
+`webhook.embedded.01` and `.02`. Three things, all of which could have gone the
+other way:
+
+- **`user.document.fieldinvite.sent` fires even though no email is sent.** The
+  obvious guess was that it would not — the event is named after a delivery that
+  does not happen here. It does, so `STATUS_FOR_EVENT` in `signing.service.ts`
+  needs no embedded-specific branch and the envelope moves through exactly the
+  states the email path moves through.
+- **`content.invite_id` is the same id `POST /v2/…/embedded-invites` returned**,
+  verified against the ids stored on the envelope. Finding 20 predicted this and
+  it holds: per-signer correlation genuinely works on the embedded path, and
+  `content.document_id` still matches `externalId`.
+- **signNow chains the next signer here too.** Signing as signer 1 produced a
+  `fieldinvite.signed` for signer 1 *and* a `fieldinvite.sent` for signer 2,
+  within the same second and with no request from us. Finding 15 said this about
+  the email family; it is now evidenced for embedded as well.
+
+The two arrived out of order — `sent` for signer 2 recorded 26 ms *before*
+`signed` for signer 1 — which is precisely the case `STATUS_RANK` exists for.
+The envelope came to rest on `signed` rather than being walked backwards to
+`sent`, without anybody having to think about it.
+
 ## Open
 
 **Subscriptions had to be repaired, and can drift again.** The dashboard created
@@ -334,28 +366,13 @@ elapse. Their payload shapes are unverified, which is why
 strict schema would reject the event types we have never seen, and rejecting
 means 4xx, and 30 of those in an hour costs us the subscription.
 
-**Embedded signing (3.2): the request side is captured, the webhook side is
-not.** Findings 19–23 cover create, link, both refusals and the document read
-back afterwards. Two of the three questions this capture was run to answer are
-settled: the create response *does* carry per-signer ids (20), and the vendor
-*does* enforce the turn (21). The third is open:
+**Embedded signing (3.2) is captured, and every question it was run to answer
+is settled.** Findings 19–24. Nothing about it is outstanding.
 
-**Does the webhook sequence change for an embedded signature?** Finding 15 says
-signNow chains the next invite itself, evidenced by `webhook.05` — an
-observation about the *email* family. Embedded emails nobody, so
-`user.document.fieldinvite.sent` may not fire at all, and `STATUS_FOR_EVENT` in
-`signing.service.ts` maps it to `sent`. To answer it: re-run
-`tools/signnow_subscriptions.ts sync <url> --prune`, start
-`tools/capture_signnow_webhooks.ts`, mint a link with `embed-link` and sign as
-signer 1, then again for signer 2, and diff the sequence against
-`webhook.01`–`webhook.07`. "Identical" is itself a finding worth writing down.
-
-The invite set on `ded43080263d4830ba0172afbd0692bfe0248cad` is **deliberately
-left alive** for exactly this. Running `embed-cleanup` deletes it, and getting it
-back costs another billable invite. Links expire in fifteen minutes; mint a
-fresh one with `embed-link` rather than re-inviting.
-
-Until that is captured, nothing in `src/` may assume which events arrive.
+The only remaining unknowns are the two the email path also has:
+`user.document.fieldinvite.decline` and `user.invite.expired` are still
+uncaptured on either delivery mode, for the reasons above — a decline needs
+another billable invite and an expiry needs days to pass.
 
 **A signing link is a bearer credential.** Whoever holds one can execute the
 contract as that signer, with no login. They are redacted out of every fixture
