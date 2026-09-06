@@ -30,6 +30,24 @@ const envSchema = z.object({
     // wildcard origin is invalid with credentialed CORS.
     CORS_ORIGIN: z.string().min(1).default('http://localhost:3000'),
 
+    // Whether the session cookie is sent on cross-site requests — which decides
+    // `Secure` + `SameSite=None` on it, and whether Express trusts the proxy
+    // that terminated TLS.
+    //
+    // Not derived from NODE_ENV. A staging or demo deploy serves the app and
+    // the API from two hosts over HTTPS while running as `development`, because
+    // the refinements below refuse the mock OCR and e-sign providers under
+    // production. Keying the cookie off the environment name meant such a
+    // deploy issued `SameSite=Lax` over a cross-site request, the browser
+    // discarded it, and every call after login was anonymous — a login that
+    // returns 200 and leaves the user logged out.
+    //
+    // Unset it and production behaviour is unchanged. Set it only where TLS
+    // actually terminates in front of the service: `Secure` on a cookie served
+    // over plain HTTP is dropped, so turning this on for a local `http://` run
+    // breaks sessions rather than fixing them.
+    COOKIE_CROSS_SITE: z.stringbool().optional(),
+
     // Storage. The bucket is Canadian-resident on purpose: identity documents
     // are FINTRAC material and do not leave `ca-central-1`.
     AWS_REGION: z.string().min(1).default('ca-central-1'),
@@ -259,3 +277,14 @@ if (!parsed.success) {
 export const env = parsed.data
 
 export const isProduction = env.NODE_ENV === 'production'
+
+/**
+ * Whether the session cookie has to survive a cross-site request.
+ *
+ * Production always does — the app and the API are separate hosts there. Any
+ * other environment says so explicitly with `COOKIE_CROSS_SITE`, because
+ * `development` covers both a local `http://localhost` run, where `Secure`
+ * would break the cookie, and a two-subdomain HTTPS dev deploy, where its
+ * absence does.
+ */
+export const crossSiteCookies = env.COOKIE_CROSS_SITE ?? isProduction

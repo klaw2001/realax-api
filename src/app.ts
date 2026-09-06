@@ -8,7 +8,7 @@ import cookieParser from 'cookie-parser'
 import session from 'express-session'
 import { PrismaSessionStore } from '@quixo3/prisma-session-store'
 
-import { env, isProduction } from '@/config/env'
+import { crossSiteCookies, env } from '@/config/env'
 import prisma from '@/lib/prisma'
 import requireAgent from '@/middleware/auth'
 import { errorHandler, notFound } from '@/middleware/error'
@@ -29,9 +29,9 @@ const app = express()
 
 app.set('port', env.PORT)
 
-// Behind a proxy in production, so `secure` cookies are recognised as being
-// sent over HTTPS rather than silently dropped.
-if (isProduction) {
+// Behind a TLS-terminating proxy wherever the cookie is cross-site, so `secure`
+// cookies are recognised as being sent over HTTPS rather than silently dropped.
+if (crossSiteCookies) {
     app.set('trust proxy', 1)
 }
 
@@ -85,11 +85,12 @@ app.use(
         rolling: true,
         cookie: {
             httpOnly: true,
-            // HTTPS only in production. `SameSite=None` is required there
-            // because the app and the API are served from different hosts, and
-            // it is only legal alongside `secure`.
-            secure: isProduction,
-            sameSite: isProduction ? 'none' : 'lax',
+            // `SameSite=None` wherever the app and the API are served from
+            // different hosts, and it is only legal alongside `secure` — so the
+            // two move together off one flag rather than off the environment
+            // name. See `crossSiteCookies` in `config/env.ts`.
+            secure: crossSiteCookies,
+            sameSite: crossSiteCookies ? 'none' : 'lax',
             maxAge: 12 * 60 * 60 * 1000
         },
         // Postgres-backed via Prisma. Sessions survive a restart, and Phase 0.5
