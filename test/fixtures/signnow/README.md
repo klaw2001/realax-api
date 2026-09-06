@@ -224,6 +224,30 @@ invite guide: "If multiple signers are included in one invite, it counts as a
 single invite." Freeform invites are charged per signer instead — another reason
 to stay on field invites.
 
+**19. Embedded invites are NOT gated on the paid plan.** `POST /v2/documents/
+{id}/embedded-invites` on the trial account answers **400** with
+`19003008 "Email value is not a valid email address."` — a validation error
+about the one field we deliberately broke, not a 402/403 upgrade wall. Captured
+in `embedded-invite-create.error.json`.
+
+Three things follow, and all three were open questions before this call:
+
+- The v2 endpoint **exists and is reachable** on the trial. 3.2 is not blocked on
+  buying the plan. The watermark (finding 17) still is, for the pilot.
+- signNow **parsed the request body far enough to validate the email**, which
+  means `invites[]` with `role_id`, `order` and `auth_method` was accepted
+  structurally. That is weak evidence the request shape is right — weak because
+  it only proves the body was not rejected outright, not that `order` is
+  honoured. `embed-link-order2` is still what settles that.
+- It is the **API-layer error envelope** (`{errors:[{code, message}]}`), the same
+  one `document-invite.error.json` carries, and it parses against the existing
+  `apiErrorSchema` unchanged. So there is no third envelope shape and
+  `classify()` in `signnow.client.ts` does not need widening — a `rejected`, not
+  a `misconfigured`.
+
+The create and link **responses** are still uncaptured. Nothing in `src/` may be
+written against them yet.
+
 ## Open
 
 **Subscriptions had to be repaired, and can drift again.** The dashboard created
@@ -242,21 +266,20 @@ elapse. Their payload shapes are unverified, which is why
 strict schema would reject the event types we have never seen, and rejecting
 means 4xx, and 30 of those in an hour costs us the subscription.
 
-**Embedded signing (3.2) has not been captured at all.** The steps exist —
-`embed-invite-400` through `embed-cleanup` in `tools/capture_signnow.ts` — and
-nobody has run them. Nothing in `src/` may be written against embedded invites
-until they have been, and no `embedded-*.json` file appears in this directory:
-rule 2 is the whole reason this folder exists, and the v2 family is exactly the
-sort of thing the eighteen findings above were all about.
+**Embedded signing (3.2) is half captured.** `embed-invite-400` has been run —
+see finding 19, and `embedded-invite-create.error.json`. It establishes that the
+endpoint is reachable on the trial and that the refusal envelope needs no new
+schema. Every **success** shape is still missing: the create response, the link
+response, and the webhook sequence. Nothing in `src/` may be written against
+those until they exist. Rule 2 is the whole reason this folder exists, and the
+v2 family is exactly the sort of thing the nineteen findings above were about.
 
-Run `embed-invite-400` first. It is free, it uses the shared document, and if
-embedded signing is not on the trial plan it answers 402/403 with an upgrade
-message — which is the cheapest possible way to learn that, and the fixture is
-then the evidence for a purchase decision rather than a dead end. Only spend
-`--yes-embed-invites` once that step has answered a validation error instead.
+The remaining steps cost roughly one document and one invite of trial quota:
+`embed-upload`, `embed-fields`, then `embed-invite --yes-embed-invites`, then
+the link steps, which are free once the invites exist.
 
-Three questions the capture has to settle, none of which the documentation can
-be trusted for:
+Three questions the rest of the capture has to settle, none of which the
+documentation can be trusted for:
 
 1. **Does the create response carry per-signer ids?** The v1 invite answers
    `{"status":"success"}` with nothing to correlate (finding 14), which is why

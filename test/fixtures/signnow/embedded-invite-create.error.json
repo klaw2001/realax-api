@@ -1,0 +1,11 @@
+{
+  "status": 400,
+  "body": {
+    "errors": [
+      {
+        "code": 19003008,
+        "message": "Email value is not a valid email address."
+      }
+    ]
+  }
+}
