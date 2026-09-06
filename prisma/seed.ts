@@ -179,10 +179,27 @@ async function seedRealax() {
         create: { id: BUYER_ID, ...buyerDetail }
     })
 
-    for (const [party, role] of [
-        [seller, PartyRole.SELLER],
-        [buyer, PartyRole.BUYER]
-    ] as const) {
+    /*
+     * The seller signs first, then the buyer.
+     *
+     * The position is the loop index rather than a constant. Both parties were
+     * seeded at `signingOrder: 1`, which is a set of positions `resolveSigners`
+     * refuses outright — two parties explicitly at position 1 means the agent's
+     * intent is ambiguous rather than parallel. So the seeded transaction, the
+     * one the demo opens, was the one transaction that could never be sent for
+     * signature.
+     *
+     * `update` carries it too, so re-seeding repairs a database that already
+     * has the duplicate rather than leaving it for whoever next tries to send.
+     */
+    for (const [index, [party, role]] of (
+        [
+            [seller, PartyRole.SELLER],
+            [buyer, PartyRole.BUYER]
+        ] as const
+    ).entries()) {
+        const signingOrder = index + 1
+
         await prisma.transactionParty.upsert({
             where: {
                 transactionId_partyId_role: {
@@ -191,12 +208,12 @@ async function seedRealax() {
                     role
                 }
             },
-            update: {},
+            update: { signingOrder },
             create: {
                 transactionId: transaction.id,
                 partyId: party.id,
                 role,
-                signingOrder: 1
+                signingOrder
             }
         })
     }
