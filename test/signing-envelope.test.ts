@@ -4,10 +4,16 @@ import { DeleteObjectCommand } from '@aws-sdk/client-s3'
 import request from 'supertest'
 
 import app from '../src/app'
+import logger from '../src/lib/logger'
 import prisma from '../src/lib/prisma'
 import { disconnect as disconnectRedis } from '../src/lib/redis'
 import s3, { keys } from '../src/lib/s3'
-import { SignNowError, type SignNowProvider } from '../src/integrations/signnow/provider'
+import { mockProvider, __setMockOutcome } from '../src/integrations/signnow/mock.client'
+import {
+    SignNowError,
+    SIGNNOW_NOT_THIS_SIGNERS_TURN,
+    type SignNowProvider
+} from '../src/integrations/signnow/provider'
 import { hashPassword } from '../src/modules/auth/auth.service'
 import { createEnvelopeForForm, SignerValidationError } from '../src/modules/signing/signing.service'
 
@@ -83,14 +89,49 @@ const completeEntries = {
     buyerLawyerFax: '416-555-0132'
 }
 
-/** A provider that records what it was asked, and can be told to fail. */
+/**
+ * A provider that records what it was asked, and can be told to fail.
+ *
+ * The cast at the bottom means a method missing from here is `undefined` at
+ * runtime rather than a compile error, so every method added to
+ * `SignNowProvider` has to be added here too.
+ */
 const stubProvider = (
     over: Partial<SignNowProvider> = {}
-): SignNowProvider & { prepareCalls: number; inviteCalls: number } => {
+): SignNowProvider & {
+    prepareCalls: number
+    inviteCalls: number
+    embeddedInviteCalls: number
+    linkCalls: number
+} => {
     const stub = {
         name: 'stub',
         prepareCalls: 0,
         inviteCalls: 0,
+        embeddedInviteCalls: 0,
+        linkCalls: 0,
+        async inviteSignersEmbedded(
+            _externalId: string,
+            input: Parameters<SignNowProvider['inviteSignersEmbedded']>[1]
+        ) {
+            stub.embeddedInviteCalls += 1
+
+            return {
+                invited: input.signers.map(signer => ({
+                    transactionPartyId: signer.transactionPartyId,
+                    order: signer.order,
+                    externalInviteId: `${signer.order}`.repeat(40).slice(0, 40)
+                }))
+            }
+        },
+        async embeddedSigningLink(_externalId: string, externalInviteId: string) {
+            stub.linkCalls += 1
+
+            return {
+                url: `https://mock.invalid/embedded-signing/${externalInviteId}`,
+                expiresInSeconds: 900
+            }
+        },
         async prepareDocument(input: Parameters<SignNowProvider['prepareDocument']>[0]) {
             stub.prepareCalls += 1
 
@@ -118,7 +159,12 @@ const stubProvider = (
         ...over
     }
 
-    return stub as SignNowProvider & { prepareCalls: number; inviteCalls: number }
+    return stub as SignNowProvider & {
+        prepareCalls: number
+        inviteCalls: number
+        embeddedInviteCalls: number
+        linkCalls: number
+    }
 }
 
 const fillForm = async () => {
@@ -279,7 +325,7 @@ describe('POST /api/transactions/:id/signing', () => {
     it('sends a compliant filled form and moves the transaction', async () => {
         const provider = stubProvider()
 
-        const envelope = await createEnvelopeForForm(transactionId, agentId, FORM, provider)
+        const envelope = await createEnvelopeForForm(transactionId, agentId, FORM, 'email', provider)
 
         expect(envelope.status).toEqual('sent')
         expect(envelope.formCode).toEqual(FORM)
@@ -296,9 +342,9 @@ describe('POST /api/transactions/:id/signing', () => {
     it('refuses a second send for the same form', async () => {
         const provider = stubProvider()
 
-        await createEnvelopeForForm(transactionId, agentId, FORM, provider)
+        await createEnvelopeForForm(transactionId, agentId, FORM, 'email', provider)
 
-        await expect(createEnvelopeForForm(transactionId, agentId, FORM, provider)).rejects.toMatchObject({
+        await expect(createEnvelopeForForm(transactionId, agentId, FORM, 'email', provider)).rejects.toMatchObject({
             name: 'EnvelopeAlreadySentError'
         })
 
@@ -311,8 +357,8 @@ describe('POST /api/transactions/:id/signing', () => {
         const provider = stubProvider()
 
         const results = await Promise.allSettled([
-            createEnvelopeForForm(transactionId, agentId, FORM, provider),
-            createEnvelopeForForm(transactionId, agentId, FORM, provider)
+            createEnvelopeForForm(transactionId, agentId, FORM, 'email', provider),
+            createEnvelopeForForm(transactionId, agentId, FORM, 'email', provider)
         ])
 
         expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1)
@@ -331,7 +377,7 @@ describe('POST /api/transactions/:id/signing', () => {
 
         try {
             await expect(
-                createEnvelopeForForm(transactionId, agentId, FORM, provider)
+                createEnvelopeForForm(transactionId, agentId, FORM, 'email', provider)
             ).rejects.toMatchObject({ name: 'FormNotFilledError' })
 
             // The vendor was never called. Sending a document the agent has not
@@ -350,7 +396,7 @@ describe('POST /api/transactions/:id/signing', () => {
 
         // 320 has a `.raw.json` and no curated `.json`, so it has geometry and
         // no names — deliberately not fillable, and so not sendable.
-        await expect(createEnvelopeForForm(transactionId, agentId, '320', provider)).rejects.toMatchObject({
+        await expect(createEnvelopeForForm(transactionId, agentId, '320', 'email', provider)).rejects.toMatchObject({
             name: 'TemplateNotFoundError'
         })
 
@@ -395,7 +441,7 @@ describe('the parties have to be invitable, which the compliance gate does not g
 
         const provider = stubProvider()
 
-        await expect(createEnvelopeForForm(transactionId, agentId, FORM, provider)).rejects.toBeInstanceOf(
+        await expect(createEnvelopeForForm(transactionId, agentId, FORM, 'email', provider)).rejects.toBeInstanceOf(
             SignerValidationError
         )
 
@@ -403,7 +449,7 @@ describe('the parties have to be invitable, which the compliance gate does not g
         // become a live document.
         expect(provider.prepareCalls).toEqual(0)
 
-        const failure = await createEnvelopeForForm(transactionId, agentId, FORM, provider).catch(
+        const failure = await createEnvelopeForForm(transactionId, agentId, FORM, 'email', provider).catch(
             (error: SignerValidationError) => error
         )
 
@@ -419,7 +465,7 @@ describe('the parties have to be invitable, which the compliance gate does not g
         await prisma.transactionParty.update({ where: { id: sellerPartyId }, data: { signingOrder: 2 } })
 
         await expect(
-            createEnvelopeForForm(transactionId, agentId, FORM, stubProvider())
+            createEnvelopeForForm(transactionId, agentId, FORM, 'email', stubProvider())
         ).rejects.toBeInstanceOf(SignerValidationError)
     })
 
@@ -427,7 +473,7 @@ describe('the parties have to be invitable, which the compliance gate does not g
         await prisma.transactionParty.update({ where: { id: sellerPartyId }, data: { signingOrder: null } })
 
         await expect(
-            createEnvelopeForForm(transactionId, agentId, FORM, stubProvider())
+            createEnvelopeForForm(transactionId, agentId, FORM, 'email', stubProvider())
         ).rejects.toBeInstanceOf(SignerValidationError)
     })
 })
@@ -440,7 +486,7 @@ describe('when the vendor fails part-way', () => {
             }
         })
 
-        await expect(createEnvelopeForForm(transactionId, agentId, FORM, provider)).rejects.toBeInstanceOf(
+        await expect(createEnvelopeForForm(transactionId, agentId, FORM, 'email', provider)).rejects.toBeInstanceOf(
             SignNowError
         )
 
@@ -468,7 +514,7 @@ describe('when the vendor fails part-way', () => {
             }
         })
 
-        await expect(createEnvelopeForForm(transactionId, agentId, FORM, provider)).rejects.toBeInstanceOf(
+        await expect(createEnvelopeForForm(transactionId, agentId, FORM, 'email', provider)).rejects.toBeInstanceOf(
             SignNowError
         )
 
@@ -480,7 +526,7 @@ describe('when the vendor fails part-way', () => {
 
         allowInvite = true
 
-        const resumed = await createEnvelopeForForm(transactionId, agentId, FORM, provider)
+        const resumed = await createEnvelopeForForm(transactionId, agentId, FORM, 'email', provider)
 
         expect(resumed.status).toEqual('sent')
         expect(resumed.id).toEqual(stranded.id)
@@ -494,7 +540,7 @@ describe('when the vendor fails part-way', () => {
 
 describe('GET /api/transactions/:id/signing', () => {
     it('lists the envelopes, newest first', async () => {
-        await createEnvelopeForForm(transactionId, agentId, FORM, stubProvider())
+        await createEnvelopeForForm(transactionId, agentId, FORM, 'email', stubProvider())
 
         const agent = await signIn()
         const response = await agent.get(`/api/transactions/${transactionId}/signing`).expect(200)
@@ -511,5 +557,268 @@ describe('GET /api/transactions/:id/signing', () => {
         const agent = await signIn()
 
         await agent.get(`/api/transactions/${otherTransactionId}/signing`).expect(404)
+    })
+})
+
+describe('embedded signing, where nobody is emailed', () => {
+    it('takes the embedded path, and emails nobody at all', async () => {
+        const provider = stubProvider()
+
+        const envelope = await createEnvelopeForForm(transactionId, agentId, FORM, 'embedded', provider)
+
+        expect(envelope.delivery).toEqual('embedded')
+        expect(provider.embeddedInviteCalls).toEqual(1)
+
+        // The assertion that proves the fork actually forked. An embedded send
+        // that also emailed the signers would pass every other check here.
+        expect(provider.inviteCalls).toEqual(0)
+    })
+
+    /*
+     * Pinned deliberately. The UI offers embedded first, but the API's default
+     * is what an omitted field means — and an omission must not be the thing
+     * that decides whether a client receives an email about a contract. If
+     * somebody flips the default, this fails rather than the clients finding out.
+     */
+    it('still emails when the request does not say, which is the old behaviour', async () => {
+        const provider = stubProvider()
+
+        const agent = await fillForm()
+        const response = await agent
+            .post(`/api/transactions/${transactionId}/signing`)
+            .send({ formCode: FORM })
+            .expect(201)
+
+        expect(response.body.envelope.delivery).toEqual('email')
+
+        void provider
+    })
+
+    it('stores an invite id per signer, and never returns one', async () => {
+        const provider = stubProvider()
+
+        const envelope = await createEnvelopeForForm(transactionId, agentId, FORM, 'embedded', provider)
+
+        const row = await prisma.signingEnvelope.findUniqueOrThrow({ where: { id: envelope.id } })
+        const stored = row.signers as { externalInviteId?: string }[]
+
+        expect(stored.every(signer => signer.externalInviteId?.length === 40)).toBe(true)
+
+        // A vendor id the browser has no business holding: it is what a link
+        // request is addressed by. Same treatment as `externalRoleId`.
+        expect(JSON.stringify(envelope)).not.toContain('externalInviteId')
+    })
+
+    it('refuses to resume an embedded envelope as an email one', async () => {
+        let allowInvite = false
+
+        const provider = stubProvider({
+            async inviteSignersEmbedded(_externalId, input) {
+                if (!allowInvite) {
+                    throw new SignNowError('unavailable', 'the vendor was unreachable')
+                }
+
+                return {
+                    invited: input.signers.map(signer => ({
+                        transactionPartyId: signer.transactionPartyId,
+                        order: signer.order,
+                        externalInviteId: 'd'.repeat(40)
+                    }))
+                }
+            }
+        })
+
+        await expect(
+            createEnvelopeForForm(transactionId, agentId, FORM, 'embedded', provider)
+        ).rejects.toBeInstanceOf(SignNowError)
+
+        allowInvite = true
+
+        // Emailing the signers now would send a client a document the agent
+        // deliberately chose not to send them.
+        await expect(
+            createEnvelopeForForm(transactionId, agentId, FORM, 'email', provider)
+        ).rejects.toMatchObject({ name: 'EnvelopeDeliveryMismatchError' })
+
+        const resumed = await createEnvelopeForForm(transactionId, agentId, FORM, 'embedded', provider)
+
+        expect(resumed.status).toEqual('sent')
+    })
+})
+
+describe('POST /api/transactions/:id/signing/:envelopeId/link', () => {
+    // Signed in once, so `mint` stays a supertest chain rather than a promise
+    // of one and `.expect(...)` still reads the way it does everywhere else.
+    let signedIn: Awaited<ReturnType<typeof signIn>>
+
+    beforeAll(async () => {
+        signedIn = await signIn()
+    })
+
+    const mint = (envelopeId: string, transactionPartyId: string) =>
+        signedIn
+            .post(`/api/transactions/${transactionId}/signing/${envelopeId}/link`)
+            .send({ transactionPartyId })
+
+    it('mints a link for the signer whose turn it is', async () => {
+        const envelope = await createEnvelopeForForm(
+            transactionId,
+            agentId,
+            FORM,
+            'embedded',
+            stubProvider()
+        )
+
+        const response = await mint(envelope.id, sellerPartyId).expect(200)
+
+        expect(response.body.url).toContain('mock.invalid')
+        expect(response.body.expiresInSeconds).toBeGreaterThan(0)
+        expect(response.body.transactionPartyId).toEqual(sellerPartyId)
+
+        // A credential in a body, so no shared cache may keep it.
+        expect(response.headers['cache-control']).toEqual('no-store')
+
+        // Rule 6 holds here as everywhere else.
+        expect(JSON.stringify(response.body)).not.toContain('@')
+        expect(JSON.stringify(response.body)).not.toContain('Whitfield')
+    })
+
+    it('refuses an envelope that was emailed instead', async () => {
+        const envelope = await createEnvelopeForForm(transactionId, agentId, FORM, 'email', stubProvider())
+
+        const response = await mint(envelope.id, sellerPartyId).expect(409)
+
+        expect(response.body.error).toEqual('envelope_not_embedded')
+    })
+
+    it('answers 404 for an envelope on another agent’s transaction', async () => {
+        const envelope = await createEnvelopeForForm(
+            transactionId,
+            agentId,
+            FORM,
+            'embedded',
+            stubProvider()
+        )
+
+        const agent = await signIn()
+
+        // A real envelope id, under a transaction the caller does not own. The
+        // id selects; it does not grant.
+        await agent
+            .post(`/api/transactions/${otherTransactionId}/signing/${envelope.id}/link`)
+            .send({ transactionPartyId: sellerPartyId })
+            .expect(404)
+    })
+
+    it('answers 404 for a party who is not a signer on it', async () => {
+        const envelope = await createEnvelopeForForm(
+            transactionId,
+            agentId,
+            FORM,
+            'embedded',
+            stubProvider()
+        )
+
+        const response = await mint(envelope.id, 'not-a-party-on-this-envelope').expect(404)
+
+        expect(response.body.error).toEqual('signer_not_on_envelope')
+    })
+
+    /*
+     * These two drive `mockProvider` rather than the stub above. The route
+     * resolves its own provider — a controller does not take one — so the only
+     * way to make the vendor fail behind an HTTP request is to make the
+     * configured provider fail, which is what `SIGNNOW_PROVIDER=mock` and
+     * `test/helpers/signNowMock` are for.
+     */
+    it('turns the vendor’s “not your turn” into something an agent can read', async () => {
+        const envelope = await createEnvelopeForForm(
+            transactionId,
+            agentId,
+            FORM,
+            'embedded',
+            stubProvider()
+        )
+
+        // Exactly what the trial answered when asked for signer 2's link before
+        // signer 1 had signed — captured in
+        // `embedded-invite-link-order2.error.json`, finding 21.
+        jest.spyOn(mockProvider, 'embeddedSigningLink').mockRejectedValue(
+            new SignNowError(
+                'rejected',
+                'signNow refused the request: The field invite is not pending or fulfilled.',
+                403,
+                SIGNNOW_NOT_THIS_SIGNERS_TURN
+            )
+        )
+
+        const response = await mint(envelope.id, sellerPartyId).expect(409)
+
+        // Not a 502. Nothing failed — there is a queue and this signer is in it.
+        expect(response.body.error).toEqual('signer_not_yet_invited')
+
+        jest.restoreAllMocks()
+    })
+
+    it('answers 502 for a vendor failure that is a real one', async () => {
+        const envelope = await createEnvelopeForForm(
+            transactionId,
+            agentId,
+            FORM,
+            'embedded',
+            stubProvider()
+        )
+
+        __setMockOutcome('unavailable')
+
+        const response = await mint(envelope.id, sellerPartyId).expect(502)
+
+        expect(response.body.error).toEqual('signing_unavailable')
+
+        __setMockOutcome(null)
+    })
+
+    it('rejects a body that does not name a party', async () => {
+        const envelope = await createEnvelopeForForm(
+            transactionId,
+            agentId,
+            FORM,
+            'embedded',
+            stubProvider()
+        )
+
+        const agent = await signIn()
+
+        await agent
+            .post(`/api/transactions/${transactionId}/signing/${envelope.id}/link`)
+            .send({})
+            .expect(400)
+    })
+
+    it('never writes the link to a log', async () => {
+        const envelope = await createEnvelopeForForm(
+            transactionId,
+            agentId,
+            FORM,
+            'embedded',
+            stubProvider()
+        )
+
+        const written: unknown[] = []
+
+        for (const level of ['info', 'warn', 'error', 'debug'] as const) {
+            jest.spyOn(logger, level).mockImplementation((...args: unknown[]) => {
+                written.push(...args)
+
+                return undefined as never
+            })
+        }
+
+        const response = await mint(envelope.id, sellerPartyId).expect(200)
+
+        expect(JSON.stringify(written)).not.toContain(response.body.url)
+        expect(JSON.stringify(written)).not.toContain('mock.invalid')
+
+        jest.restoreAllMocks()
     })
 })

@@ -4,7 +4,12 @@ import prisma from '@/lib/prisma'
 import logger from '@/lib/logger'
 import { getObjectBytes } from '@/lib/s3'
 import { signNowProvider } from '@/integrations/signnow'
-import { type EnvelopeSigner, type SignNowProvider } from '@/integrations/signnow/provider'
+import {
+    SignNowError,
+    SIGNNOW_NOT_THIS_SIGNERS_TURN,
+    type EnvelopeSigner,
+    type SignNowProvider
+} from '@/integrations/signnow/provider'
 import { TransactionNotFoundError } from '@/modules/forms/fill.service'
 import { FormNotFilledError } from '@/modules/forms/forms.service'
 import { loadTemplate } from '@/modules/forms/template.service'
@@ -12,7 +17,12 @@ import { listTransactionParties } from '@/modules/party/party.service'
 import { placementsForParties, SignerHasNoLineError } from '@/modules/signing/placement.service'
 import { setTransactionStatus } from '@/modules/transaction/transaction.service'
 import type { Party } from '@/schemas/party'
-import type { SignerValidationFailure, SigningEnvelopeView } from '@/schemas/signing'
+import type {
+    EnvelopeDelivery,
+    SignerValidationFailure,
+    SigningEnvelopeView,
+    SigningLinkResponse
+} from '@/schemas/signing'
 
 /**
  * Raising an envelope on a filled form (build plan 3.1).
@@ -28,6 +38,54 @@ export class EnvelopeAlreadySentError extends Error {
     constructor(readonly envelopeId: string) {
         super('This form already has an envelope out for signature')
         this.name = 'EnvelopeAlreadySentError'
+    }
+}
+
+/** A resume asked for a different delivery mode than the envelope was sent in. */
+export class EnvelopeDeliveryMismatchError extends Error {
+    constructor(
+        readonly envelopeId: string,
+        readonly delivery: EnvelopeDelivery
+    ) {
+        super(`This envelope was already started as ${delivery}`)
+        this.name = 'EnvelopeDeliveryMismatchError'
+    }
+}
+
+/** The envelope exists, but not in a state where anyone can still sign it. */
+export class EnvelopeClosedError extends Error {
+    constructor(readonly status: string) {
+        super(`This envelope is ${status}`)
+        this.name = 'EnvelopeClosedError'
+    }
+}
+
+/** A signing link was asked for on an envelope that was emailed instead. */
+export class EnvelopeNotEmbeddedError extends Error {
+    constructor() {
+        super('This envelope was sent by email, so there is no link to open here')
+        this.name = 'EnvelopeNotEmbeddedError'
+    }
+}
+
+/** No such signer on this envelope, or one with no invite behind them. */
+export class SignerNotOnEnvelopeError extends Error {
+    constructor() {
+        super('That party is not a signer on this envelope')
+        this.name = 'SignerNotOnEnvelopeError'
+    }
+}
+
+/**
+ * The previous signer has not finished.
+ *
+ * Carries whose turn it actually is, as an id — never a name, rule 6. The
+ * frontend already has the party list and joins on it.
+ */
+export class SignerNotYetInvitedError extends Error {
+    constructor(readonly awaitingTransactionPartyId: string | null) {
+        super('It is not this signer’s turn yet')
+        this.name = 'SignerNotYetInvitedError'
     }
 }
 
@@ -219,6 +277,56 @@ const ownedTransaction = (transactionId: string, agentId: string) =>
     prisma.transaction.findFirst({ where: { id: transactionId, agentId }, select: { id: true } })
 
 /**
+ * Ask the signers, whichever way this envelope is being sent.
+ *
+ * The one place the two delivery modes differ. Everything on either side of it
+ * — the ordering that decides what a half-failure leaves behind, the unique
+ * index, the status guard — is identical, and duplicating
+ * `createEnvelopeForForm` per mode is exactly where the two would drift.
+ *
+ * Returns the signers as they should be stored. Only the embedded path has
+ * anything to add: an invite id per signer, which is what a link is later
+ * minted against.
+ */
+const sendInvite = async (
+    provider: SignNowProvider,
+    delivery: EnvelopeDelivery,
+    externalId: string,
+    signers: EnvelopeSigner[],
+    roleIds: Record<string, string>,
+    formCode: string
+): Promise<StoredSigner[]> => {
+    const stored = signers.map(signer => ({
+        transactionPartyId: signer.transactionPartyId,
+        role: signer.role,
+        order: signer.order,
+        externalRoleId: roleIds[signer.transactionPartyId] ?? ''
+    }))
+
+    if (delivery === 'embedded') {
+        const invited = await provider.inviteSignersEmbedded(externalId, { signers, roleIds })
+
+        const inviteIds = new Map(
+            invited.invited.map(entry => [entry.transactionPartyId, entry.externalInviteId])
+        )
+
+        return stored.map(signer => ({
+            ...signer,
+            externalInviteId: inviteIds.get(signer.transactionPartyId)
+        }))
+    }
+
+    await provider.inviteSigners(externalId, {
+        signers,
+        roleIds,
+        subject: `Please sign OREA Form ${formCode}`,
+        message: 'Your agent has sent this document for signature.'
+    })
+
+    return stored
+}
+
+/**
  * Send a filled form for signature.
  *
  * The ordering is the substance of this function, because every step that can
@@ -235,6 +343,10 @@ const ownedTransaction = (transactionId: string, agentId: string) =>
  * `activeFormId` index against a document that does not exist. The worst case
  * here is a vendor document nobody was invited to.
  *
+ * `delivery` chooses between emailing the signers and preparing them for
+ * in-app signing. It changes one call in the middle and nothing else — see
+ * `sendInvite`.
+ *
  * `provider` is an optional last parameter so tests can inject a stub, matching
  * `scanIdentityDocument(..., provider?: OcrProvider)`.
  */
@@ -242,6 +354,7 @@ export const createEnvelopeForForm = async (
     transactionId: string,
     agentId: string,
     formCode: string,
+    delivery: EnvelopeDelivery = 'email',
     provider: SignNowProvider = signNowProvider()
 ): Promise<SigningEnvelopeView> => {
     if (!(await ownedTransaction(transactionId, agentId))) {
@@ -297,23 +410,41 @@ export const createEnvelopeForForm = async (
     // — fields cannot be re-placed once a document is sent, and this one never
     // was.
     if (existing) {
-        const invited = await provider.inviteSigners(existing.externalId, {
+        /*
+         * The stored mode wins, not the requested one.
+         *
+         * Resuming an embedded envelope as an email invite would send a client
+         * a document the agent deliberately chose not to send them, and the
+         * reverse would leave somebody waiting for an email that is never
+         * coming. Neither is a thing to do quietly, so a disagreement is
+         * refused and the agent is told which it already is.
+         */
+        if (existing.delivery !== delivery) {
+            throw new EnvelopeDeliveryMismatchError(
+                existing.id,
+                existing.delivery as EnvelopeDelivery
+            )
+        }
+
+        const stored = await sendInvite(
+            provider,
+            delivery,
+            existing.externalId,
             signers,
-            roleIds: Object.fromEntries(
-                ((existing.signers as unknown as StoredSigner[]) ?? []).map(signer => [
+            Object.fromEntries(
+                storedSigners(existing.signers).map(signer => [
                     signer.transactionPartyId,
                     signer.externalRoleId
                 ])
             ),
-            subject: `Please sign OREA Form ${template.form}`,
-            message: 'Your agent has sent this document for signature.'
-        })
-
-        void invited
+            template.form
+        )
 
         await prisma.signingEnvelope.updateMany({
             where: { id: existing.id, status: 'created' },
-            data: { status: 'sent' }
+            // The invite ids only exist after the call above, and on a resume
+            // they are the thing that was missing the first time.
+            data: { status: 'sent', signers: stored as unknown as Prisma.InputJsonValue }
         })
 
         await setTransactionStatus(
@@ -355,6 +486,7 @@ export const createEnvelopeForForm = async (
                 activeFormId: form.id,
                 externalId: prepared.externalId,
                 status: 'created',
+                delivery,
                 signers: stored as unknown as Prisma.InputJsonValue
             }
         })
@@ -374,19 +506,26 @@ export const createEnvelopeForForm = async (
         throw error
     }
 
-    await provider.inviteSigners(prepared.externalId, {
+    const invited = await sendInvite(
+        provider,
+        delivery,
+        prepared.externalId,
         signers,
-        roleIds: prepared.roleIds,
-        subject: `Please sign OREA Form ${template.form}`,
-        message: 'Your agent has sent this document for signature.'
-    })
+        prepared.roleIds,
+        template.form
+    )
 
     // Guarded on `created`, so a `fieldinvite.sent` webhook that has already
     // arrived and moved the row is not walked backwards. Webhooks are the
     // source of truth.
+    //
+    // The signers are rewritten here rather than at create because an embedded
+    // invite only yields its ids once it has been made, and the row has to
+    // exist before then — the ordering above is what keeps a failure between
+    // the two recoverable.
     await prisma.signingEnvelope.updateMany({
         where: { id: envelope.id, status: 'created' },
-        data: { status: 'sent' }
+        data: { status: 'sent', signers: invited as unknown as Prisma.InputJsonValue }
     })
 
     await setTransactionStatus(
@@ -424,6 +563,78 @@ export const listEnvelopes = async (
     })
 
     return records.map(record => toView(record, record.transactionForm?.formTemplate.formCode ?? ''))
+}
+
+/**
+ * A short-lived link that lets one signer sign, in the app (build plan 3.2).
+ *
+ * The envelope is loaded by id **and** transaction **and** owning agent, in one
+ * query. A path id selects; it does not grant. Another agent's envelope is a
+ * 404 here rather than a 403, the same answer a transaction they do not own
+ * gives, because telling somebody an id exists is telling them something.
+ *
+ * Whose turn it is, is the vendor's to say and not ours. There is a local
+ * count in `awaitingSigner` and it is used for rendering, but it is not the
+ * gate: in the in-person flow the agent signs one party and immediately wants
+ * the next link, and the webhook confirming the first is still in flight
+ * somewhere. Gating on our own events would stall the agent behind a round trip
+ * from signNow to us and back. So the request goes through and a refusal is
+ * translated — `SIGNNOW_NOT_THIS_SIGNERS_TURN` is not really an error, it is
+ * "not yet", and it deserves an answer that says so rather than a 502.
+ *
+ * The URL is returned and forgotten. Never logged, never stored.
+ */
+export const mintSigningLink = async (
+    transactionId: string,
+    agentId: string,
+    envelopeId: string,
+    transactionPartyId: string,
+    provider: SignNowProvider = signNowProvider()
+): Promise<SigningLinkResponse> => {
+    const envelope = await prisma.signingEnvelope.findFirst({
+        where: { id: envelopeId, transactionId, transaction: { agentId } },
+        include: { events: { select: { eventType: true } } }
+    })
+
+    if (envelope === null) {
+        throw new TransactionNotFoundError()
+    }
+
+    if (envelope.delivery !== 'embedded') {
+        throw new EnvelopeNotEmbeddedError()
+    }
+
+    if (TERMINAL.has(envelope.status) || envelope.status === 'completed') {
+        throw new EnvelopeClosedError(envelope.status)
+    }
+
+    const signers = storedSigners(envelope.signers)
+    const signer = signers.find(candidate => candidate.transactionPartyId === transactionPartyId)
+
+    // No invite id means the envelope is mid-resume: the row exists, the vendor
+    // has the document, and nobody has been asked yet. Indistinguishable from
+    // an unknown party as far as this endpoint can do anything about it.
+    if (signer === undefined || signer.externalInviteId === undefined) {
+        throw new SignerNotOnEnvelopeError()
+    }
+
+    try {
+        const link = await provider.embeddedSigningLink(envelope.externalId, signer.externalInviteId)
+
+        return {
+            url: link.url,
+            expiresInSeconds: link.expiresInSeconds,
+            transactionPartyId
+        }
+    } catch (error) {
+        if (error instanceof SignNowError && error.vendorCode === SIGNNOW_NOT_THIS_SIGNERS_TURN) {
+            throw new SignerNotYetInvitedError(
+                awaitingSigner(signers, envelope.events)?.transactionPartyId ?? null
+            )
+        }
+
+        throw error
+    }
 }
 
 /**

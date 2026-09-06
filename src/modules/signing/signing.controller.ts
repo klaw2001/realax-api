@@ -6,8 +6,14 @@ import { TemplateNotFoundError, TemplateInvalidError } from '@/modules/forms/tem
 import {
     createEnvelopeForForm,
     listEnvelopes,
+    mintSigningLink,
     EnvelopeAlreadySentError,
+    EnvelopeClosedError,
+    EnvelopeDeliveryMismatchError,
+    EnvelopeNotEmbeddedError,
     FormNotFilledError,
+    SignerNotOnEnvelopeError,
+    SignerNotYetInvitedError,
     SignerValidationError,
     TransactionNotFoundError
 } from '@/modules/signing/signing.service'
@@ -16,7 +22,9 @@ import type { ErrorResponse } from '@/schemas/common'
 import {
     createEnvelopeRequestSchema,
     envelopeListResponseSchema,
-    envelopeResponseSchema
+    envelopeResponseSchema,
+    signingLinkRequestSchema,
+    signingLinkResponseSchema
 } from '@/schemas/signing'
 
 const unauthorized: ErrorResponse = { error: 'unauthorized', message: 'Authentication required' }
@@ -81,7 +89,7 @@ export const postEnvelope = async (req: Request, res: Response) => {
     }
 
     const { transactionId } = params(req)
-    const { formCode } = parsed.data
+    const { formCode, delivery } = parsed.data
 
     try {
         // Before anything else, and recorded. The gate running is itself the
@@ -104,7 +112,7 @@ export const postEnvelope = async (req: Request, res: Response) => {
             return
         }
 
-        const envelope = await createEnvelopeForForm(transactionId, req.agent.id, formCode)
+        const envelope = await createEnvelopeForForm(transactionId, req.agent.id, formCode, delivery)
 
         res.status(201).json(envelopeResponseSchema.parse({ envelope }))
     } catch (error) {
@@ -125,6 +133,17 @@ export const postEnvelope = async (req: Request, res: Response) => {
             res.status(404).json({
                 error: 'form_not_filled',
                 message: 'Fill this form before sending it for signature'
+            } satisfies ErrorResponse)
+            return
+        }
+
+        if (error instanceof EnvelopeDeliveryMismatchError) {
+            res.status(409).json({
+                error: 'envelope_delivery_mismatch',
+                message:
+                    error.delivery === 'embedded'
+                        ? 'This form was already started for in-app signing. Open it there rather than emailing it.'
+                        : 'This form was already started as an email invite. The signers have been written to.'
             } satisfies ErrorResponse)
             return
         }
@@ -175,4 +194,99 @@ export const getEnvelopes = async (req: Request, res: Response) => {
     }
 
     res.status(200).json(envelopeListResponseSchema.parse({ envelopes }))
+}
+
+/**
+ * `POST /api/transactions/:id/signing/:envelopeId/link`.
+ *
+ * The only response body in this service that contains a credential. It is sent
+ * with `Cache-Control: no-store` — the first response header anywhere in this
+ * codebase, and worth the exception: everything else here returns facts about a
+ * transaction, and this returns the ability to sign one. A shared or proxied
+ * cache holding it for even a moment is a different class of mistake.
+ *
+ * Nothing about the URL is logged, including on the way out.
+ */
+export const postSigningLink = async (req: Request, res: Response) => {
+    if (!req.agent) {
+        res.status(401).json(unauthorized)
+        return
+    }
+
+    const parsed = signingLinkRequestSchema.safeParse(req.body)
+
+    if (!parsed.success) {
+        const fields = [...new Set(parsed.error.issues.map(issue => issue.path.join('.')))]
+
+        res.status(400).json({
+            error: 'invalid_request',
+            message: `Check these fields: ${fields.join(', ') || 'the request body'}`
+        } satisfies ErrorResponse)
+
+        return
+    }
+
+    try {
+        const link = await mintSigningLink(
+            params(req).transactionId,
+            req.agent.id,
+            req.params.envelopeId ?? '',
+            parsed.data.transactionPartyId
+        )
+
+        res.setHeader('Cache-Control', 'no-store')
+        res.status(200).json(signingLinkResponseSchema.parse(link))
+    } catch (error) {
+        // An envelope on somebody else's transaction is a 404, the same as one
+        // that does not exist. A path id selects; it does not grant.
+        if (error instanceof TransactionNotFoundError) {
+            res.status(404).json({
+                error: 'envelope_not_found',
+                message: 'No such envelope'
+            } satisfies ErrorResponse)
+            return
+        }
+
+        if (error instanceof SignerNotOnEnvelopeError) {
+            res.status(404).json({
+                error: 'signer_not_on_envelope',
+                message: 'That party is not a signer on this envelope'
+            } satisfies ErrorResponse)
+            return
+        }
+
+        if (error instanceof EnvelopeNotEmbeddedError) {
+            res.status(409).json({
+                error: 'envelope_not_embedded',
+                message: 'This form was emailed to the signers, so there is nothing to open here'
+            } satisfies ErrorResponse)
+            return
+        }
+
+        if (error instanceof EnvelopeClosedError) {
+            res.status(409).json({
+                error: 'envelope_closed',
+                message: `This envelope is ${error.status} — nobody can sign it now`
+            } satisfies ErrorResponse)
+            return
+        }
+
+        if (error instanceof SignerNotYetInvitedError) {
+            // 409 rather than 403: nothing is forbidden, it is a queue. The id
+            // of whoever is being waited on, never a name — the frontend has
+            // the party list and joins on it.
+            res.status(409).json({
+                error: 'signer_not_yet_invited',
+                message: 'The signer before this one has not finished yet'
+            } satisfies ErrorResponse)
+            return
+        }
+
+        if (error instanceof SignNowError) {
+            sendProviderError(error, res)
+            return
+        }
+
+        throw error
+    }
 }

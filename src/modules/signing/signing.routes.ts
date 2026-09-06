@@ -1,6 +1,6 @@
 import express from 'express'
 
-import { getEnvelopes, postEnvelope } from '@/modules/signing/signing.controller'
+import { getEnvelopes, postEnvelope, postSigningLink } from '@/modules/signing/signing.controller'
 
 /**
  * Signing on one transaction, mounted at `/api/transactions/:id/signing` —
@@ -20,6 +20,12 @@ transactionSigningRoutes.post('/', (req, res, next) => {
 
 transactionSigningRoutes.get('/', (req, res, next) => {
     getEnvelopes(req, res).catch(next)
+})
+
+// A POST because it is not idempotent — every call mints a fresh credential —
+// and because a URL that signs a contract has no business in a browser history.
+transactionSigningRoutes.post('/:envelopeId/link', (req, res, next) => {
+    postSigningLink(req, res).catch(next)
 })
 
 export default transactionSigningRoutes
