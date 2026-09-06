@@ -18,6 +18,8 @@ import logger from '@/lib/logger'
 import {
     documentSchema,
     documentUploadSchema,
+    embeddedInviteCreateSchema,
+    embeddedInviteLinkSchema,
     inviteResponseSchema,
     userSchema,
     apiErrorSchema,
@@ -25,6 +27,8 @@ import {
 } from '@/integrations/signnow/schema'
 import {
     SignNowError,
+    type EmbeddedInvite,
+    type EmbeddedLink,
     type EnvelopeSigner,
     type FieldPlacement,
     type PreparedDocument,
@@ -34,6 +38,19 @@ import {
 
 /** How long any one upstream call may take before we give up on it. */
 const REQUEST_TIMEOUT_MS = 10_000
+
+/**
+ * How long a signing link stays usable. signNow counts this in minutes.
+ *
+ * A constant rather than a parameter: a caller-chosen expiry on a credential
+ * that signs a contract is a caller-chosen security property, and there is no
+ * caller who needs a different one. Short for the same reason presigned S3
+ * links are (`DEFAULT_SIGNED_URL_TTL_SECONDS`) — a leaked link should already be
+ * dead — and long enough that a client reading before signing does not run out.
+ *
+ * Minting again is free, so the recovery from an expiry is a second tap.
+ */
+const LINK_EXPIRATION_MINUTES = 15
 
 /**
  * The role names placed on a document, derived from our party roles.
@@ -86,7 +103,16 @@ const classify = (status: number, body: unknown): SignNowError => {
         // The vendor's message names the field, not a client — "Email is
         // invalid", "From must not be empty" — so it is safe to carry and it is
         // the only thing that makes the failure diagnosable.
-        return new SignNowError('rejected', `signNow refused the request: ${api.data.errors[0]?.message ?? 'no reason given'}`, status)
+        // The code is carried as well as the message. Every API-layer refusal is
+        // `rejected`, but one of them — 19001028, "not this signer's turn" — is
+        // a normal state of a sequential signing run rather than a fault, and
+        // the code is the only stable way to recognise it.
+        return new SignNowError(
+            'rejected',
+            `signNow refused the request: ${api.data.errors[0]?.message ?? 'no reason given'}`,
+            status,
+            api.data.errors[0]?.code
+        )
     }
 
     // 5xx, an HTML error page, a proxy in the way.
@@ -302,6 +328,85 @@ const inviteSigners = async (
 }
 
 /**
+ * Invite everyone without sending anything (build plan 3.2).
+ *
+ * No `from`, no subject, no message — there is no email, so none of what
+ * `inviteSigners` spends a `GET /user` on applies. One call, and it answers with
+ * the per-signer ids that make the rest of embedded signing possible.
+ *
+ * `auth_method: 'none'` because the link itself is the credential and the agent
+ * is standing next to the signer. Anything stronger would be a second factor on
+ * a person who is physically present, holding the agent's own device.
+ */
+const inviteSignersEmbedded = async (
+    externalId: string,
+    input: {
+        signers: EnvelopeSigner[]
+        roleIds: Record<string, string>
+    }
+): Promise<EmbeddedInvite> => {
+    const body = {
+        invites: input.signers.map(signer => ({
+            email: signer.email,
+            role_id: input.roleIds[signer.transactionPartyId],
+            // The same field that sequences the email path, and the vendor
+            // enforces it here too: a link for signer 2 is refused until 1 signs.
+            order: signer.order,
+            auth_method: 'none'
+        }))
+    }
+
+    const created = parse(
+        embeddedInviteCreateSchema,
+        await request('POST', `/v2/documents/${externalId}/embedded-invites`, { json: body }),
+        'embedded invite'
+    )
+
+    // Matched on `order` rather than position. The response is the vendor's
+    // list, not an echo of ours, and nothing promises the two are in the same
+    // sequence — `order` is the only field common to both that identifies a
+    // signer, since the ids are the vendor's and the emails are not returned.
+    return {
+        invited: input.signers.map(signer => {
+            const invite = created.data.find(candidate => candidate.order === signer.order)
+
+            if (invite === undefined) {
+                throw new SignNowError(
+                    'schema',
+                    `signNow created no embedded invite for signing position ${signer.order}`
+                )
+            }
+
+            return {
+                transactionPartyId: signer.transactionPartyId,
+                order: signer.order,
+                externalInviteId: invite.id
+            }
+        })
+    }
+}
+
+const embeddedSigningLink = async (
+    externalId: string,
+    externalInviteId: string
+): Promise<EmbeddedLink> => {
+    const link = parse(
+        embeddedInviteLinkSchema,
+        await request(
+            'POST',
+            `/v2/documents/${externalId}/embedded-invites/${externalInviteId}/link`,
+            { json: { auth_method: 'none', link_expiration: LINK_EXPIRATION_MINUTES } }
+        ),
+        'embedded signing link'
+    )
+
+    return {
+        url: link.data.link,
+        expiresInSeconds: LINK_EXPIRATION_MINUTES * 60
+    }
+}
+
+/**
  * Whether a webhook body really came from signNow.
  *
  * `base64(raw sha256 digest)`, verified against real captured callbacks. The
@@ -333,5 +438,7 @@ export const signNowHttpProvider: SignNowProvider = {
     name: 'signnow',
     prepareDocument,
     inviteSigners,
+    inviteSignersEmbedded,
+    embeddedSigningLink,
     verifyWebhookSignature
 }

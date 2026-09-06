@@ -6,13 +6,20 @@ import { join } from 'path'
 
 import { signNowProvider } from '../src/integrations/signnow'
 import { mockProvider, __setMockOutcome } from '../src/integrations/signnow/mock.client'
-import { SignNowError, type EnvelopeSigner, type FieldPlacement } from '../src/integrations/signnow/provider'
+import {
+    SignNowError,
+    SIGNNOW_NOT_THIS_SIGNERS_TURN,
+    type EnvelopeSigner,
+    type FieldPlacement
+} from '../src/integrations/signnow/provider'
 import { verifyWebhookSignature } from '../src/integrations/signnow/signnow.client'
 import {
     apiErrorSchema,
     authErrorSchema,
     documentSchema,
     documentUploadSchema,
+    embeddedInviteCreateSchema,
+    embeddedInviteLinkSchema,
     inviteResponseSchema,
     userSchema,
     webhookEventSchema
@@ -139,6 +146,51 @@ describe('captured signNow responses still match the schemas', () => {
         expect(apiErrorSchema.safeParse(auth.body).success).toBe(false)
     })
 
+    it('parses the embedded invite, which does carry per-signer ids', () => {
+        const parsed = embeddedInviteCreateSchema.parse(fixture('embedded-invite-create.json'))
+
+        expect(parsed.data).toHaveLength(2)
+        expect(parsed.data.map(invite => invite.order)).toEqual([1, 2])
+
+        // The whole reason 3.2 can show per-signer progress: these are the ids
+        // the webhooks carry as `content.invite_id`. The email invite above
+        // answers with nothing to correlate at all.
+        expect(parsed.data.every(invite => /^[a-f0-9]{40}$/.test(invite.id))).toBe(true)
+
+        // Only the first signer is asked. The second is created and waiting,
+        // which is the vendor sequencing the run rather than us.
+        expect(parsed.data[0]?.status).toEqual('pending')
+        expect(parsed.data[1]?.status).toEqual('created')
+    })
+
+    it('parses the signing link', () => {
+        const parsed = embeddedInviteLinkSchema.parse(fixture('embedded-invite-link.json'))
+
+        expect(parsed.data.link).toBeDefined()
+    })
+
+    it('classifies every embedded refusal as rejected, and keeps the vendor code', () => {
+        const cases = [
+            { file: 'embedded-invite-create.error.json', status: 400, code: 19003008 },
+            { file: 'embedded-invite-link-order2.error.json', status: 403, code: SIGNNOW_NOT_THIS_SIGNERS_TURN },
+            { file: 'embedded-invite-link.error.json', status: 404, code: 19002002 }
+        ]
+
+        for (const expected of cases) {
+            const captured = fixture(expected.file) as { status: number; body: unknown }
+
+            expect(captured.status).toEqual(expected.status)
+
+            // All three are the API-layer envelope, so `classify()` needed no
+            // widening for embedded signing — they are `rejected`, not
+            // `misconfigured`, because the vendor understood us and said no.
+            const parsed = apiErrorSchema.parse(captured.body)
+
+            expect(parsed.errors[0]?.code).toEqual(expected.code)
+            expect(authErrorSchema.safeParse(captured.body).success).toBe(false)
+        }
+    })
+
     it('parses every captured webhook, including the one with a different content shape', () => {
         const fieldInvite = webhookEventSchema.parse(fixture('webhook.04.user.document.fieldinvite.signed.json'))
 
@@ -207,6 +259,60 @@ describe('mock provider', () => {
                 placements: { 'party-1': [placement()] }
             })
         ).rejects.toMatchObject({ kind: 'unavailable' })
+    })
+
+    it('derives invite ids the same way, so a resume can be told from a re-invite', async () => {
+        const roleIds = { 'party-1': 'b'.repeat(40) }
+
+        const first = await mockProvider.inviteSignersEmbedded('a'.repeat(40), {
+            signers: [signer()],
+            roleIds
+        })
+
+        const second = await mockProvider.inviteSignersEmbedded('a'.repeat(40), {
+            signers: [signer()],
+            roleIds
+        })
+
+        expect(first.invited[0]?.externalInviteId).toEqual(second.invited[0]?.externalInviteId)
+        expect(first.invited[0]?.externalInviteId).toMatch(/^[a-f0-9]{40}$/)
+    })
+
+    it('refuses a signer with no role, as the real vendor would', async () => {
+        await expect(
+            mockProvider.inviteSignersEmbedded('a'.repeat(40), { signers: [signer()], roleIds: {} })
+        ).rejects.toMatchObject({ kind: 'rejected' })
+    })
+
+    /*
+     * This test exists to fail when somebody "improves" the mock into something
+     * realistic. A link that looks real is one a developer will eventually click
+     * and then trust, and `.invalid` is reserved by RFC 2606 precisely so it
+     * cannot resolve. Do not relax it.
+     */
+    it('mints a link that is obviously not a real one', async () => {
+        const link = await mockProvider.embeddedSigningLink('a'.repeat(40), 'c'.repeat(40))
+
+        expect(new URL(link.url).hostname.endsWith('.invalid')).toBe(true)
+        expect(link.url).not.toContain('signnow')
+        expect(link.expiresInSeconds).toBeGreaterThan(0)
+    })
+
+    it('can be made to fail with each kind, on the embedded methods too', async () => {
+        for (const kind of ['unavailable', 'misconfigured', 'rejected', 'schema'] as const) {
+            __setMockOutcome(kind)
+
+            await expect(
+                mockProvider.inviteSignersEmbedded('a'.repeat(40), {
+                    signers: [signer()],
+                    roleIds: { 'party-1': 'b'.repeat(40) }
+                })
+            ).rejects.toMatchObject({ kind })
+
+            await expect(
+                mockProvider.embeddedSigningLink('a'.repeat(40), 'c'.repeat(40))
+            ).rejects.toMatchObject({ kind })
+        }
     })
 
     it('runs the real HMAC rather than pretending to verify', () => {

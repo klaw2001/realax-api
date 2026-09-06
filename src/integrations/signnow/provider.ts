@@ -94,6 +94,35 @@ export interface SentInvite {
     invited: { transactionPartyId: string; order: number }[]
 }
 
+/**
+ * What an embedded invite yields, and the reason 3.2 can do what 3.1 cannot.
+ *
+ * Compare `SentInvite`: the email invite answers `{"status":"success"}` and
+ * nothing else, so there is no way to tell one signer's event from another's.
+ * The embedded call returns an id per signer, and that id is what the webhooks
+ * carry as `content.invite_id` — so an event can be matched to a party.
+ *
+ * `externalInviteId` is also what a signing link is minted against. It is stored
+ * on the envelope's `signers` JSON beside `externalRoleId` and, like it, never
+ * leaves this service.
+ */
+export interface EmbeddedInvite {
+    invited: { transactionPartyId: string; order: number; externalInviteId: string }[]
+}
+
+/**
+ * A link that signs a document.
+ *
+ * Not an identifier and not a location: a bearer credential. Whoever holds this
+ * can execute the contract as the signer it was minted for, without logging in
+ * to anything. It is returned to the caller and forgotten — never logged, never
+ * persisted, never put in an S3 key or an error message.
+ */
+export interface EmbeddedLink {
+    url: string
+    expiresInSeconds: number
+}
+
 export interface SignNowProvider {
     readonly name: string
 
@@ -131,6 +160,44 @@ export interface SignNowProvider {
     ): Promise<SentInvite>
 
     /**
+     * Invite the signers without emailing any of them (build plan 3.2).
+     *
+     * A separate method rather than a flag on `inviteSigners`, because the two
+     * are different vendor calls with different bodies and different results —
+     * and because `SentInvite` exists to record that the email invite yields
+     * nothing correlatable. Widening it to carry ids on one path and not the
+     * other would erase that.
+     *
+     * The document is prepared exactly as for an email invite;
+     * `prepareDocument` does not know which of these follows it.
+     *
+     * Sequential signing still holds. Only the first signer becomes signable,
+     * and the vendor refuses a link for anyone else until their turn — so this
+     * returns ids for every signer, but not permission for every signer.
+     */
+    inviteSignersEmbedded(
+        externalId: string,
+        input: {
+            signers: EnvelopeSigner[]
+            roleIds: Record<string, string>
+        }
+    ): Promise<EmbeddedInvite>
+
+    /**
+     * Mint a signing link for one invited signer.
+     *
+     * Short-lived by construction, and minted on demand rather than at invite
+     * time: a link is a credential, and one that exists before it is needed is
+     * one that can leak before it is used. Calling this again issues a fresh
+     * link — it is not idempotent, and that is the point.
+     *
+     * Throws `rejected` when it is not that signer's turn. The vendor is the
+     * authority on that, not us: it answers 403 with `vendorCode` 19001028, and
+     * the caller turns that into something an agent can read.
+     */
+    embeddedSigningLink(externalId: string, externalInviteId: string): Promise<EmbeddedLink>
+
+    /**
      * Whether a webhook body really came from signNow.
      *
      * The signature is base64 of the **raw** sha256 HMAC digest — not base64 of
@@ -165,9 +232,26 @@ export class SignNowError extends Error {
     constructor(
         readonly kind: 'misconfigured' | 'unavailable' | 'rejected' | 'schema',
         message: string,
-        readonly status?: number
+        readonly status?: number,
+
+        /**
+         * signNow's own numeric code, when the body carried one.
+         *
+         * Kept because `kind` is deliberately coarse — every API-layer refusal
+         * is `rejected` — and one of them is not really an error at all:
+         * 19001028, "the field invite is not pending or fulfilled", is the
+         * vendor saying it is not this signer's turn yet. That deserves an
+         * answer an agent can act on rather than a generic "the service refused
+         * this document", and the code is the only thing that identifies it.
+         * Matching on the message text would break the first time signNow
+         * reworded it.
+         */
+        readonly vendorCode?: number
     ) {
         super(message)
         this.name = 'SignNowError'
     }
 }
+
+/** Not an error so much as "not yet": the previous signer has not finished. */
+export const SIGNNOW_NOT_THIS_SIGNERS_TURN = 19001028

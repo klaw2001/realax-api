@@ -16,6 +16,8 @@ import { createHash } from 'crypto'
 import { verifyWebhookSignature } from '@/integrations/signnow/signnow.client'
 import {
     SignNowError,
+    type EmbeddedInvite,
+    type EmbeddedLink,
     type EnvelopeSigner,
     type FieldPlacement,
     type PreparedDocument,
@@ -99,10 +101,72 @@ const inviteSigners = async (
     }
 }
 
+/**
+ * An invite id derived from the document and the party.
+ *
+ * Same construction and same reasons as `mockDocumentId`: forty lowercase hex
+ * characters so it matches the real vendor's ids and survives
+ * `signNowIdSchema`, and deterministic so a test can assert an envelope was
+ * resumed rather than re-invited.
+ */
+const mockInviteId = (externalId: string, transactionPartyId: string): string =>
+    createHash('sha256').update(`${externalId}:invite:${transactionPartyId}`).digest('hex').slice(0, 40)
+
+const inviteSignersEmbedded = async (
+    externalId: string,
+    input: { signers: EnvelopeSigner[]; roleIds: Record<string, string> }
+): Promise<EmbeddedInvite> => {
+    failIfAsked('inviteSignersEmbedded')
+
+    // The same refusal the real vendor makes, for the same reason `inviteSigners`
+    // above mirrors it: a signer with no role on the document cannot be invited.
+    for (const signer of input.signers) {
+        if (input.roleIds[signer.transactionPartyId] === undefined) {
+            throw new SignNowError('rejected', 'A signer has no role on the document')
+        }
+    }
+
+    return {
+        invited: input.signers.map(signer => ({
+            transactionPartyId: signer.transactionPartyId,
+            order: signer.order,
+            externalInviteId: mockInviteId(externalId, signer.transactionPartyId)
+        }))
+    }
+}
+
+/**
+ * A link that goes nowhere, and looks like it.
+ *
+ * `.invalid` is reserved by RFC 2606 and can never resolve, so a developer who
+ * clicks this gets a DNS failure rather than a page. That is the whole design:
+ * the host is deliberately not `signnow.com`, there is no random token, and
+ * nothing about it invites being trusted. A mock that produced a plausible
+ * signing URL would teach people that mock output can be acted on, which is the
+ * habit that ends with somebody sending a real client a dead link.
+ *
+ * It does not enforce the signing turn. The vendor is the authority on whose
+ * turn it is — the mock has no state and should not grow any — so the ordering
+ * rules are exercised against the real provider and asserted in the service.
+ */
+const embeddedSigningLink = async (
+    externalId: string,
+    externalInviteId: string
+): Promise<EmbeddedLink> => {
+    failIfAsked('embeddedSigningLink')
+
+    return {
+        url: `https://mock.invalid/embedded-signing/${externalId}/${externalInviteId}`,
+        expiresInSeconds: 15 * 60
+    }
+}
+
 export const mockProvider: SignNowProvider = {
     name: 'mock',
     prepareDocument,
     inviteSigners,
+    inviteSignersEmbedded,
+    embeddedSigningLink,
     // Deliberately the real one.
     verifyWebhookSignature
 }

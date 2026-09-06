@@ -71,6 +71,52 @@ export const inviteResponseSchema = z.object({
     status: z.literal('success')
 })
 
+/**
+ * `POST /v2/documents/{id}/embedded-invites` (build plan 3.2).
+ *
+ * The opposite of `inviteResponseSchema` above, and the reason embedded signing
+ * can show per-signer progress at all: this one answers with an id per signer.
+ * `id` is the same identifier the webhooks carry as `content.invite_id`, so an
+ * event can be matched back to a party — which is impossible on the email path.
+ *
+ * `status` differs between the two entries in the captured response: the first
+ * signer is `pending` and the second `created`, because only the first has been
+ * asked. Parsed as a plain string rather than an enum; the full vocabulary is
+ * not known from one capture, and nothing here branches on it.
+ */
+export const embeddedInviteCreateSchema = z.object({
+    data: z.array(
+        z.object({
+            id: signNowIdSchema,
+            role_id: signNowIdSchema,
+            order: z.number().int().positive(),
+            status: z.string().optional()
+        })
+    )
+})
+
+/**
+ * `POST /v2/documents/{id}/embedded-invites/{inviteId}/link`.
+ *
+ * The one field is a bearer credential — whoever holds it can sign as that
+ * signer, with no login. It is never logged, never stored, and never written to
+ * a fixture: `redact()` in `tools/capture_signnow.ts` strips it by key name and
+ * again by shape.
+ *
+ * Which is why this is `z.string()` and not `z.url()`, against the instinct.
+ * The committed fixture holds `"<redacted>"`, so a URL-validating schema could
+ * never be tested against the only captured example we are allowed to keep —
+ * the assertion would have to be deleted or the credential committed, and
+ * neither is a trade worth making for a format check on a field we hand
+ * straight to an iframe. The README says as much about redaction generally: the
+ * shape is what a schema needs, and the shape is "a non-empty string".
+ */
+export const embeddedInviteLinkSchema = z.object({
+    data: z.object({
+        link: z.string().min(1)
+    })
+})
+
 /** `GET /user`, cut to the two fields an invite's `from` needs. */
 export const userSchema = z.object({
     id: signNowIdSchema,
