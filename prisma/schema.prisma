@@ -273,13 +273,27 @@ model SigningEnvelope {
   externalId String @unique
   status     String
 
-  // [{ transactionPartyId, role, order, externalRoleId }]
+  // How the signers were asked: "email" or "embedded". The vocabulary is pinned
+  // in Zod, as `provider` and `status` above are, rather than in a Postgres enum
+  // that a third delivery mode would need a migration to widen.
+  //
+  // Defaulted rather than backfilled: every envelope that existed before 3.2 was
+  // an email invite, so the default is not a placeholder, it is the truth about
+  // those rows. It also decides how a resume behaves — re-inviting an embedded
+  // envelope by email would send a client a document the agent deliberately
+  // chose not to send them.
+  delivery String @default("email")
+
+  // [{ transactionPartyId, role, order, externalRoleId, externalInviteId? }]
   //
   // Json rather than a table because the vendor-side identifiers it holds are
-  // exactly what the capture settled, and a table designed before that capture
-  // would have had a column for an invite id that does not exist — signNow's
-  // invite response carries no ids at all. No email and no legal name here:
-  // rule 6, and the party rows already have both.
+  // exactly what the capture settled, and a table designed before it would have
+  // got them wrong in both directions: the email invite returns no ids at all,
+  // and the embedded one returns a per-signer id that nobody expected. No email
+  // and no legal name here: rule 6, and the party rows already have both.
+  //
+  // `externalInviteId` is present only on embedded envelopes. It is what a
+  // signing link is minted against, and what a webhook's `invite_id` matches.
   signers Json?
 
   auditCertS3Key String?

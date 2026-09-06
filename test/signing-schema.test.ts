@@ -227,4 +227,41 @@ describe('columns the migration added', () => {
         expect(signers[0]?.externalRoleId).toHaveLength(40)
         expect(JSON.stringify(signers)).not.toContain('@')
     })
+
+    /*
+     * Proves the migration ran, not merely that it was written. An envelope
+     * created without a `delivery` has to read back `email`, because that is
+     * what every envelope raised before 3.2 actually was — the default is a
+     * statement about history, not a placeholder.
+     */
+    it('defaults delivery to email, which is what the rows that predate it were', async () => {
+        const created = await prisma.signingEnvelope.create({ data: envelope() })
+
+        expect(created.delivery).toEqual('email')
+    })
+
+    it('carries an invite id on an embedded envelope, and still no client detail', async () => {
+        const created = await prisma.signingEnvelope.create({
+            data: envelope({
+                delivery: 'embedded',
+                signers: [
+                    {
+                        transactionPartyId: 'party-1',
+                        role: 'SELLER',
+                        order: 1,
+                        externalRoleId: 'a'.repeat(40),
+                        externalInviteId: 'c'.repeat(40)
+                    }
+                ]
+            })
+        })
+
+        const signers = created.signers as { externalInviteId?: string }[]
+
+        expect(created.delivery).toEqual('embedded')
+        expect(signers[0]?.externalInviteId).toHaveLength(40)
+
+        // The extra vendor id changes nothing about rule 6.
+        expect(JSON.stringify(signers)).not.toContain('@')
+    })
 })

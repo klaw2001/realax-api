@@ -2084,6 +2084,15 @@
           "fileName"
         ]
       },
+      "EnvelopeDelivery": {
+        "type": "string",
+        "enum": [
+          "email",
+          "embedded"
+        ],
+        "description": "`email` sends each signer signNow's own hosted link in turn. `embedded` emails nobody — the agent mints a signing link per signer and renders it in the app, for a client who is physically present.",
+        "example": "embedded"
+      },
       "EnvelopeSigner": {
         "type": "object",
         "properties": {
@@ -2140,11 +2149,22 @@
             "description": "Moved by webhook, not by the browser. `created` means the document exists at the vendor but nobody has been invited yet — a state a Send can resume from.",
             "example": "sent"
           },
+          "delivery": {
+            "$ref": "#/components/schemas/EnvelopeDelivery"
+          },
           "signers": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/EnvelopeSigner"
             }
+          },
+          "awaitingTransactionPartyId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Whose turn it is, or null when nobody is being waited on. Derived from the signing events received so far, so it is what to render — but not what to trust before minting a link. The e-signature service decides that, and the link endpoint asks it.",
+            "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
           },
           "createdAt": {
             "type": "string",
@@ -2163,7 +2183,9 @@
           "formCode",
           "provider",
           "status",
+          "delivery",
           "signers",
+          "awaitingTransactionPartyId",
           "createdAt",
           "updatedAt"
         ]
@@ -2176,6 +2198,16 @@
             "minLength": 1,
             "description": "A form already filled on this transaction. It is not filled for you.",
             "example": "100"
+          },
+          "delivery": {
+            "type": "string",
+            "enum": [
+              "email",
+              "embedded"
+            ],
+            "default": "email",
+            "description": "Omit for `email`, the long-standing behaviour. `embedded` sends nothing and requires the agent to mint a signing link per signer.",
+            "example": "embedded"
           }
         },
         "required": [
@@ -2297,6 +2329,44 @@
           "error",
           "message",
           "compliance"
+        ]
+      },
+      "SigningLinkRequest": {
+        "type": "object",
+        "properties": {
+          "transactionPartyId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Which signer on the envelope is about to sign. Must be one of its `signers`.",
+            "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+          }
+        },
+        "required": [
+          "transactionPartyId"
+        ]
+      },
+      "SigningLinkResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Authorises signing as that party — anyone who has it can sign, with no login. Render it into an iframe and let it go. Do not persist it, log it, put it in a bookmark, or pass it to a share sheet. It expires in minutes and a fresh one costs nothing, so there is never a reason to keep it.",
+            "example": "https://app.signnow.com/webapp/document/…"
+          },
+          "expiresInSeconds": {
+            "type": "integer",
+            "example": 900
+          },
+          "transactionPartyId": {
+            "type": "string",
+            "description": "Echoed back, so a slow response cannot be rendered against the wrong signer.",
+            "example": "clx0a1b2c3d4e5f6g7h8i9j0k"
+          }
+        },
+        "required": [
+          "url",
+          "expiresInSeconds",
+          "transactionPartyId"
         ]
       },
       "IdentityDocumentType": {
@@ -4283,7 +4353,7 @@
     "/api/transactions/{id}/signing": {
       "post": {
         "summary": "Send a filled form for signature",
-        "description": "Runs the compliance gate, checks that every party can actually be invited, uploads the filled PDF to the e-sign provider with the signature fields placed on it, and invites the first signer.\n\nSigning is sequential: only the first signer is invited now. The provider invites the next one when the previous has signed, and every state change after this call arrives by webhook rather than from the browser.\n\nAt most one envelope per form may be out for signature at a time, enforced by a unique index rather than a check, so a double-clicked Send cannot produce two.",
+        "description": "Runs the compliance gate, checks that every party can actually be invited, uploads the filled PDF to the e-sign provider with the signature fields placed on it, and invites the first signer.\n\nSigning is sequential: only the first signer is invited now. The provider invites the next one when the previous has signed, and every state change after this call arrives by webhook rather than from the browser.\n\n`delivery` decides how they are asked. `email` is the default and sends each signer a hosted link in turn. `embedded` emails nobody at all — raise the envelope, then call the link endpoint per signer to get something to render in the app.\n\nAt most one envelope per form may be out for signature at a time, enforced by a unique index rather than a check, so a double-clicked Send cannot produce two.",
         "tags": [
           "signing"
         ],
@@ -4436,6 +4506,110 @@
           },
           "404": {
             "description": "No such transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactions/{id}/signing/{envelopeId}/link": {
+      "post": {
+        "summary": "Mint a signing link for one signer",
+        "description": "For an `embedded` envelope only: returns a short-lived URL that lets the named party sign, to be rendered in an iframe on the agent’s own device. Nothing is emailed.\n\nA POST rather than a GET because it is not idempotent — each call issues a fresh credential — and because a URL that signs a contract has no business in a browser history or a prefetch.\n\nSequential signing is enforced by the e-signature service, not here: asking for signer 2 before signer 1 has finished answers 409. Mint on demand, immediately before handing the device over, rather than ahead of time.",
+        "tags": [
+          "signing"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "envelopeId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SigningLinkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The link. Render it and discard it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SigningLinkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body does not name a party",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction or envelope, or that party is not on it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The envelope was sent by email, or is already finished, or it is not that signer’s turn yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The e-sign provider refused or could not be reached",
             "content": {
               "application/json": {
                 "schema": {

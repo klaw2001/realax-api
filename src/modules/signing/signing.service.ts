@@ -136,6 +136,44 @@ interface StoredSigner {
     role: Party['role']
     order: number
     externalRoleId: string
+
+    /**
+     * Embedded envelopes only — the email invite returns no ids to store.
+     *
+     * What a signing link is minted against, and what a webhook's `invite_id`
+     * matches. Kept here rather than exposed, exactly as `externalRoleId` is:
+     * it is a vendor identifier, and handing it to a browser would be handing
+     * out the one thing a link request is addressed by.
+     */
+    externalInviteId?: string
+}
+
+const storedSigners = (value: Prisma.JsonValue): StoredSigner[] =>
+    Array.isArray(value) ? (value as unknown as StoredSigner[]) : []
+
+/**
+ * Whose turn it is, from the events we have been told about.
+ *
+ * Pure, and deliberately not authoritative. The vendor decides whether a signer
+ * may sign, and the link endpoint asks it — this is for rendering, so a screen
+ * can say "waiting on Margaret" and enable one button instead of two.
+ *
+ * Counting signatures rather than matching `invite_id` to a signer: the count
+ * is right whether or not the events carry an id, and on the email path they
+ * are the only correlation available at all. It relies on signing being
+ * sequential, which is the same assumption the whole feature rests on and which
+ * the vendor enforces.
+ *
+ * `null` once everyone has signed, or when there are no signers to wait on.
+ */
+export const awaitingSigner = (
+    signers: StoredSigner[],
+    events: { eventType: string }[]
+): StoredSigner | null => {
+    const signed = events.filter(event => event.eventType === SIGNED_EVENT).length
+    const ordered = [...signers].sort((a, b) => a.order - b.order)
+
+    return ordered[signed] ?? null
 }
 
 const toView = (
@@ -144,13 +182,15 @@ const toView = (
         transactionId: string
         provider: string
         status: string
+        delivery: string
         signers: Prisma.JsonValue
+        events?: { eventType: string }[]
         createdAt: Date
         updatedAt: Date
     },
     formCode: string
 ): SigningEnvelopeView => {
-    const signers = Array.isArray(record.signers) ? (record.signers as unknown as StoredSigner[]) : []
+    const signers = storedSigners(record.signers)
 
     return {
         id: record.id,
@@ -158,11 +198,18 @@ const toView = (
         formCode,
         provider: record.provider,
         status: record.status as SigningEnvelopeView['status'],
+        delivery: record.delivery as SigningEnvelopeView['delivery'],
         signers: signers.map(signer => ({
             transactionPartyId: signer.transactionPartyId,
             role: signer.role,
             order: signer.order
         })),
+
+        // Null on a finished envelope, and on one read without its events —
+        // "nobody is being waited on" is the truthful answer to both.
+        awaitingTransactionPartyId: TERMINAL.has(record.status)
+            ? null
+            : (awaitingSigner(signers, record.events ?? [])?.transactionPartyId ?? null),
         createdAt: record.createdAt.toISOString(),
         updatedAt: record.updatedAt.toISOString()
     }
@@ -365,7 +412,15 @@ export const listEnvelopes = async (
     const records = await prisma.signingEnvelope.findMany({
         where: { transactionId },
         orderBy: { createdAt: 'desc' },
-        include: { transactionForm: { include: { formTemplate: { select: { formCode: true } } } } }
+        include: {
+            transactionForm: { include: { formTemplate: { select: { formCode: true } } } },
+
+            // Only the type. The payload is a whole vendor callback and nothing
+            // here reads it — `awaitingSigner` counts signatures, and pulling
+            // the bodies would mean loading every webhook we have ever received
+            // to answer a question about whose turn it is.
+            events: { select: { eventType: true } }
+        }
     })
 
     return records.map(record => toView(record, record.transactionForm?.formTemplate.formCode ?? ''))
@@ -397,9 +452,18 @@ const TERMINAL = new Set(['declined', 'expired'])
  * sequential signing the vendor invites the next one itself, and only
  * `document.complete` means every required field is filled.
  */
+/**
+ * One signer finishing — the event `awaitingSigner` counts.
+ *
+ * Named rather than repeated because it is load-bearing in two unrelated
+ * places: it moves the envelope's status, and it is how a screen works out
+ * whose turn it is.
+ */
+export const SIGNED_EVENT = 'user.document.fieldinvite.signed'
+
 const STATUS_FOR_EVENT: Record<string, string> = {
     'user.document.fieldinvite.sent': 'sent',
-    'user.document.fieldinvite.signed': 'signed',
+    [SIGNED_EVENT]: 'signed',
     'user.document.complete': 'completed',
     'user.document.fieldinvite.decline': 'declined',
     'user.invite.expired': 'expired'
