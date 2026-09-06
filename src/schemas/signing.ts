@@ -129,7 +129,10 @@ registry.registerPath({
     security: [{ sessionCookie: [] }],
     request: {
         params: z.object({ id: z.string() }),
-        body: { content: { 'application/json': { schema: createEnvelopeRequestSchema } } }
+        body: {
+            required: true,
+            content: { 'application/json': { schema: createEnvelopeRequestSchema } }
+        }
     },
     responses: {
         201: {
