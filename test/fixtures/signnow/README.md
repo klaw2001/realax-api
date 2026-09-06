@@ -73,6 +73,24 @@ To check: grep this directory for the account's own address and for the mail
 provider's domain. Both must return nothing. (The literal strings are not
 written here, so that the check does not match this file.)
 
+Also, before committing any `embedded-*.json`:
+
+    grep -o 'https[^"]*' test/fixtures/signnow/embedded-*.json
+
+Every hit must be a bare `https://api.signnow.com`. Anything with a path or a
+query on it is a live signing link about to enter git history, where deleting it
+later does not remove it — a credential that lets whoever reads the repository
+execute a contract as somebody else. `redact()` should have turned it into
+`<redacted-url>` already; a hit means it did not, and the fix is the redaction,
+not the file.
+
+Grepping the whole directory for URL-shaped tokens instead does **not** work,
+and it is worth knowing why before someone writes that check and starts ignoring
+it: `document-get.json` legitimately holds thumbnail URLs with the 40-hex
+document id in the path, and they match every "long opaque segment" pattern
+anyone would reasonably write. They are not credentials — fetching one needs the
+bearer token — so they stay.
+
 ## Findings
 
 These are the reasons the client is written the way it is. Each one contradicts
@@ -223,6 +241,51 @@ elapse. Their payload shapes are unverified, which is why
 `content.document_id` — and stores the whole body in `SignerEvent.payload`. A
 strict schema would reject the event types we have never seen, and rejecting
 means 4xx, and 30 of those in an hour costs us the subscription.
+
+**Embedded signing (3.2) has not been captured at all.** The steps exist —
+`embed-invite-400` through `embed-cleanup` in `tools/capture_signnow.ts` — and
+nobody has run them. Nothing in `src/` may be written against embedded invites
+until they have been, and no `embedded-*.json` file appears in this directory:
+rule 2 is the whole reason this folder exists, and the v2 family is exactly the
+sort of thing the eighteen findings above were all about.
+
+Run `embed-invite-400` first. It is free, it uses the shared document, and if
+embedded signing is not on the trial plan it answers 402/403 with an upgrade
+message — which is the cheapest possible way to learn that, and the fixture is
+then the evidence for a purchase decision rather than a dead end. Only spend
+`--yes-embed-invites` once that step has answered a validation error instead.
+
+Three questions the capture has to settle, none of which the documentation can
+be trusted for:
+
+1. **Does the create response carry per-signer ids?** The v1 invite answers
+   `{"status":"success"}` with nothing to correlate (finding 14), which is why
+   `SentInvite` records that it yields nothing. If v2 does return ids, per-signer
+   correlation becomes possible for the first time and the webhook
+   `content.invite_id` can finally be matched to a party.
+2. **Does `order` gate an embedded link?** Finding 6 established that the
+   invite's `order` drives the sequence on the *email* family. `embed-link-order2`
+   mints a link for signer 2 before signer 1 has signed. If it works, embedded
+   signing is parallel and sequential signing is *lost* by moving to it — which
+   contradicts build plan 3.1 and the duplicate-position rejection in
+   `resolveSigners`, and is a product decision rather than an implementation one.
+3. **Does the webhook sequence change?** Finding 15 says signNow chains the next
+   invite itself, evidenced by `webhook.05`. Embedded emails nobody, so
+   `user.document.fieldinvite.sent` may not fire at all. Re-run
+   `tools/signnow_subscriptions.ts sync <url> --prune`, then
+   `tools/capture_signnow_webhooks.ts`, sign both signers, and diff the sequence
+   against `webhook.01`–`webhook.07`. "Identical" is itself a finding worth
+   writing down.
+
+**A signing link is a bearer credential.** Whoever holds one can execute the
+contract as that signer, with no login. They are redacted out of every fixture
+twice over — by key name in `SECRET_KEYS` and by shape in `OPAQUE_URL_PATTERN`,
+because guessing the key name is not a security control — and printed to the
+terminal instead. The shape rule over-matches knowingly: re-capturing
+`document-get.json` with `--force` will redact its thumbnail URLs too, because
+they carry the document id in the path and nothing separates that from a token
+by shape alone. Losing a thumbnail URL costs nothing the id beside it does not
+already give you; keeping a signing token costs a signature.
 
 ## Webhook fixtures
 
