@@ -67,6 +67,21 @@ const AGENT_EMAIL = 'darren@realax.test'
 // — this default is in version control and is therefore public.
 const AGENT_PASSWORD = process.env.SEED_AGENT_PASSWORD || 'realax-dev-password'
 
+/**
+ * The seeded clients' addresses.
+ *
+ * `.test` by default, because these are invented people and a reserved TLD is
+ * the honest thing to give them. But signNow validates a recipient address
+ * before it will create an invite and refuses that whole TLD, so sending the
+ * demo transaction for signature against the real vendor needs real mailboxes.
+ *
+ * Overridable rather than hardcoded: whoever is demoing puts their own
+ * addresses in `.env`, and nobody's personal inbox ends up in version control.
+ * Gmail plus-addressing works well here — both signers land in one inbox.
+ */
+const SELLER_EMAIL = process.env.SEED_SELLER_EMAIL || 'm.whitfield@example.test'
+const BUYER_EMAIL = process.env.SEED_BUYER_EMAIL || 'p.raghunathan@example.test'
+
 async function seedRealax() {
     // The brokerage preset table. `update` carries the detail so a corrected
     // address here reaches an existing database on the next seed run — these
@@ -140,7 +155,7 @@ async function seedRealax() {
     // the first party on each side.
     const sellerDetail = {
         fullLegalName: 'Margaret Anne Whitfield',
-        email: 'm.whitfield@example.test',
+        email: SELLER_EMAIL,
         phone: '647-555-0119',
         address: '18 Maple Grove Avenue',
         city: 'Toronto',
@@ -165,7 +180,7 @@ async function seedRealax() {
     // impossible to see passing against seeded data.
     const buyerDetail = {
         fullLegalName: 'Priya Raghunathan',
-        email: 'p.raghunathan@example.test',
+        email: BUYER_EMAIL,
         phone: '416-555-0164',
         address: '404 Sherbourne Street, Unit 12',
         city: 'Toronto',

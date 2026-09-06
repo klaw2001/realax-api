@@ -2,7 +2,7 @@ PORT=4000
 
 DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/realax_dev?schema=public"
 
-CORS_ORIGIN="http://localhost:3000"
+CORS_ORIGIN="http://localhost:3005"
 API_BASEURL="http://localhost:4000"
 
 # Signs the session cookie (build plan 0.3). Generate with:
@@ -113,3 +113,13 @@ SIGNNOW_WEBHOOK_SECRET=
 # Capture tooling only (tools/capture_signnow.ts). Never read by the service.
 SIGNNOW_CAPTURE_SIGNER_1=
 SIGNNOW_CAPTURE_SIGNER_2=
+
+# Seed tooling only (prisma/seed.ts). Never read by the service.
+#
+# The seeded clients' addresses. They default to @example.test, which is the
+# honest thing to give invented people — but signNow validates a recipient
+# before creating an invite and refuses that TLD, so sending the demo
+# transaction for signature against the live vendor needs real mailboxes.
+# Gmail plus-addressing works: both signers land in one inbox.
+SEED_SELLER_EMAIL=
+SEED_BUYER_EMAIL=
