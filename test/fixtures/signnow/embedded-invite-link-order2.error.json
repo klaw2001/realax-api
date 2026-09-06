@@ -1,0 +1,11 @@
+{
+  "status": 403,
+  "body": {
+    "errors": [
+      {
+        "code": 19001028,
+        "message": "The field invite is not pending or fulfilled."
+      }
+    ]
+  }
+}

@@ -24,6 +24,27 @@ Produced by `tools/capture_signnow.ts` and
 | `document-invite.json` | `POST /document/{id}/invite` → 200 |
 | `webhook.01`–`webhook.07` | the callbacks of one complete two-signer signing run |
 
+Embedded signing (build plan 3.2), captured 2026-09-07. A second document, so
+the one above keeps its "fields but no invite" property:
+
+| File | Request |
+|---|---|
+| `embedded-document-upload.json` | `POST /document`, the blank `100.pdf` again |
+| `embedded-document-add-fields.request.json` | the body sent to `PUT /document/{id}` |
+| `embedded-document-add-fields.json` | `PUT /document/{id}` → 200 |
+| `embedded-document-get-with-fields.json` | `GET /document/{id}`, after field placement |
+| `embedded-invite-create.request.json` | the body sent to `POST /v2/documents/{id}/embedded-invites` |
+| `embedded-invite-create.json` | that call → **201**, with per-signer ids |
+| `embedded-invite-create.error.json` | the same with one malformed address → **400** |
+| `embedded-invite-link.json` | `POST .../embedded-invites/{id}/link` → 200. The link itself is redacted |
+| `embedded-invite-link-order2.error.json` | the same for signer 2, out of turn → **403** |
+| `embedded-invite-link.error.json` | the same for an invite id that does not exist → **404** |
+| `embedded-document-get-after-invite.json` | `GET /document/{id}`, with the embedded invites on it |
+
+Embedded document id: `ded43080263d4830ba0172afbd0692bfe0248cad`. Unlike the one
+above it **does** hold a live invite set — see the Open section before deleting
+it.
+
 The webhook run, in the order it arrived:
 
 | # | event | signer | `content.status` |
@@ -245,8 +266,55 @@ Three things follow, and all three were open questions before this call:
   `classify()` in `signnow.client.ts` does not need widening — a `rejected`, not
   a `misconfigured`.
 
-The create and link **responses** are still uncaptured. Nothing in `src/` may be
-written against them yet.
+**20. The embedded create response carries per-signer ids — the v1 invite's does
+not.** `POST /v2/documents/{id}/embedded-invites` answers **201** with
+`data[]` of `{id, email, role_id, order, status}`. Finding 14 records that the
+v1 invite answers `{"status":"success"}` with nothing to correlate, which is why
+`SentInvite` exists to say so. This is the opposite, and it is the single most
+useful thing in this capture: `id` here is the `invite_id` the webhooks carry,
+so **per-signer correlation is possible on the embedded path and impossible on
+the email one.**
+
+The two signers come back with *different* statuses — signer 1 `pending`,
+signer 2 `created` — which is the first evidence that `order` is honoured rather
+than accepted and ignored.
+
+**21. The vendor enforces the signing turn itself.** Minting a link for signer 2
+while signer 1 has not signed answers **403**, `19001028 "The field invite is
+not pending or fulfilled."` So sequential signing survives the move to embedded;
+it is not something 3.2 has to build, and the parallel-signing worry that would
+have contradicted build plan 3.1 does not arise.
+
+The API should still refuse first, with a message naming whose turn it is. A
+signer-facing 502 that means "not your turn yet" is a worse answer than a 409
+that says so, and the turn is derivable from `SignerEvent` rows without asking
+the vendor.
+
+An unknown invite id is a different code: **404**, `19002002 "Field invite not
+found"`.
+
+**22. The signing page can be put in an iframe.** `GET` on a minted link returns
+no `X-Frame-Options`, no `frame-ancestors` directive, and its only CSP header is
+`content-security-policy-report-only` — which is not enforced. So the embedded
+flow the build plan asks for is actually available, rather than being a redirect
+wearing an iframe's name.
+
+Worth re-checking before the pilot: this is a header, not a contract, and a
+vendor can add `frame-ancestors` in any release.
+
+**23. `field_invites[].email` is not an email address.** On an embedded invite it
+is the address followed by the API application's name in parentheses, and that
+name contains the account holder's own username. `EMAIL_PATTERN` replaces the
+address and leaves the parenthetical standing, so `redact()` has an
+`APP_NAME_PATTERN` for it too. Anything parsing this field for an address has to
+expect the suffix. (The literal form is not written out here, so that a grep for
+it does not match this file — the same reason the addresses above are not.)
+
+Embedded invites do appear in the document's `field_invites`, flagged
+`is_embedded: true` with an `embedded_signer` object, so invite state is
+readable from `GET /document/{id}` without keeping it ourselves.
+`short_link_url` is `null` on them — there is no short link, because there is no
+email to put one in.
 
 ## Open
 
@@ -266,39 +334,28 @@ elapse. Their payload shapes are unverified, which is why
 strict schema would reject the event types we have never seen, and rejecting
 means 4xx, and 30 of those in an hour costs us the subscription.
 
-**Embedded signing (3.2) is half captured.** `embed-invite-400` has been run —
-see finding 19, and `embedded-invite-create.error.json`. It establishes that the
-endpoint is reachable on the trial and that the refusal envelope needs no new
-schema. Every **success** shape is still missing: the create response, the link
-response, and the webhook sequence. Nothing in `src/` may be written against
-those until they exist. Rule 2 is the whole reason this folder exists, and the
-v2 family is exactly the sort of thing the nineteen findings above were about.
+**Embedded signing (3.2): the request side is captured, the webhook side is
+not.** Findings 19–23 cover create, link, both refusals and the document read
+back afterwards. Two of the three questions this capture was run to answer are
+settled: the create response *does* carry per-signer ids (20), and the vendor
+*does* enforce the turn (21). The third is open:
 
-The remaining steps cost roughly one document and one invite of trial quota:
-`embed-upload`, `embed-fields`, then `embed-invite --yes-embed-invites`, then
-the link steps, which are free once the invites exist.
+**Does the webhook sequence change for an embedded signature?** Finding 15 says
+signNow chains the next invite itself, evidenced by `webhook.05` — an
+observation about the *email* family. Embedded emails nobody, so
+`user.document.fieldinvite.sent` may not fire at all, and `STATUS_FOR_EVENT` in
+`signing.service.ts` maps it to `sent`. To answer it: re-run
+`tools/signnow_subscriptions.ts sync <url> --prune`, start
+`tools/capture_signnow_webhooks.ts`, mint a link with `embed-link` and sign as
+signer 1, then again for signer 2, and diff the sequence against
+`webhook.01`–`webhook.07`. "Identical" is itself a finding worth writing down.
 
-Three questions the rest of the capture has to settle, none of which the
-documentation can be trusted for:
+The invite set on `ded43080263d4830ba0172afbd0692bfe0248cad` is **deliberately
+left alive** for exactly this. Running `embed-cleanup` deletes it, and getting it
+back costs another billable invite. Links expire in fifteen minutes; mint a
+fresh one with `embed-link` rather than re-inviting.
 
-1. **Does the create response carry per-signer ids?** The v1 invite answers
-   `{"status":"success"}` with nothing to correlate (finding 14), which is why
-   `SentInvite` records that it yields nothing. If v2 does return ids, per-signer
-   correlation becomes possible for the first time and the webhook
-   `content.invite_id` can finally be matched to a party.
-2. **Does `order` gate an embedded link?** Finding 6 established that the
-   invite's `order` drives the sequence on the *email* family. `embed-link-order2`
-   mints a link for signer 2 before signer 1 has signed. If it works, embedded
-   signing is parallel and sequential signing is *lost* by moving to it — which
-   contradicts build plan 3.1 and the duplicate-position rejection in
-   `resolveSigners`, and is a product decision rather than an implementation one.
-3. **Does the webhook sequence change?** Finding 15 says signNow chains the next
-   invite itself, evidenced by `webhook.05`. Embedded emails nobody, so
-   `user.document.fieldinvite.sent` may not fire at all. Re-run
-   `tools/signnow_subscriptions.ts sync <url> --prune`, then
-   `tools/capture_signnow_webhooks.ts`, sign both signers, and diff the sequence
-   against `webhook.01`–`webhook.07`. "Identical" is itself a finding worth
-   writing down.
+Until that is captured, nothing in `src/` may assume which events arrive.
 
 **A signing link is a bearer credential.** Whoever holds one can execute the
 contract as that signer, with no login. They are redacted out of every fixture

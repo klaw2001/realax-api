@@ -2,5 +2,8 @@
   "grant": "api-key",
   "note": "client_credentials rejected — see oauth-token-unsupported-grant.json",
   "documentId": "08ba14321d484b30a3dd74a0bf3cd40d8dee71b8",
-  "documentIdIsS3Safe": "yes"
+  "documentIdIsS3Safe": "yes",
+  "embedDocumentId": "ded43080263d4830ba0172afbd0692bfe0248cad",
+  "embedInvite1": "4aee171d4db9436589d33af1f08f4dc159e3ccc2",
+  "embedInvite2": "5fd279d6c4c64c508903c267d7b42bb07b05bc43"
 }

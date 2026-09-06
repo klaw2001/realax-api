@@ -1,0 +1,11 @@
+{
+  "status": 404,
+  "body": {
+    "errors": [
+      {
+        "code": 19002002,
+        "message": "Field invite not found"
+      }
+    ]
+  }
+}

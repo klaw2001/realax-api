@@ -1,0 +1,18 @@
+{
+  "data": [
+    {
+      "id": "4aee171d4db9436589d33af1f08f4dc159e3ccc2",
+      "email": "signer1@example.test",
+      "role_id": "19b07ac47a4943d8836f4a687b39ca1dbd4bb7f7",
+      "order": 1,
+      "status": "pending"
+    },
+    {
+      "id": "5fd279d6c4c64c508903c267d7b42bb07b05bc43",
+      "email": "signer2@example.test",
+      "role_id": "4d43207536c046948dda3c2d61b51ecca6e43264",
+      "order": 2,
+      "status": "created"
+    }
+  ]
+}

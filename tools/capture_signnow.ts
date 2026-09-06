@@ -184,6 +184,21 @@ const EMAIL_PATTERN = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g
 const OPAQUE_URL_PATTERN = /https?:\/\/\S*[/=][A-Za-z0-9_-]{20,}\S*/g
 
 /**
+ * The application name signNow staples onto an embedded invite's address.
+ *
+ * `field_invites[].email` is not an email address. On an embedded invite it
+ * reads `signer@example.test (someusername API Application 1788241603417)`, and
+ * that username is the account holder's own — derived from the login address,
+ * which is exactly what the email mapping exists to keep out of these files.
+ * `EMAIL_PATTERN` replaces the address and leaves the parenthetical standing.
+ *
+ * The shape is preserved so a schema still learns that this field is a string
+ * with something after the address, which is the part that would otherwise
+ * surprise whoever writes the Zod for it.
+ */
+const APP_NAME_PATTERN = /\([^()]*\bAPI Application\b[^()]*\)/g
+
+/**
  * Replace credentials and real addresses, in place, recursively.
  *
  * The *shape* is what the Zod schemas are built from — a key with
@@ -212,7 +227,9 @@ const redact = (value: unknown, emails: Map<string, string>): unknown => {
     if (typeof value === 'string') {
         // Before the email pass: a signing link can carry an address in its
         // query string, and the whole URL goes rather than just the address.
-        const withoutLinks = value.replace(OPAQUE_URL_PATTERN, '<redacted-url>')
+        const withoutLinks = value
+            .replace(OPAQUE_URL_PATTERN, '<redacted-url>')
+            .replace(APP_NAME_PATTERN, '(<redacted-app>)')
 
         return withoutLinks.replace(EMAIL_PATTERN, match => {
             const known = emails.get(match.toLowerCase())

@@ -1,0 +1,16 @@
+{
+  "invites": [
+    {
+      "email": "signer1@example.test",
+      "role_id": "19b07ac47a4943d8836f4a687b39ca1dbd4bb7f7",
+      "order": 1,
+      "auth_method": "none"
+    },
+    {
+      "email": "signer2@example.test",
+      "role_id": "4d43207536c046948dda3c2d61b51ecca6e43264",
+      "order": 2,
+      "auth_method": "none"
+    }
+  ]
+}
