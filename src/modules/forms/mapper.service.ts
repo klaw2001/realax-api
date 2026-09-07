@@ -289,7 +289,14 @@ const inRole = (parties: Party[], role: PartyRole): Party[] =>
 const addressForService = (party: Party | undefined, prefix: string): MergedValues => ({
     [`${prefix}.addressForService.line1`]: toText(party?.address),
     [`${prefix}.addressForService.line2`]: join(party?.city, party?.province, party?.postalCode),
-    [`${prefix}.addressForService.tel`]: toText(party?.phone)
+    [`${prefix}.addressForService.tel`]: toText(party?.phone),
+
+    // The same address taken apart. Form 371 prints the municipality and the
+    // postal code on their own captioned lines rather than as one block, so
+    // they are served as their own keys instead of the form having to unpick
+    // the joined second line.
+    [`${prefix}.municipality`]: toText(party?.city),
+    [`${prefix}.postalCode`]: toText(party?.postalCode)
 })
 
 /**
@@ -303,8 +310,14 @@ const addressForService = (party: Party | undefined, prefix: string): MergedValu
  * A lease is handled as a listing: the agent taking the deal is on the landlord's
  * side, the same way. Form 100 is not the lease form — see NEEDS-KLAW for which
  * OREA lease form this is checked against when leases are wired.
+ *
+ * Exported because the compliance gate needs the same answer to decide which
+ * page to send an agent to for a missing brokerage blank. It used to hold its
+ * own copy of the rule; two copies of a decision this consequential is one
+ * edit away from the gate and the fill engine disagreeing about which side of
+ * a deal the agent is on.
  */
-const brokerageBlock = (type: TransactionType): 'listingBrokerage' | 'coopBrokerage' =>
+export const brokerageBlock = (type: TransactionType): 'listingBrokerage' | 'coopBrokerage' =>
     type === 'PURCHASE' ? 'coopBrokerage' : 'listingBrokerage'
 
 /**
@@ -352,13 +365,37 @@ const domainValues = (snapshot: TransactionSnapshot): MergedValues => {
         [`${brokerage}.tel`]: toText(agent?.brokerage?.phone) ?? toText(agent?.phone),
         [`${brokerage}.salesperson`]: toText(agent?.name),
 
+        // Form 320 prints the brokerage's address too. One line, because that
+        // is how a `Brokerage` stores it — the form's second line is there for
+        // an address that does not fit, and is typed when it is needed.
+        [`${brokerage}.address.line1`]: toText(agent?.brokerage?.address),
+
         // Schedule A repeats the front page. Same values, because they are the
         // same deal — a schedule naming different parties than the agreement it
         // is attached to is a defect.
+        // Form 371's execution block gives the second buyer their own telephone
+        // line, which no other form does. The first buyer's is the address-for-
+        // service number above.
+        'buyer2.tel': toText(buyers[1]?.phone),
+
+        // Form 371. The designated representative is the individual who
+        // represents the buyer under TRESA, and it is the signed-in agent
+        // unless the brokerage has designated somebody else — which the entries
+        // column overrides this with.
+        designatedRepresentatives: toText(agent?.name),
+
+        // The declaration of insurance names the salesperson again, a few lines
+        // under their own signature. Same person, so the same value; a separate
+        // key only because a curated blank name is used once per form.
+        'insuranceDeclaration.salesperson': toText(agent?.name),
+
         'scheduleA.buyer.fullLegalNames': buyerNames,
         'scheduleA.seller.fullLegalNames': sellerNames,
         'scheduleA.property.line1': toText(property?.address),
-        'scheduleA.property.line2': join(property?.city, property?.province, property?.postalCode)
+        'scheduleA.property.line2': join(property?.city, property?.province, property?.postalCode),
+
+        // Form 371's Schedule A repeats the brokerage rather than the property.
+        [`scheduleA.${brokerage}.name`]: toText(agent?.brokerage?.name)
     }
 }
 

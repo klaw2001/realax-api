@@ -17,6 +17,7 @@ import { authRoutes, meRoutes } from '@/modules/auth/auth.routes'
 import dashboardRoutes from '@/modules/dashboard/dashboard.routes'
 import healthRoutes from '@/modules/health/health.routes'
 import { transactionEntriesRoutes } from '@/modules/entries/entries.routes'
+import { formCatalogueRoutes } from '@/modules/forms/catalogue.routes'
 import { transactionFormRoutes } from '@/modules/forms/forms.routes'
 import { partyIdentityRoutes, transactionIdentityRoutes } from '@/modules/identity/identity.routes'
 import { transactionPartyRoutes } from '@/modules/party/party.routes'
@@ -138,6 +139,7 @@ app.use('/api/me', meRoutes)
 // over transactions, compliance and identity, and belongs to none of them.
 app.use('/api/me', dashboardRoutes)
 app.use('/api/agent', agentRoutes)
+app.use('/api/forms', formCatalogueRoutes)
 app.use('/api/transactions', transactionRoutes)
 
 // Mounted apart from the transaction router rather than inside it: the property

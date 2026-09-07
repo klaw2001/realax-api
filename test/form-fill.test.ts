@@ -31,7 +31,7 @@ let agentId = ''
 let transactionId = ''
 
 const snapshot = (entries?: TransactionSnapshot['entries']): TransactionSnapshot => ({
-    transaction: { type: 'LISTING' },
+    transaction: { type: 'PURCHASE' },
     agent: {
         id: 'agent_1',
         email: 'darren@realax.test',
@@ -147,13 +147,14 @@ describe('drawing a form', () => {
         expect(result.filled).toContain('purchasePrice.numeric')
         expect(result.truncated).toEqual([])
 
-        // The co-operating brokerage is the other side's, and on a listing there
-        // is no other side yet. Whether that blocks signing is the compliance
-        // gate's question in 2.4, not this one's.
+        // On a purchase the agent's own profile fills the co-operating block, so
+        // the listing brokerage is the other side's — and this fixture types in
+        // no brokerage entries at all. Whether that blocks signing is the
+        // compliance gate's question in 2.4, not this one's.
         expect(result.missing).toEqual([
-            'coopBrokerage.name',
-            'coopBrokerage.tel',
-            'coopBrokerage.salesperson'
+            'listingBrokerage.name',
+            'listingBrokerage.tel',
+            'listingBrokerage.salesperson'
         ])
 
         const pdf = await PDFDocument.load(result.bytes)
@@ -275,7 +276,7 @@ describe('filling a form for a transaction', () => {
 
         const transaction = await prisma.transaction.create({
             data: {
-                type: 'LISTING',
+                type: 'PURCHASE',
                 agent: { connect: { id: agentId } },
                 property: {
                     create: {
@@ -345,7 +346,7 @@ describe('filling a form for a transaction', () => {
         expect(values['seller.fullLegalNames']).toEqual('Margaret Eleanor O’Donnell')
         // Pruned, not stored as nulls: a key with nothing behind it is a field
         // this fill did not have, and the missing list is where that is said.
-        expect(values['coopBrokerage.name']).toBeUndefined()
+        expect(values['listingBrokerage.name']).toBeUndefined()
     }, 30000)
 
     test('re-filling replaces the row rather than adding one', async () => {

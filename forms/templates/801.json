@@ -1,0 +1,940 @@
+{
+  "form": "801",
+  "revision": "2024",
+  "title": "Offer Summary Document",
+  "source": "(Ontario) 801 - Offer Summary Document \u2013 For use with Agreement of .pdf",
+  "sourceSha256": "9ff3c8b27553c943f00c166b4ec8131226067500c43222d822933df6c681dc36",
+  "fillSource": "decrypted/801.pdf",
+  "fillSourceSha256": "90acbb004247c305dd669046a855eb1ea746039df4c71344952aa5d1d4e7438b",
+  "generator": "tools/curate_template.py",
+  "coordinateSpace": "pdf-user-space-origin-bottom-left",
+  "units": "pt",
+  "extraction": {
+    "minRunLength": 4,
+    "leaderChars": ".\u2024\u00b7_",
+    "lineTolerance": 2.0,
+    "runBreakFactor": 2.5
+  },
+  "pageCount": 1,
+  "pages": [
+    {
+      "page": 1,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    }
+  ],
+  "blankCount": 49,
+  "blanks": [
+    {
+      "id": "801-p1-b001",
+      "name": "property.address",
+      "page": 1,
+      "bbox": [
+        181.4,
+        617.4,
+        277.49,
+        625.4
+      ],
+      "baseline": 619.16,
+      "width": 96.1,
+      "fontSize": 8.0,
+      "label": "REAL PROPERTY ADDRESS",
+      "labelAfter": "(the \u201cproperty\u201d)",
+      "lineText": "REAL PROPERTY ADDRESS: . (the \u201cproperty\u201d)",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b002",
+      "name": "agreement.dateDay",
+      "page": 1,
+      "bbox": [
+        245.95,
+        591.4,
+        285.37,
+        599.4
+      ],
+      "baseline": 593.16,
+      "width": 39.42,
+      "fontSize": 8.0,
+      "label": "for an Agreement of Purchase and Sale dated: the",
+      "labelAfter": "day of , 20 (\u201coffer\u201d)",
+      "lineText": "for an Agreement of Purchase and Sale dated: the day of , 20 (\u201coffer\u201d)",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b003",
+      "name": "agreement.dateMonth",
+      "page": 1,
+      "bbox": [
+        311.23,
+        591.4,
+        488.64,
+        599.4
+      ],
+      "baseline": 593.16,
+      "width": 177.41,
+      "fontSize": 8.0,
+      "label": "for an Agreement of Purchase and Sale dated: the day of",
+      "labelAfter": ", 20 (\u201coffer\u201d)",
+      "lineText": "for an Agreement of Purchase and Sale dated: the day of , 20 (\u201coffer\u201d)",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b004",
+      "name": "agreement.dateYear",
+      "page": 1,
+      "bbox": [
+        504.93,
+        591.4,
+        541.89,
+        599.4
+      ],
+      "baseline": 593.16,
+      "width": 36.96,
+      "fontSize": 8.0,
+      "label": "for an Agreement of Purchase and Sale dated: the day of , 20",
+      "labelAfter": "(\u201coffer\u201d)",
+      "lineText": "for an Agreement of Purchase and Sale dated: the day of , 20 (\u201coffer\u201d)",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b005",
+      "name": "coopBrokerage.name",
+      "page": 1,
+      "bbox": [
+        96.95,
+        570.4,
+        570.04,
+        578.4
+      ],
+      "baseline": 572.16,
+      "width": 473.09,
+      "fontSize": 8.0,
+      "label": "BROKERAGE",
+      "labelAfter": "",
+      "lineText": "BROKERAGE",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b006",
+      "name": "coopBrokerage.salesperson",
+      "page": 1,
+      "bbox": [
+        179.64,
+        549.4,
+        571.42,
+        557.4
+      ],
+      "baseline": 551.16,
+      "width": 391.78,
+      "fontSize": 8.0,
+      "label": "SALES REPRESENTATIVE/BROKER",
+      "labelAfter": "",
+      "lineText": "SALES REPRESENTATIVE/BROKER",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b007",
+      "name": "buyer.fullLegalNames",
+      "page": 1,
+      "bbox": [
+        63.46,
+        528.4,
+        440.45,
+        536.4
+      ],
+      "baseline": 530.16,
+      "width": 376.99,
+      "fontSize": 8.0,
+      "label": "I/We,",
+      "labelAfter": ", have signed an offer for the property",
+      "lineText": "I/We, , have signed an offer for the property",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b008",
+      "name": "execution.buyer1.signature",
+      "page": 1,
+      "bbox": [
+        40.5,
+        502.4,
+        205.59,
+        510.4
+      ],
+      "baseline": 504.16,
+      "width": 165.09,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "801-p1-b009",
+      "name": "execution.buyer1.date",
+      "page": 1,
+      "bbox": [
+        212.62,
+        502.4,
+        301.32,
+        510.4
+      ],
+      "baseline": 504.16,
+      "width": 88.7,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "801-p1-b010",
+      "name": "execution.buyer2.signature",
+      "page": 1,
+      "bbox": [
+        310.7,
+        502.4,
+        475.79,
+        510.4
+      ],
+      "baseline": 504.16,
+      "width": 165.09,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "801-p1-b011",
+      "name": "execution.buyer2.date",
+      "page": 1,
+      "bbox": [
+        482.82,
+        502.4,
+        571.52,
+        510.4
+      ],
+      "baseline": 504.16,
+      "width": 88.7,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "801-p1-b012",
+      "name": "offerSubmitted.how",
+      "page": 1,
+      "bbox": [
+        128.45,
+        476.4,
+        300.93,
+        484.4
+      ],
+      "baseline": 478.16,
+      "width": 172.48,
+      "fontSize": 8.0,
+      "label": "This offer was submitted,",
+      "labelAfter": "to the Listing Brokerage at on the day of",
+      "lineText": "This offer was submitted, to the Listing Brokerage at on the day of",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b013",
+      "name": "offerSubmitted.time",
+      "page": 1,
+      "bbox": [
+        395.85,
+        476.4,
+        459.91,
+        484.4
+      ],
+      "baseline": 478.16,
+      "width": 64.06,
+      "fontSize": 8.0,
+      "label": "This offer was submitted, to the Listing Brokerage at",
+      "labelAfter": "on the day of",
+      "lineText": "This offer was submitted, to the Listing Brokerage at on the day of",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b014",
+      "name": "offerSubmitted.dateDay",
+      "page": 1,
+      "bbox": [
+        486.32,
+        476.4,
+        545.45,
+        484.4
+      ],
+      "baseline": 478.16,
+      "width": 59.14,
+      "fontSize": 8.0,
+      "label": "This offer was submitted, to the Listing Brokerage at on the",
+      "labelAfter": "day of",
+      "lineText": "This offer was submitted, to the Listing Brokerage at on the day of",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b015",
+      "name": "offerSubmitted.dateMonth",
+      "page": 1,
+      "bbox": [
+        40.5,
+        450.4,
+        151.38,
+        458.4
+      ],
+      "baseline": 452.16,
+      "width": 110.88,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": ", 20 Irrevocable until on the day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b016",
+      "name": "offerSubmitted.dateYear",
+      "page": 1,
+      "bbox": [
+        166.08,
+        450.4,
+        195.65,
+        458.4
+      ],
+      "baseline": 452.16,
+      "width": 29.57,
+      "fontSize": 8.0,
+      "label": ", 20",
+      "labelAfter": "Irrevocable until on the day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b017",
+      "name": "irrevocability.time",
+      "page": 1,
+      "bbox": [
+        262.13,
+        450.4,
+        318.8,
+        458.4
+      ],
+      "baseline": 452.16,
+      "width": 56.67,
+      "fontSize": 8.0,
+      "label": ", 20 Irrevocable until",
+      "labelAfter": "on the day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b018",
+      "name": "irrevocability.dateDay",
+      "page": 1,
+      "bbox": [
+        344.97,
+        450.4,
+        384.39,
+        458.4
+      ],
+      "baseline": 452.16,
+      "width": 39.42,
+      "fontSize": 8.0,
+      "label": ", 20 Irrevocable until on the",
+      "labelAfter": "day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b019",
+      "name": "irrevocability.dateMonth",
+      "page": 1,
+      "bbox": [
+        411.45,
+        450.4,
+        524.79,
+        458.4
+      ],
+      "baseline": 452.16,
+      "width": 113.34,
+      "fontSize": 8.0,
+      "label": ", 20 Irrevocable until on the day of",
+      "labelAfter": ", 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b020",
+      "name": "irrevocability.dateYear",
+      "page": 1,
+      "bbox": [
+        539.49,
+        450.4,
+        571.52,
+        458.4
+      ],
+      "baseline": 452.16,
+      "width": 32.03,
+      "fontSize": 8.0,
+      "label": ", 20 Irrevocable until on the day of , 20",
+      "labelAfter": "",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b021",
+      "name": "counterOffer.buyer.fullLegalNames",
+      "page": 1,
+      "bbox": [
+        63.46,
+        405.4,
+        440.45,
+        413.4
+      ],
+      "baseline": 407.16,
+      "width": 376.99,
+      "fontSize": 8.0,
+      "label": "I/We,",
+      "labelAfter": ", have signed an offer for the property",
+      "lineText": "I/We, , have signed an offer for the property",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b022",
+      "name": "counterOffer.execution.buyer1.signature",
+      "page": 1,
+      "bbox": [
+        40.5,
+        379.4,
+        205.59,
+        387.4
+      ],
+      "baseline": 381.16,
+      "width": 165.09,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "801-p1-b023",
+      "name": "counterOffer.execution.buyer1.date",
+      "page": 1,
+      "bbox": [
+        212.62,
+        379.4,
+        301.32,
+        387.4
+      ],
+      "baseline": 381.16,
+      "width": 88.7,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "801-p1-b024",
+      "name": "counterOffer.execution.buyer2.signature",
+      "page": 1,
+      "bbox": [
+        310.7,
+        379.4,
+        475.79,
+        387.4
+      ],
+      "baseline": 381.16,
+      "width": 165.09,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "801-p1-b025",
+      "name": "counterOffer.execution.buyer2.date",
+      "page": 1,
+      "bbox": [
+        482.82,
+        379.4,
+        571.52,
+        387.4
+      ],
+      "baseline": 381.16,
+      "width": 88.7,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "801-p1-b026",
+      "name": "counterOfferSubmitted.how",
+      "page": 1,
+      "bbox": [
+        124.92,
+        353.4,
+        299.87,
+        361.4
+      ],
+      "baseline": 355.16,
+      "width": 174.94,
+      "fontSize": 8.0,
+      "label": "An offer was submitted,",
+      "labelAfter": "to the Listing Brokerage at on the day of",
+      "lineText": "An offer was submitted, to the Listing Brokerage at on the day of",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b027",
+      "name": "counterOfferSubmitted.time",
+      "page": 1,
+      "bbox": [
+        394.69,
+        353.4,
+        463.68,
+        361.4
+      ],
+      "baseline": 355.16,
+      "width": 68.99,
+      "fontSize": 8.0,
+      "label": "An offer was submitted, to the Listing Brokerage at",
+      "labelAfter": "on the day of",
+      "lineText": "An offer was submitted, to the Listing Brokerage at on the day of",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b028",
+      "name": "counterOfferSubmitted.dateDay",
+      "page": 1,
+      "bbox": [
+        490.04,
+        353.4,
+        546.72,
+        361.4
+      ],
+      "baseline": 355.16,
+      "width": 56.67,
+      "fontSize": 8.0,
+      "label": "An offer was submitted, to the Listing Brokerage at on the",
+      "labelAfter": "day of",
+      "lineText": "An offer was submitted, to the Listing Brokerage at on the day of",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b029",
+      "name": "counterOfferSubmitted.dateMonth",
+      "page": 1,
+      "bbox": [
+        40.5,
+        327.4,
+        151.38,
+        335.4
+      ],
+      "baseline": 329.16,
+      "width": 110.88,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": ", 20 Irrevocable until on the day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b030",
+      "name": "counterOfferSubmitted.dateYear",
+      "page": 1,
+      "bbox": [
+        166.08,
+        327.4,
+        195.65,
+        335.4
+      ],
+      "baseline": 329.16,
+      "width": 29.57,
+      "fontSize": 8.0,
+      "label": ", 20",
+      "labelAfter": "Irrevocable until on the day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b031",
+      "name": "counterOfferIrrevocable.time",
+      "page": 1,
+      "bbox": [
+        262.13,
+        327.4,
+        318.8,
+        335.4
+      ],
+      "baseline": 329.16,
+      "width": 56.67,
+      "fontSize": 8.0,
+      "label": ", 20 Irrevocable until",
+      "labelAfter": "on the day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b032",
+      "name": "counterOfferIrrevocable.dateDay",
+      "page": 1,
+      "bbox": [
+        344.97,
+        327.4,
+        384.39,
+        335.4
+      ],
+      "baseline": 329.16,
+      "width": 39.42,
+      "fontSize": 8.0,
+      "label": ", 20 Irrevocable until on the",
+      "labelAfter": "day of , 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b033",
+      "name": "counterOfferIrrevocable.dateMonth",
+      "page": 1,
+      "bbox": [
+        411.45,
+        327.4,
+        524.79,
+        335.4
+      ],
+      "baseline": 329.16,
+      "width": 113.34,
+      "fontSize": 8.0,
+      "label": ", 20 Irrevocable until on the day of",
+      "labelAfter": ", 20",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b034",
+      "name": "counterOfferIrrevocable.dateYear",
+      "page": 1,
+      "bbox": [
+        539.49,
+        327.4,
+        571.52,
+        335.4
+      ],
+      "baseline": 329.16,
+      "width": 32.03,
+      "fontSize": 8.0,
+      "label": ", 20 Irrevocable until on the day of , 20",
+      "labelAfter": "",
+      "lineText": ", 20 Irrevocable until on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b035",
+      "name": "seller.fullLegalNames",
+      "page": 1,
+      "bbox": [
+        83.36,
+        271.4,
+        571.23,
+        279.4
+      ],
+      "baseline": 273.16,
+      "width": 487.87,
+      "fontSize": 8.0,
+      "label": "SELLER(S)",
+      "labelAfter": "",
+      "lineText": "SELLER(S)",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b036",
+      "name": "seller.contact",
+      "page": 1,
+      "bbox": [
+        124.8,
+        248.4,
+        570.79,
+        256.4
+      ],
+      "baseline": 250.16,
+      "width": 445.98,
+      "fontSize": 8.0,
+      "label": "SELLER(S) CONTACT",
+      "labelAfter": "",
+      "lineText": "SELLER(S) CONTACT",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b037",
+      "name": "listingBrokerage.name",
+      "page": 1,
+      "bbox": [
+        132.09,
+        222.4,
+        570.68,
+        230.4
+      ],
+      "baseline": 224.16,
+      "width": 438.59,
+      "fontSize": 8.0,
+      "label": "LISTING BROKERAGE",
+      "labelAfter": "",
+      "lineText": "LISTING BROKERAGE",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b038",
+      "name": "listingBrokerage.salesperson",
+      "page": 1,
+      "bbox": [
+        179.73,
+        199.4,
+        571.5,
+        207.4
+      ],
+      "baseline": 201.16,
+      "width": 391.78,
+      "fontSize": 8.0,
+      "label": "SALES REPRESENTATIVE/BROKER",
+      "labelAfter": "",
+      "lineText": "SALES REPRESENTATIVE/BROKER",
+      "kind": "data"
+    },
+    {
+      "id": "801-p1-b039",
+      "name": "offerReceived.how",
+      "page": 1,
+      "bbox": [
+        124.48,
+        176.4,
+        220.57,
+        184.4
+      ],
+      "baseline": 178.16,
+      "width": 96.1,
+      "fontSize": 8.0,
+      "label": "This offer was received,",
+      "labelAfter": "by the Listing Brokerage at on the day of , 20",
+      "lineText": "This offer was received, by the Listing Brokerage at on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b040",
+      "name": "offerReceived.time",
+      "page": 1,
+      "bbox": [
+        316.81,
+        176.4,
+        371.02,
+        184.4
+      ],
+      "baseline": 178.16,
+      "width": 54.21,
+      "fontSize": 8.0,
+      "label": "This offer was received, by the Listing Brokerage at",
+      "labelAfter": "on the day of , 20",
+      "lineText": "This offer was received, by the Listing Brokerage at on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b041",
+      "name": "offerReceived.dateDay",
+      "page": 1,
+      "bbox": [
+        396.99,
+        176.4,
+        424.1,
+        184.4
+      ],
+      "baseline": 178.16,
+      "width": 27.1,
+      "fontSize": 8.0,
+      "label": "This offer was received, by the Listing Brokerage at on the",
+      "labelAfter": "day of , 20",
+      "lineText": "This offer was received, by the Listing Brokerage at on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b042",
+      "name": "offerReceived.dateMonth",
+      "page": 1,
+      "bbox": [
+        450.96,
+        176.4,
+        542.13,
+        184.4
+      ],
+      "baseline": 178.16,
+      "width": 91.17,
+      "fontSize": 8.0,
+      "label": "This offer was received, by the Listing Brokerage at on the day of",
+      "labelAfter": ", 20",
+      "lineText": "This offer was received, by the Listing Brokerage at on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b043",
+      "name": "offerReceived.dateYear",
+      "page": 1,
+      "bbox": [
+        556.77,
+        176.4,
+        571.55,
+        184.4
+      ],
+      "baseline": 178.16,
+      "width": 14.78,
+      "fontSize": 8.0,
+      "label": "This offer was received, by the Listing Brokerage at on the day of , 20",
+      "labelAfter": "",
+      "lineText": "This offer was received, by the Listing Brokerage at on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b044",
+      "name": "offerPresented.how",
+      "page": 1,
+      "bbox": [
+        129.4,
+        146.4,
+        235.35,
+        154.4
+      ],
+      "baseline": 148.16,
+      "width": 105.95,
+      "fontSize": 8.0,
+      "label": "This offer was presented,",
+      "labelAfter": "to the Seller(s) at on the day of , 20",
+      "lineText": "This offer was presented, to the Seller(s) at on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b045",
+      "name": "offerPresented.time",
+      "page": 1,
+      "bbox": [
+        300.25,
+        146.4,
+        354.46,
+        154.4
+      ],
+      "baseline": 148.16,
+      "width": 54.21,
+      "fontSize": 8.0,
+      "label": "This offer was presented, to the Seller(s) at",
+      "labelAfter": "on the day of , 20",
+      "lineText": "This offer was presented, to the Seller(s) at on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b046",
+      "name": "offerPresented.dateDay",
+      "page": 1,
+      "bbox": [
+        380.87,
+        146.4,
+        417.83,
+        154.4
+      ],
+      "baseline": 148.16,
+      "width": 36.96,
+      "fontSize": 8.0,
+      "label": "This offer was presented, to the Seller(s) at on the",
+      "labelAfter": "day of , 20",
+      "lineText": "This offer was presented, to the Seller(s) at on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b047",
+      "name": "offerPresented.dateMonth",
+      "page": 1,
+      "bbox": [
+        445.12,
+        146.4,
+        536.29,
+        154.4
+      ],
+      "baseline": 148.16,
+      "width": 91.17,
+      "fontSize": 8.0,
+      "label": "This offer was presented, to the Seller(s) at on the day of",
+      "labelAfter": ", 20",
+      "lineText": "This offer was presented, to the Seller(s) at on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b048",
+      "name": "offerPresented.dateYear",
+      "page": 1,
+      "bbox": [
+        551.07,
+        146.4,
+        570.79,
+        154.4
+      ],
+      "baseline": 148.16,
+      "width": 19.71,
+      "fontSize": 8.0,
+      "label": "This offer was presented, to the Seller(s) at on the day of , 20",
+      "labelAfter": "",
+      "lineText": "This offer was presented, to the Seller(s) at on the day of , 20",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "801-p1-b049",
+      "name": "offer.comments",
+      "page": 1,
+      "bbox": [
+        91.02,
+        79.4,
+        571.5,
+        87.4
+      ],
+      "baseline": 81.16,
+      "width": 480.48,
+      "fontSize": 8.0,
+      "label": "Comments",
+      "labelAfter": "",
+      "lineText": "Comments",
+      "kind": "data",
+      "optional": true
+    }
+  ]
+}

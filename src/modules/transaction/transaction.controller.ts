@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 
 import {
-    createListingTransaction,
+    createTransaction,
     findTransaction,
     listTransactions
 } from '@/modules/transaction/transaction.service'
@@ -93,20 +93,20 @@ export const postTransaction = async (req: Request, res: Response) => {
     const parsed = createTransactionRequestSchema.safeParse(req.body)
 
     if (!parsed.success) {
-        // A well-formed request naming PURCHASE or LEASE is not a malformed
+        // A well-formed request naming LISTING or LEASE is not a malformed
         // request — it is a flow that is not built yet, and the message says
         // so rather than reading as a validation failure.
         const type: unknown = (req.body as { type?: unknown })?.type
 
         const body: ErrorResponse =
-            type === 'PURCHASE' || type === 'LEASE'
+            type === 'LISTING' || type === 'LEASE'
                 ? {
                       error: 'transaction_type_unavailable',
                       message: `${String(type).toLowerCase()} transactions are not available yet`
                   }
                 : {
                       error: 'invalid_request',
-                      message: 'A transaction type of LISTING is required'
+                      message: 'A transaction type of PURCHASE is required'
                   }
 
         res.status(400).json(body)
@@ -114,7 +114,7 @@ export const postTransaction = async (req: Request, res: Response) => {
         return
     }
 
-    const transaction = await createListingTransaction(req.agent.id)
+    const transaction = await createTransaction(req.agent.id, parsed.data.type)
 
     res.status(201).json(transactionResponseSchema.parse({ transaction }))
 }

@@ -65,9 +65,9 @@ const completeEntries = {
     rentalItems: ['Hot water tank'],
     hstTreatment: 'included in',
     propertyPresentUse: 'Single family residential',
-    coopBrokerageName: 'Bayview Heights Real Estate Ltd., Brokerage',
-    coopBrokerageTel: '416-555-0173',
-    coopBrokerageSalesperson: 'Alan Prakash',
+    listingBrokerageName: 'Bayview Heights Real Estate Ltd., Brokerage',
+    listingBrokerageTel: '416-555-0173',
+    listingBrokerageSalesperson: 'Alan Prakash',
     sellerLawyerName: 'Hollis & Wren LLP',
     sellerLawyerAddress: '120 Adelaide Street West, Suite 900, Toronto, ON M5H 1T1',
     sellerLawyerEmail: 'conveyancing@holliswren.example.test',
@@ -77,7 +77,18 @@ const completeEntries = {
     buyerLawyerAddress: '75 Front Street East, Suite 300, Toronto, ON M5E 1B8',
     buyerLawyerEmail: 'closings@marchettilaw.example.test',
     buyerLawyerTel: '416-555-0131',
-    buyerLawyerFax: '416-555-0132'
+    buyerLawyerFax: '416-555-0132',
+
+    // Form 371's own terms. Here rather than in a second fixture because the
+    // endpoint takes the whole set in one PUT — a partial save clears whatever
+    // it leaves out, so there is no such thing as "the 371 entries" on the wire.
+    commencementTime: '9:00 a.m.',
+    commencementDate: '2026-08-03',
+    expiryDate: '2026-12-01',
+    buyerRequirementsPropertyType: 'Detached or semi-detached residential, 3+ bedrooms',
+    buyerRequirementsGeographicLocation: 'City of Toronto, north of Bloor Street',
+    commissionPercent: '2.5',
+    holdoverPeriodDays: 90
 }
 
 beforeAll(async () => {
@@ -124,7 +135,7 @@ beforeAll(async () => {
 
     const transaction = await prisma.transaction.create({
         data: {
-            type: 'LISTING',
+            type: 'PURCHASE',
             agent: { connect: { id: agentId } },
             property: {
                 create: {
@@ -177,7 +188,7 @@ beforeAll(async () => {
     })
 
     const theirs = await prisma.transaction.create({
-        data: { type: 'LISTING', agentId: otherAgentId }
+        data: { type: 'PURCHASE', agentId: otherAgentId }
     })
 
     transactionId = transaction.id
@@ -374,6 +385,31 @@ describe('a transaction the gate passes', () => {
         expect(checks[0].missingFields).toEqual([])
     })
 
+    test('a second form on the same transaction fills from the same terms', async () => {
+        const agent = await signIn()
+
+        // Form 371 is four pages against Form 100's six and shares most of its
+        // answers. Filling it here proves the route is not Form 100 with the
+        // code parameterised: a different page count, a different blank set and
+        // a template that names its own required parties all go through it.
+        const fill = await agent.post(`/api/transactions/${transactionId}/forms/371/fill`)
+
+        expect(fill.status).toEqual(200)
+        expect(fill.body.form.formCode).toEqual('371')
+        expect(fill.body.form.status).toEqual('FILLED')
+        expect(fill.body.truncated).toEqual([])
+
+        const compliance = await agent.get(`/api/transactions/${transactionId}/forms/371/compliance`)
+
+        expect(compliance.status).toEqual(200)
+        expect(compliance.body.compliance.passed).toEqual(true)
+
+        const download = await agent.get(`/api/transactions/${transactionId}/forms/371/download`)
+
+        expect(download.status).toEqual(200)
+        expect(download.body.fileName).toEqual('OREA-371-filled.pdf')
+    }, 30000)
+
     test('the download is a short-lived link that fetches the PDF', async () => {
         const agent = await signIn()
 
@@ -395,12 +431,13 @@ describe('a transaction the gate passes', () => {
 })
 
 describe('a form the service cannot fill', () => {
-    test('an uncurated form is refused, not attempted', async () => {
+    test('a form we have no template for is refused, not attempted', async () => {
         const agent = await signIn()
 
-        // 320 has extracted geometry and no curation, so its blanks have no
-        // names. Deliberately not fillable.
-        const response = await agent.get(`/api/transactions/${transactionId}/forms/320`)
+        // A form code the library has never had. Every OREA form we ship is
+        // curated now, so this guards the refusal itself rather than standing
+        // in for the next form waiting to be named.
+        const response = await agent.get(`/api/transactions/${transactionId}/forms/999`)
 
         expect(response.status).toEqual(404)
         expect(response.body.error).toEqual('form_not_available')
@@ -415,5 +452,59 @@ describe('a form the service cannot fill', () => {
 
         expect(response.status).toEqual(404)
         expect(response.body.error).toEqual('form_not_available')
+    })
+})
+
+describe('GET /api/forms', () => {
+    test('lists the curated library, ordered by code', async () => {
+        const agent = await signIn()
+
+        const response = await agent.get('/api/forms')
+
+        expect(response.status).toEqual(200)
+
+        const codes = response.body.forms.map((form: { code: string }) => form.code)
+
+        // Exhaustive rather than a containment check: this endpoint is what the
+        // frontend renders a form list from, so a form appearing or vanishing
+        // is the thing worth failing on.
+        expect(codes).toEqual(['100', '320', '371', '801'])
+    })
+
+    test('carries what a screen needs to name a form without asking again', async () => {
+        const agent = await signIn()
+
+        const response = await agent.get('/api/forms')
+        const hundred = response.body.forms.find((form: { code: string }) => form.code === '100')
+
+        expect(hundred).toEqual({
+            code: '100',
+            title: 'Agreement of Purchase and Sale',
+            revision: 'May 2026',
+            pageCount: 6,
+            fieldCount: 68
+        })
+    })
+
+    test('the field count is the denominator the per-form status counts against', async () => {
+        const agent = await signIn()
+
+        const [catalogue, status] = await Promise.all([
+            agent.get('/api/forms'),
+            agent.get(`/api/transactions/${transactionId}/forms/${FORM}`)
+        ])
+
+        const entry = catalogue.body.forms.find((form: { code: string }) => form.code === FORM)
+
+        // Two endpoints, one number. A screen showing "19 of 30" must not be
+        // able to get the 30 from one of them and the 19 from the other and
+        // have them mean different things.
+        expect(entry.fieldCount).toEqual(status.body.form.fieldCount)
+    })
+
+    test('without a session it is 401', async () => {
+        const response = await request(app).get('/api/forms')
+
+        expect(response.status).toEqual(401)
     })
 })

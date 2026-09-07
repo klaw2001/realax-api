@@ -148,21 +148,21 @@ enum TransactionStatus {
 }
 
 model Transaction {
-  id         String              @id @default(cuid())
-  type       TransactionType
-  status     TransactionStatus   @default(DRAFT)
-  agentId    String
-  agent      Agent               @relation(fields: [agentId], references: [id])
-  propertyId String?
-  property   Property?           @relation(fields: [propertyId], references: [id])
-  parties    TransactionParty[]
-  entries    TransactionEntries?
-  forms      TransactionForm[]
-  envelopes  SigningEnvelope[]
-  documents  Document[]
+  id            String              @id @default(cuid())
+  type          TransactionType
+  status        TransactionStatus   @default(DRAFT)
+  agentId       String
+  agent         Agent               @relation(fields: [agentId], references: [id])
+  propertyId    String?
+  property      Property?           @relation(fields: [propertyId], references: [id])
+  parties       TransactionParty[]
+  entries       TransactionEntries?
+  forms         TransactionForm[]
+  envelopes     SigningEnvelope[]
+  documents     Document[]
   identityScans IdentityScan[]
-  createdAt  DateTime            @default(now())
-  updatedAt  DateTime            @updatedAt
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 }
 
 enum PartyRole {
@@ -228,8 +228,8 @@ model TransactionForm {
   // Two relations to the same model: every envelope ever raised for this form,
   // and the at-most-one currently out for signature. The second is what the
   // unique constraint on `SigningEnvelope.activeFormId` enforces.
-  envelopes       SigningEnvelope[] @relation("EnvelopeForm")
-  activeEnvelope  SigningEnvelope?  @relation("EnvelopeActiveForm")
+  envelopes      SigningEnvelope[] @relation("EnvelopeForm")
+  activeEnvelope SigningEnvelope?  @relation("EnvelopeActiveForm")
 }
 
 model ComplianceCheck {
@@ -370,6 +370,11 @@ model AuditLog {
 // them, and Schedule A's date follows the agreement's rather than having a
 // column of its own — one agreement, one date.
 //
+// The one deliberate exception is the brokerage blocks, which have columns for
+// both sides even though the agent's profile answers whichever one is theirs.
+// Which one that is follows the transaction type, so a single set of columns
+// would be right for one flow and wrong for the other. See the note there.
+//
 // A `Json` blob would have done the same job and is what the demo used. It is
 // not what this is, for the reason the top of this file gives: the field shapes
 // are known now, and a typed column is what makes a missing completion date a
@@ -428,14 +433,121 @@ model TransactionEntries {
   // The present use the agreement warrants — "single family residential".
   propertyPresentUse String?
 
-  // --- The other side's brokerage ------------------------------------------
-  // On a listing the agent's own brokerage is the listing brokerage and comes
-  // from their profile; the co-operating brokerage acts for the buyer and is
-  // typed in. There is no listing-brokerage column here for the same reason:
-  // only LISTING is wired (build plan 1.2), so the profile always answers it.
+  // --- The brokerages ------------------------------------------------------
+  // Form 100 prints both blocks, and which one the agent's own profile answers
+  // follows the transaction type — `brokerageBlock` in the form mapper. On a
+  // purchase the agent acts for the buyer, so the profile fills the
+  // co-operating block and the listing brokerage is the other side's: known
+  // from the listing, typed in here.
+  //
+  // Both blocks have columns even though the profile always answers one of
+  // them. The layering in `buildMergedValues` puts entries last, so a typed
+  // value beats the profile — which is what an agent filing on a colleague's
+  // behalf needs. Forms 320 and 801 print both brokerages outright.
+  listingBrokerageName        String?
+  listingBrokerageTel         String?
+  listingBrokerageSalesperson String?
+
   coopBrokerageName        String?
   coopBrokerageTel         String?
   coopBrokerageSalesperson String?
+
+  // --- Form 320, the co-operation confirmation ------------------------------
+  // The address and fax lines beside each brokerage's name. Form 100 asks only
+  // for name, telephone and salesperson; 320 prints the rest of the block.
+  coopBrokerageAddress     String?
+  coopBrokerageAddress2    String?
+  coopBrokerageFax         String?
+  listingBrokerageAddress  String?
+  listingBrokerageAddress2 String?
+  listingBrokerageFax      String?
+
+  // Section 4b): the co-operating brokerage is paid EITHER the amount shown in
+  // the MLS listing OR on terms written out in full. They are alternatives on
+  // the paper, so both are optional in the curation — requiring either would
+  // make the other impossible to use.
+  coopCommissionAmount String?
+  coopCommissionTerms  String?
+
+  // The "additional comments and/or disclosures" lines under sections 1, 2
+  // and 4. Two ruled lines each, flowed at fill time like the chattels block.
+  sellerBrokerageCommentsSingle   String?
+  sellerBrokerageCommentsMultiple String?
+  coopBrokerageComments           String?
+
+  // --- Form 801, the offer summary -----------------------------------------
+  // How and when the offer reached the listing brokerage. Times of day are
+  // strings, not instants: the form prints "5:00 p.m." beside a preprinted
+  // "(a.m./p.m.)", and a timestamp would carry a date and a zone that the
+  // blank has nowhere to put.
+  offerSubmittedHow  String?
+  offerSubmittedTime String?
+  offerSubmittedDate DateTime? @db.Date
+
+  // The counter-offer block, which the form prints as a second copy of the
+  // one above. Every blank behind these is marked optional in the curation:
+  // most offers are not countered, and requiring them would make the form
+  // unfillable for the ones that are not. The buyer names repeat because the
+  // form asks for them again, and a countered offer is not necessarily signed
+  // by everyone who signed the first.
+  counterOfferBuyerNames      String?
+  counterOfferSubmittedHow    String?
+  counterOfferSubmittedTime   String?
+  counterOfferSubmittedDate   DateTime? @db.Date
+  counterOfferIrrevocableTime String?
+  counterOfferIrrevocableDate DateTime? @db.Date
+
+  // The listing brokerage's half of the form. Received and presented are facts
+  // the other side records after delivery, so a co-operating agent has neither
+  // — optional in the curation, storable here for the case where they are
+  // known and the form is being completed as a record.
+  sellerContact      String?
+  offerReceivedHow   String?
+  offerReceivedTime  String?
+  offerReceivedDate  DateTime? @db.Date
+  offerPresentedHow  String?
+  offerPresentedTime String?
+  offerPresentedDate DateTime? @db.Date
+  offerComments      String?
+
+  // --- Form 371, Buyer Designated Representation Agreement -----------------
+
+  // Who represents the buyer under TRESA. Defaults to the signed-in agent in
+  // the mapper; this column is the override for a brokerage that designates
+  // somebody else, or two people — the form's heading is plural and it prints
+  // two ruled lines.
+  designatedRepresentatives String?
+
+  // The term of the authority. Commencement carries a time as well as a date
+  // because the form prints "(a.m./p.m.)" beneath it; expiry does not, since
+  // 11:59 p.m. is preprinted.
+  commencementTime String?
+  commencementDate DateTime? @db.Date
+  expiryDate       DateTime? @db.Date
+
+  // What the buyer is looking for, in the buyer's own words. Deliberately not
+  // the Property record and not `propertyPresentUse`: 371 is signed before any
+  // property exists, so a description bound to one would make the form
+  // unfillable exactly when it is used.
+  buyerRequirementsPropertyType       String?
+  buyerRequirementsGeographicLocation String?
+
+  // "Schedule A, ......... attached hereto". The A is preprinted, so this is
+  // the list of schedules BEYOND A — not `schedulesList`, which on Form 100
+  // includes the A and would print it twice.
+  additionalSchedulesList String?
+
+  // The three mutually exclusive ways OREA lets the commission be expressed.
+  // A percentage is text, not a Decimal: the form preprints the "%" and agents
+  // write "2.5" as readily as "2.5 plus applicable taxes", and a numeric column
+  // would silently reject the second.
+  commissionPercent     String?
+  commissionAlternative String?
+  commissionLease       String?
+
+  // The holdover period, in days after expiry. The one commission term on this
+  // form that is not optional — it is what survives the agreement.
+  holdoverPeriodDays Int?
 
   // --- Lawyers -------------------------------------------------------------
   sellerLawyerName    String?

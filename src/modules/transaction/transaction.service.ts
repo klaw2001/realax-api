@@ -209,11 +209,22 @@ export const findTransaction = async (
  * The status is not taken from the request: every transaction begins as a
  * draft, and it advances through the compliance gate rather than by being
  * asked to.
+ *
+ * The type *is* taken from the request. It used to be hardcoded here, back when
+ * one type was wired and the parsed value had nowhere to go — but the type
+ * decides which brokerage block the signed-in agent's own details are printed
+ * in (`brokerageBlock` in the form mapper), so a row carrying the wrong one
+ * fills a contract with the agent on the wrong side of the deal. Which type the
+ * API will accept is `createTransactionRequestSchema`'s business, not this
+ * function's.
  */
-export const createListingTransaction = async (agentId: string): Promise<Transaction> => {
+export const createTransaction = async (
+    agentId: string,
+    type: TransactionType
+): Promise<Transaction> => {
     const record = await prisma.transaction.create({
         data: {
-            type: TransactionType.LISTING,
+            type,
             status: TransactionStatus.DRAFT,
             agentId
         },

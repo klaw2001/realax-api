@@ -1,8 +1,8 @@
-import { evaluateCompliance } from '../src/modules/compliance/compliance.service'
+import { describeBlank, evaluateCompliance } from '../src/modules/compliance/compliance.service'
 import { toEntryInput } from '../src/modules/entries/entries.service'
 import { renderFilledForm } from '../src/modules/forms/fill.service'
 import { buildMergedValues, type TransactionSnapshot } from '../src/modules/forms/mapper.service'
-import { loadTemplate } from '../src/modules/forms/template.service'
+import { loadTemplate, reportableBlankNames } from '../src/modules/forms/template.service'
 import type { AgentProfile } from '../src/schemas/agent'
 import type { TransactionEntries } from '../src/schemas/entries'
 import type { Party } from '../src/schemas/party'
@@ -108,9 +108,62 @@ const entries: TransactionEntries = {
     rentalItems: ['Hot water tank'],
     hstTreatment: 'included in',
     propertyPresentUse: 'Single family residential',
-    coopBrokerageName: 'Bayview Heights Real Estate Ltd., Brokerage',
-    coopBrokerageTel: '416-555-0173',
-    coopBrokerageSalesperson: 'Alan Prakash',
+    // The other side's block is typed in. The agent's own — the co-operating
+    // one on a purchase — is answered by their profile, so nothing types it
+    // here; the tests below are what pin which is which.
+    listingBrokerageName: 'Bayview Heights Real Estate Ltd., Brokerage',
+    listingBrokerageTel: '416-555-0173',
+    listingBrokerageSalesperson: 'Alan Prakash',
+    coopBrokerageName: null,
+    coopBrokerageTel: null,
+    coopBrokerageSalesperson: null,
+    // Form 320's fields, all null: this fixture is a complete Form 100.
+    coopBrokerageAddress: null,
+    coopBrokerageAddress2: null,
+    coopBrokerageFax: null,
+    listingBrokerageAddress: null,
+    listingBrokerageAddress2: null,
+    listingBrokerageFax: null,
+    coopCommissionAmount: null,
+    coopCommissionTerms: null,
+    sellerBrokerageCommentsSingle: null,
+    sellerBrokerageCommentsMultiple: null,
+    coopBrokerageComments: null,
+
+    // Form 801's fields. All null here: this fixture is a complete Form 100,
+    // and the tests that care about 801 fill in what they need.
+    offerSubmittedHow: null,
+    offerSubmittedTime: null,
+    offerSubmittedDate: null,
+    counterOfferBuyerNames: null,
+    counterOfferSubmittedHow: null,
+    counterOfferSubmittedTime: null,
+    counterOfferSubmittedDate: null,
+    counterOfferIrrevocableTime: null,
+    counterOfferIrrevocableDate: null,
+    sellerContact: null,
+    offerReceivedHow: null,
+    offerReceivedTime: null,
+    offerReceivedDate: null,
+    offerPresentedHow: null,
+    offerPresentedTime: null,
+    offerPresentedDate: null,
+    offerComments: null,
+
+    // Form 371's own terms. Null here on purpose: this fixture is the complete
+    // Form 100 deal, and the tests that use it assert on Form 100's blanks.
+    designatedRepresentatives: null,
+    commencementTime: null,
+    commencementDate: null,
+    expiryDate: null,
+    buyerRequirementsPropertyType: null,
+    buyerRequirementsGeographicLocation: null,
+    additionalSchedulesList: null,
+    commissionPercent: null,
+    commissionAlternative: null,
+    commissionLease: null,
+    holdoverPeriodDays: null,
+
     sellerLawyerName: 'Hollis & Wren LLP',
     sellerLawyerAddress: '120 Adelaide Street West, Suite 900, Toronto, ON M5H 1T1',
     sellerLawyerEmail: 'conveyancing@holliswren.example.test',
@@ -125,7 +178,7 @@ const entries: TransactionEntries = {
 }
 
 const complete: TransactionSnapshot = {
-    transaction: { type: 'LISTING' },
+    transaction: { type: 'PURCHASE' },
     agent,
     property,
     parties,
@@ -161,14 +214,14 @@ describe('a complete transaction', () => {
 
 describe('an empty transaction', () => {
     test('reports every blank the form names, and passes nothing', async () => {
-        const result = await check({ transaction: { type: 'LISTING' } })
+        const result = await check({ transaction: { type: 'PURCHASE' } })
 
         expect(result.passed).toEqual(false)
         expect(result.failures.length).toBeGreaterThan(40)
     })
 
     test('agrees with the fill engine about what is missing', async () => {
-        const sparse: TransactionSnapshot = { transaction: { type: 'LISTING' }, agent }
+        const sparse: TransactionSnapshot = { transaction: { type: 'PURCHASE' }, agent }
         const template = await loadTemplate(FORM)
 
         const rendered = await renderFilledForm(template, buildMergedValues(sparse))
@@ -205,7 +258,7 @@ describe('an empty transaction', () => {
 
 describe('a failure says what it is and where to fix it', () => {
     test('every failure carries a label and a page, never a bare field name', async () => {
-        const result = await check({ transaction: { type: 'LISTING' } })
+        const result = await check({ transaction: { type: 'PURCHASE' } })
 
         for (const item of result.failures) {
             expect(item.label.length).toBeGreaterThan(0)
@@ -311,6 +364,30 @@ describe('parties the transaction type requires', () => {
 
         expect(fields(result)).toEqual(['party.seller', 'party.buyer'])
     })
+
+    test('a form that names its own required parties is not asked for the others', async () => {
+        // Form 371 is signed at onboarding: the buyer engages the brokerage
+        // before there is a seller to have an agreement with. The type's table
+        // says a PURCHASE needs both sides, and on this form that would report
+        // an absent seller against a document with no seller on it.
+        const template = await loadTemplate('371')
+
+        expect(template.requiredParties).toEqual(['BUYER'])
+
+        const result = evaluateCompliance(template, {
+            ...complete,
+            parties: parties.filter(item => item.role === 'BUYER')
+        })
+
+        expect(fields(result)).not.toContain('party.seller')
+    })
+
+    test('and is still asked for the parties it does name', async () => {
+        const result = evaluateCompliance(await loadTemplate('371'), { ...complete, parties: [] })
+
+        expect(fields(result)).toContain('party.buyer')
+        expect(fields(result)).not.toContain('party.seller')
+    })
 })
 
 describe('the agent profile and their brokerage', () => {
@@ -327,7 +404,7 @@ describe('the agent profile and their brokerage', () => {
         // The telephone blank is not among them: the mapper falls back to the
         // agent's own number, so it is filled. Only the name has nothing
         // behind it.
-        expect(fields(result)).toEqual(['agent.brokerage', 'listingBrokerage.name'])
+        expect(fields(result)).toEqual(['agent.brokerage', 'coopBrokerage.name'])
     })
 
     test('a brokerage with no phone passes when the agent has one', async () => {
@@ -345,13 +422,63 @@ describe('the agent profile and their brokerage', () => {
             agent: { ...agent, phone: null, brokerage: { ...agent.brokerage!, phone: null } }
         })
 
-        expect(fields(result)).toEqual(['brokerage.phone', 'listingBrokerage.tel'])
+        expect(fields(result)).toEqual(['brokerage.phone', 'coopBrokerage.tel'])
     })
 
-    test("on a listing the agent's own brokerage is fixed on their profile", async () => {
+    test("on a purchase the agent's own brokerage is fixed on their profile", async () => {
+        // The agent acts for the buyer, so the co-operating block is theirs and
+        // comes from the profile. Blanking the profile is what makes it missing;
+        // the point of the assertion is the *area*, because that is the page the
+        // agent is sent to.
         const result = await check({
             ...complete,
             agent: { ...agent, name: '' }
+        })
+
+        const salesperson = result.failures.find(
+            item => item.field === 'coopBrokerage.salesperson'
+        )
+
+        expect(salesperson?.area).toEqual('profile')
+        expect(salesperson?.label).toEqual('Co-operating brokerage — salesperson name')
+    })
+
+    test('the other side of a purchase is typed in, not taken from the profile', async () => {
+        const result = await check({
+            ...complete,
+            entries: toEntryInput({
+                ...entries,
+                listingBrokerageName: null,
+                listingBrokerageTel: null,
+                listingBrokerageSalesperson: null
+            })
+        })
+
+        const listing = result.failures.find(item => item.field === 'listingBrokerage.name')
+
+        expect(listing?.area).toEqual('entries')
+        expect(listing?.label).toEqual('Listing brokerage — brokerage name')
+
+        // The agent's own block is answered by their profile, so it is not a
+        // failure however the other side's is filled.
+        expect(fields(result)).not.toContain('coopBrokerage.name')
+    })
+
+    test('on a listing the blocks swap over', async () => {
+        // Listing is not a wired flow — the API refuses to create one. The gate
+        // still has to answer correctly for a row that already is one, because
+        // pointing an agent at the wrong page is the same mistake as filling the
+        // wrong box, one step later.
+        const result = await check({
+            ...complete,
+            transaction: { type: 'LISTING' },
+            agent: { ...agent, name: '' },
+            entries: toEntryInput({
+                ...entries,
+                listingBrokerageName: null,
+                listingBrokerageTel: null,
+                listingBrokerageSalesperson: null
+            })
         })
 
         const salesperson = result.failures.find(
@@ -360,31 +487,6 @@ describe('the agent profile and their brokerage', () => {
 
         expect(salesperson?.area).toEqual('profile')
         expect(salesperson?.label).toEqual('Listing brokerage — salesperson name')
-    })
-
-    test('on a purchase it is the co-operating block that is theirs', async () => {
-        // Purchase is not a wired flow (build plan 1.2). The gate still has to
-        // answer correctly for one, because pointing an agent at the wrong page
-        // is the same mistake as filling the wrong box, one step later.
-        const result = await check({
-            ...complete,
-            transaction: { type: 'PURCHASE' },
-            entries: toEntryInput({
-                ...entries,
-                coopBrokerageName: null,
-                coopBrokerageTel: null,
-                coopBrokerageSalesperson: null
-            })
-        })
-
-        // On a purchase the agent is the co-operating brokerage, so their own
-        // profile fills that block — and the listing brokerage is the other
-        // side's, typed in with the rest of the agreement.
-        const listing = result.failures.find(item => item.field === 'listingBrokerage.name')
-
-        expect(listing?.area).toEqual('entries')
-        expect(listing?.label).toEqual('Listing brokerage — brokerage name')
-        expect(fields(result)).not.toContain('coopBrokerage.name')
     })
 })
 
@@ -399,10 +501,60 @@ describe('the ruled continuation blocks', () => {
     })
 })
 
+describe('a blank the curation marks optional', () => {
+    // Form 801 is the reason this exists: it prints the times the *listing*
+    // brokerage received and presented the offer, which the co-operating agent
+    // filling the form has no way to know. Without the flag the form could
+    // never pass for anybody.
+    const emptySummary: TransactionSnapshot = {
+        transaction: { type: 'PURCHASE' },
+        agent,
+        property,
+        parties,
+        entries: toEntryInput({
+            ...entries,
+            offerSubmittedHow: 'by email',
+            offerSubmittedTime: '4:15 p.m.',
+            offerSubmittedDate: '2026-09-02'
+        })
+    }
+
+    test('is not required, so a form full of them still passes', async () => {
+        const result = evaluateCompliance(await loadTemplate('801'), emptySummary)
+
+        expect(fields(result)).toEqual([])
+        expect(result.passed).toEqual(true)
+    })
+
+    test('but a required blank on the same form is still demanded', async () => {
+        // The one thing above that is *not* optional: how and when we sent it.
+        const result = evaluateCompliance(await loadTemplate('801'), {
+            ...emptySummary,
+            entries: toEntryInput(entries)
+        })
+
+        expect(result.passed).toEqual(false)
+        expect(fields(result)).toContain('offerSubmitted.how')
+
+        // And the optional ones are still absent from the report.
+        expect(fields(result)).not.toContain('offerReceived.how')
+        expect(fields(result)).not.toContain('offer.comments')
+    })
+
+    test('is still a blank an agent may fill, so it keeps its name and label', async () => {
+        const template = await loadTemplate('801')
+
+        // `reportableBlankNames` answers "what could be filled", which an
+        // optional blank still is. Only the gate treats it differently.
+        expect(reportableBlankNames(template)).toContain('offer.comments')
+        expect(describeBlank('offer.comments', 'PURCHASE').label).toEqual('Comments')
+    })
+})
+
 describe('the blanks the gate must never ask for', () => {
     test('no signature or signing-date blank is ever reported', async () => {
         const template = await loadTemplate(FORM)
-        const result = await check({ transaction: { type: 'LISTING' } })
+        const result = await check({ transaction: { type: 'PURCHASE' } })
 
         const notTheAgents = new Set(
             template.blanks.filter(blank => blank.kind !== 'data').map(blank => blank.name)

@@ -107,14 +107,74 @@ export const transactionEntriesSchema = registry.register(
 
         propertyPresentUse: z.string().nullable().openapi({ example: 'Single family residential' }),
 
-        // The other side's brokerage. On a listing the agent's own brokerage is
-        // the listing brokerage and comes from their profile, so only the
-        // co-operating one is typed in.
+        // Both brokerage blocks. The agent's own profile answers whichever one
+        // is theirs — the co-operating block on a purchase — and the other side
+        // is typed in. A value here beats the profile either way, which is what
+        // an agent filing on a colleague's behalf needs.
+        listingBrokerageName: z.string().nullable().openapi({
+            example: 'Harbourfront Realty Group Ltd., Brokerage'
+        }),
+        listingBrokerageTel: z.string().nullable().openapi({ example: '416-555-0148' }),
+        listingBrokerageSalesperson: z.string().nullable().openapi({ example: 'Dana Whitfield' }),
+
         coopBrokerageName: z.string().nullable().openapi({
             example: 'Bayview Heights Real Estate Ltd., Brokerage'
         }),
         coopBrokerageTel: z.string().nullable().openapi({ example: '416-555-0173' }),
         coopBrokerageSalesperson: z.string().nullable().openapi({ example: 'Alan Prakash' }),
+
+        // Form 320, the co-operation confirmation.
+        coopBrokerageAddress: z.string().nullable().openapi({ example: '55 Yonge Street, Suite 400, Toronto, ON M5E 1J4' }),
+        coopBrokerageAddress2: z.string().nullable().openapi({ example: 'Toronto, ON M5E 1J4' }),
+        coopBrokerageFax: z.string().nullable().openapi({ example: '416-555-0143' }),
+        listingBrokerageAddress: z.string().nullable().openapi({ example: '2900 Bayview Avenue, Unit 12, North York, ON M2K 1E6' }),
+        listingBrokerageAddress2: z.string().nullable().openapi({ example: 'North York, ON M2K 1E6' }),
+        listingBrokerageFax: z.string().nullable().openapi({ example: '416-555-0174' }),
+        coopCommissionAmount: z.string().nullable().openapi({ example: '2.5% of the sale price' }),
+        coopCommissionTerms: z.string().nullable().openapi({ example: 'Paid from the deposit on closing.' }),
+        sellerBrokerageCommentsSingle: z.string().nullable().openapi({ example: null }),
+        sellerBrokerageCommentsMultiple: z.string().nullable().openapi({ example: null }),
+        coopBrokerageComments: z.string().nullable().openapi({ example: null }),
+
+        // Form 801, the offer summary. Times of day are the strings the form
+        // prints beside "(a.m./p.m.)", not instants.
+        offerSubmittedHow: z.string().nullable().openapi({ example: 'by email' }),
+        offerSubmittedTime: z.string().nullable().openapi({ example: '4:15 p.m.' }),
+        offerSubmittedDate: dateOnly.nullable().openapi({ example: '2026-09-02' }),
+
+        counterOfferBuyerNames: z.string().nullable().openapi({ example: 'Priya Raghunathan' }),
+        counterOfferSubmittedHow: z.string().nullable().openapi({ example: 'by email' }),
+        counterOfferSubmittedTime: z.string().nullable().openapi({ example: '9:30 a.m.' }),
+        counterOfferSubmittedDate: dateOnly.nullable().openapi({ example: '2026-09-03' }),
+        counterOfferIrrevocableTime: z.string().nullable().openapi({ example: '11:59 p.m.' }),
+        counterOfferIrrevocableDate: dateOnly.nullable().openapi({ example: '2026-09-05' }),
+
+        sellerContact: z.string().nullable().openapi({ example: 'm.whitfield@example.test' }),
+        offerReceivedHow: z.string().nullable().openapi({ example: 'by email' }),
+        offerReceivedTime: z.string().nullable().openapi({ example: '4:20 p.m.' }),
+        offerReceivedDate: dateOnly.nullable().openapi({ example: '2026-09-02' }),
+        offerPresentedHow: z.string().nullable().openapi({ example: 'in person' }),
+        offerPresentedTime: z.string().nullable().openapi({ example: '7:00 p.m.' }),
+        offerPresentedDate: dateOnly.nullable().openapi({ example: '2026-09-02' }),
+        offerComments: z.string().nullable().openapi({ example: 'Buyer flexible on closing.' }),
+
+        designatedRepresentatives: z.string().nullable().openapi({ example: 'Darren Fischer' }),
+        commencementTime: z.string().nullable().openapi({ example: '9:00 a.m.' }),
+        commencementDate: dateOnly.nullable().openapi({ example: '2026-09-01' }),
+        expiryDate: dateOnly.nullable().openapi({ example: '2026-12-01' }),
+        buyerRequirementsPropertyType: z
+            .string()
+            .nullable()
+            .openapi({ example: 'Detached or semi-detached residential, 3+ bedrooms' }),
+        buyerRequirementsGeographicLocation: z
+            .string()
+            .nullable()
+            .openapi({ example: 'City of Toronto, north of Bloor Street' }),
+        additionalSchedulesList: z.string().nullable().openapi({ example: null }),
+        commissionPercent: z.string().nullable().openapi({ example: '2.5' }),
+        commissionAlternative: z.string().nullable().openapi({ example: null }),
+        commissionLease: z.string().nullable().openapi({ example: null }),
+        holdoverPeriodDays: z.number().int().nullable().openapi({ example: 90 }),
 
         sellerLawyerName: z.string().nullable().openapi({ example: 'Hollis & Wren LLP' }),
         sellerLawyerAddress: z.string().nullable().openapi({
@@ -189,9 +249,61 @@ export const saveTransactionEntriesRequestSchema = registry.register(
 
         propertyPresentUse: optionalText(200),
 
+        listingBrokerageName: optionalText(200),
+        listingBrokerageTel: optionalText(40),
+        listingBrokerageSalesperson: optionalText(120),
+
         coopBrokerageName: optionalText(200),
         coopBrokerageTel: optionalText(40),
         coopBrokerageSalesperson: optionalText(120),
+
+        coopBrokerageAddress: optionalText(300),
+        coopBrokerageAddress2: optionalText(300),
+        coopBrokerageFax: optionalText(40),
+        listingBrokerageAddress: optionalText(300),
+        listingBrokerageAddress2: optionalText(300),
+        listingBrokerageFax: optionalText(40),
+        coopCommissionAmount: optionalText(120),
+        coopCommissionTerms: optionalText(400),
+        sellerBrokerageCommentsSingle: optionalText(400),
+        sellerBrokerageCommentsMultiple: optionalText(400),
+        coopBrokerageComments: optionalText(400),
+
+        offerSubmittedHow: optionalText(80),
+        offerSubmittedTime: optionalText(40),
+        offerSubmittedDate: dateOnly.nullish(),
+
+        counterOfferBuyerNames: optionalText(300),
+        counterOfferSubmittedHow: optionalText(80),
+        counterOfferSubmittedTime: optionalText(40),
+        counterOfferSubmittedDate: dateOnly.nullish(),
+        counterOfferIrrevocableTime: optionalText(40),
+        counterOfferIrrevocableDate: dateOnly.nullish(),
+
+        sellerContact: optionalText(200),
+        offerReceivedHow: optionalText(80),
+        offerReceivedTime: optionalText(40),
+        offerReceivedDate: dateOnly.nullish(),
+        offerPresentedHow: optionalText(80),
+        offerPresentedTime: optionalText(40),
+        offerPresentedDate: dateOnly.nullish(),
+        offerComments: optionalText(500),
+
+        designatedRepresentatives: optionalText(200),
+        commencementTime: optionalText(40),
+        commencementDate: dateOnly.nullish(),
+        expiryDate: dateOnly.nullish(),
+        buyerRequirementsPropertyType: optionalText(400),
+        buyerRequirementsGeographicLocation: optionalText(400),
+        additionalSchedulesList: optionalText(200),
+        commissionPercent: optionalText(40),
+        commissionAlternative: optionalText(300),
+        commissionLease: optionalText(300),
+
+        // Days, so an integer — but bounded, because the blank is one short
+        // dot-leader run between "within" and "days" and a five-digit holdover
+        // is a typo rather than a term.
+        holdoverPeriodDays: z.number().int().min(0).max(3650).nullish(),
 
         sellerLawyerName: optionalText(200),
         sellerLawyerAddress: optionalText(300),

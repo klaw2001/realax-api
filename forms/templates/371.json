@@ -1,0 +1,974 @@
+{
+  "form": "371",
+  "revision": "2026",
+  "title": "Buyer Designated Representation Agreement",
+  "requiredParties": [
+    "BUYER"
+  ],
+  "source": "(Ontario) 371 - Buyer Designated Representation Agreement - Authority for Purch.pdf",
+  "sourceSha256": "31b5ab95d9601aa556a0111c7e4fcd4a21cefc616bc61266f1ebb742703f1d39",
+  "fillSource": "decrypted/371.pdf",
+  "fillSourceSha256": "0fb5e53c3f46413ab7b52dac2deec17eebbaa20b5ff2eb1f883339791ab06320",
+  "generator": "tools/curate_template.py",
+  "coordinateSpace": "pdf-user-space-origin-bottom-left",
+  "units": "pt",
+  "extraction": {
+    "minRunLength": 4,
+    "leaderChars": ".\u2024\u00b7_",
+    "lineTolerance": 2.0,
+    "runBreakFactor": 2.5
+  },
+  "pageCount": 4,
+  "pages": [
+    {
+      "page": 1,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    },
+    {
+      "page": 2,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    },
+    {
+      "page": 3,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    },
+    {
+      "page": 4,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    }
+  ],
+  "blankCount": 49,
+  "blanks": [
+    {
+      "id": "371-p1-b001",
+      "name": "coopBrokerage.name",
+      "page": 1,
+      "bbox": [
+        96.32,
+        659.13,
+        507.81,
+        667.13
+      ],
+      "baseline": 660.89,
+      "width": 411.48,
+      "fontSize": 8.0,
+      "label": "BROKERAGE",
+      "labelAfter": "(the \u201cBrokerage\u201d),",
+      "lineText": "BROKERAGE: (the \u201cBrokerage\u201d),",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b002",
+      "name": "coopBrokerage.address.line1",
+      "page": 1,
+      "bbox": [
+        83.63,
+        642.13,
+        571.49,
+        650.13
+      ],
+      "baseline": 643.89,
+      "width": 487.86,
+      "fontSize": 8.0,
+      "label": "ADDRESS",
+      "labelAfter": "",
+      "lineText": "ADDRESS",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b003",
+      "name": "coopBrokerage.address.line2",
+      "page": 1,
+      "bbox": [
+        40.5,
+        624.13,
+        296.75,
+        632.13
+      ],
+      "baseline": 625.89,
+      "width": 256.25,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "Tel. No. Fax No",
+      "lineText": "Tel. No. Fax No",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "371-p1-b004",
+      "name": "coopBrokerage.tel",
+      "page": 1,
+      "bbox": [
+        324.24,
+        624.13,
+        430.19,
+        632.13
+      ],
+      "baseline": 625.89,
+      "width": 105.95,
+      "fontSize": 8.0,
+      "label": "Tel. No",
+      "labelAfter": "Fax No",
+      "lineText": "Tel. No. Fax No",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b005",
+      "name": "coopBrokerage.fax",
+      "page": 1,
+      "bbox": [
+        458.71,
+        624.13,
+        569.59,
+        632.13
+      ],
+      "baseline": 625.89,
+      "width": 110.88,
+      "fontSize": 8.0,
+      "label": "Tel. No. Fax No",
+      "labelAfter": "",
+      "lineText": "Tel. No. Fax No",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "371-p1-b006",
+      "name": "buyer.fullLegalNames",
+      "page": 1,
+      "bbox": [
+        72.59,
+        604.13,
+        521.04,
+        612.13
+      ],
+      "baseline": 605.89,
+      "width": 448.44,
+      "fontSize": 8.0,
+      "label": "BUYER",
+      "labelAfter": ", (the \u201cBuyer\u201d),",
+      "lineText": "BUYER: , (the \u201cBuyer\u201d),",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b007",
+      "name": "buyer.addressForService.line1",
+      "page": 1,
+      "bbox": [
+        83.63,
+        585.13,
+        571.49,
+        593.13
+      ],
+      "baseline": 586.89,
+      "width": 487.86,
+      "fontSize": 8.0,
+      "label": "ADDRESS",
+      "labelAfter": "",
+      "lineText": "ADDRESS",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b008",
+      "name": "buyer.municipality",
+      "page": 1,
+      "bbox": [
+        103.87,
+        564.13,
+        369.98,
+        572.13
+      ],
+      "baseline": 565.89,
+      "width": 266.11,
+      "fontSize": 8.0,
+      "label": "MUNICIPALITY",
+      "labelAfter": "POSTAL CODE",
+      "lineText": "MUNICIPALITY: POSTAL CODE",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b009",
+      "name": "buyer.postalCode",
+      "page": 1,
+      "bbox": [
+        433.51,
+        564.13,
+        571.5,
+        572.13
+      ],
+      "baseline": 565.89,
+      "width": 137.98,
+      "fontSize": 8.0,
+      "label": "MUNICIPALITY: POSTAL CODE",
+      "labelAfter": "",
+      "lineText": "MUNICIPALITY: POSTAL CODE",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b010",
+      "name": "designatedRepresentatives.line1",
+      "page": 1,
+      "bbox": [
+        179.42,
+        546.13,
+        571.19,
+        554.13
+      ],
+      "baseline": 547.89,
+      "width": 391.77,
+      "fontSize": 8.0,
+      "label": "DESIGNATED REPRESENTATIVE(S)",
+      "labelAfter": "",
+      "lineText": "DESIGNATED REPRESENTATIVE(S)",
+      "kind": "data",
+      "flow": "designatedRepresentatives"
+    },
+    {
+      "id": "371-p1-b011",
+      "name": "designatedRepresentatives.line2",
+      "page": 1,
+      "bbox": [
+        40.5,
+        527.13,
+        570.25,
+        535.13
+      ],
+      "baseline": 528.89,
+      "width": 529.75,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "flow": "designatedRepresentatives"
+    },
+    {
+      "id": "371-p1-b012",
+      "name": "commencement.time",
+      "page": 1,
+      "bbox": [
+        94.86,
+        489.13,
+        173.7,
+        497.13
+      ],
+      "baseline": 490.89,
+      "width": 78.85,
+      "fontSize": 8.0,
+      "label": "commencing at",
+      "labelAfter": "on the day of , 20 ,",
+      "lineText": "commencing at on the day of , 20 ,",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b013",
+      "name": "commencement.dateDay",
+      "page": 1,
+      "bbox": [
+        199.78,
+        489.13,
+        266.3,
+        497.13
+      ],
+      "baseline": 490.89,
+      "width": 66.53,
+      "fontSize": 8.0,
+      "label": "commencing at on the",
+      "labelAfter": "day of , 20 ,",
+      "lineText": "commencing at on the day of , 20 ,",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b014",
+      "name": "commencement.dateMonth",
+      "page": 1,
+      "bbox": [
+        293.26,
+        489.13,
+        502.7,
+        497.13
+      ],
+      "baseline": 490.89,
+      "width": 209.44,
+      "fontSize": 8.0,
+      "label": "commencing at on the day of",
+      "labelAfter": ", 20 ,",
+      "lineText": "commencing at on the day of , 20 ,",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b015",
+      "name": "commencement.dateYear",
+      "page": 1,
+      "bbox": [
+        519.72,
+        489.13,
+        569.0,
+        497.13
+      ],
+      "baseline": 490.89,
+      "width": 49.28,
+      "fontSize": 8.0,
+      "label": "commencing at on the day of , 20",
+      "labelAfter": ",",
+      "lineText": "commencing at on the day of , 20 ,",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b016",
+      "name": "expiry.dateDay",
+      "page": 1,
+      "bbox": [
+        160.75,
+        471.13,
+        224.82,
+        479.13
+      ],
+      "baseline": 472.89,
+      "width": 64.06,
+      "fontSize": 8.0,
+      "label": "and expiring at 11:59 p.m. on the",
+      "labelAfter": "day of , 20 (Expiry Date),",
+      "lineText": "and expiring at 11:59 p.m. on the day of , 20 (Expiry Date),",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b017",
+      "name": "expiry.dateMonth",
+      "page": 1,
+      "bbox": [
+        251.08,
+        471.13,
+        462.98,
+        479.13
+      ],
+      "baseline": 472.89,
+      "width": 211.9,
+      "fontSize": 8.0,
+      "label": "and expiring at 11:59 p.m. on the day of",
+      "labelAfter": ", 20 (Expiry Date),",
+      "lineText": "and expiring at 11:59 p.m. on the day of , 20 (Expiry Date),",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b018",
+      "name": "expiry.dateYear",
+      "page": 1,
+      "bbox": [
+        477.42,
+        471.13,
+        524.23,
+        479.13
+      ],
+      "baseline": 472.89,
+      "width": 46.82,
+      "fontSize": 8.0,
+      "label": "and expiring at 11:59 p.m. on the day of , 20",
+      "labelAfter": "(Expiry Date),",
+      "lineText": "and expiring at 11:59 p.m. on the day of , 20 (Expiry Date),",
+      "kind": "data"
+    },
+    {
+      "id": "371-p1-b019",
+      "name": "buyerRequirements.propertyType.line1",
+      "page": 1,
+      "bbox": [
+        113.19,
+        403.13,
+        571.48,
+        411.13
+      ],
+      "baseline": 404.89,
+      "width": 458.3,
+      "fontSize": 8.0,
+      "label": "Property Type (Use)",
+      "labelAfter": "",
+      "lineText": "Property Type (Use)",
+      "kind": "data",
+      "flow": "buyerRequirements.propertyType"
+    },
+    {
+      "id": "371-p1-b020",
+      "name": "buyerRequirements.propertyType.line2",
+      "page": 1,
+      "bbox": [
+        40.5,
+        387.13,
+        571.96,
+        395.13
+      ],
+      "baseline": 388.89,
+      "width": 531.46,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "flow": "buyerRequirements.propertyType"
+    },
+    {
+      "id": "371-p1-b021",
+      "name": "buyerRequirements.geographicLocation.line1",
+      "page": 1,
+      "bbox": [
+        118.13,
+        371.13,
+        571.5,
+        379.13
+      ],
+      "baseline": 372.89,
+      "width": 453.37,
+      "fontSize": 8.0,
+      "label": "Geographic Location",
+      "labelAfter": "",
+      "lineText": "Geographic Location",
+      "kind": "data",
+      "flow": "buyerRequirements.geographicLocation"
+    },
+    {
+      "id": "371-p1-b022",
+      "name": "buyerRequirements.geographicLocation.line2",
+      "page": 1,
+      "bbox": [
+        40.5,
+        355.13,
+        570.25,
+        363.13
+      ],
+      "baseline": 356.89,
+      "width": 529.75,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "flow": "buyerRequirements.geographicLocation"
+    },
+    {
+      "id": "371-p1-b023",
+      "name": "additionalSchedules.list",
+      "page": 1,
+      "bbox": [
+        82.32,
+        313.13,
+        244.85,
+        321.13
+      ],
+      "baseline": 314.89,
+      "width": 162.52,
+      "fontSize": 8.0,
+      "label": "Schedule A,",
+      "labelAfter": "attached hereto forms part of this Agreement, of which Schedule A sets",
+      "lineText": "Schedule A, attached hereto forms part of this Agreement, of which Schedule A sets",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "371-p1-b024",
+      "name": "commission.percent",
+      "page": 1,
+      "bbox": [
+        322.42,
+        123.63,
+        448.08,
+        131.63
+      ],
+      "baseline": 125.39,
+      "width": 125.66,
+      "fontSize": 8.0,
+      "label": "the Buyer agrees that the Brokerage is entitled to be paid a commission of",
+      "labelAfter": "% of the sale price of the property",
+      "lineText": "the Buyer agrees that the Brokerage is entitled to be paid a commission of % of the sale price of the property",
+      "kind": "data",
+      "note": "The form preprints '% of the sale price of the property' after it, so the value is the number alone.",
+      "optional": true
+    },
+    {
+      "id": "371-p1-b025",
+      "name": "commission.alternative",
+      "page": 1,
+      "bbox": [
+        71.31,
+        109.63,
+        571.49,
+        117.63
+      ],
+      "baseline": 111.39,
+      "width": 500.18,
+      "fontSize": 8.0,
+      "label": "or",
+      "labelAfter": "",
+      "lineText": "or",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "371-p1-b026",
+      "name": "commission.lease",
+      "page": 1,
+      "bbox": [
+        168.63,
+        95.63,
+        570.26,
+        103.63
+      ],
+      "baseline": 97.39,
+      "width": 401.63,
+      "fontSize": 8.0,
+      "label": "or for a lease, a commission of",
+      "labelAfter": "",
+      "lineText": "or for a lease, a commission of",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "371-p2-b027",
+      "name": "holdoverPeriod.days",
+      "page": 2,
+      "bbox": [
+        406.4,
+        690.64,
+        485.24,
+        698.64
+      ],
+      "baseline": 692.4,
+      "width": 78.85,
+      "fontSize": 8.0,
+      "label": "The Buyer agrees to pay the Brokerage such commission if the Buyer enters into an agreement within",
+      "labelAfter": "days after the expiration",
+      "lineText": "The Buyer agrees to pay the Brokerage such commission if the Buyer enters into an agreement within days after the expiration",
+      "kind": "data",
+      "align": "center",
+      "note": "Printed between 'within' and 'days after the expiration', so the value is the number alone."
+    },
+    {
+      "id": "371-p3-b028",
+      "name": "execution.brokerage.signature",
+      "page": 3,
+      "bbox": [
+        40.5,
+        403.14,
+        257.33,
+        411.14
+      ],
+      "baseline": 404.9,
+      "width": 216.83,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "371-p3-b029",
+      "name": "execution.brokerage.date",
+      "page": 3,
+      "bbox": [
+        277.04,
+        403.14,
+        385.46,
+        411.14
+      ],
+      "baseline": 404.9,
+      "width": 108.42,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "371-p3-b030",
+      "name": "coopBrokerage.salesperson",
+      "page": 3,
+      "bbox": [
+        400.5,
+        403.14,
+        570.52,
+        411.14
+      ],
+      "baseline": 404.9,
+      "width": 170.02,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "371-p3-b031",
+      "name": "execution.buyer1.signature",
+      "page": 3,
+      "bbox": [
+        40.5,
+        318.14,
+        272.12,
+        326.14
+      ],
+      "baseline": 319.9,
+      "width": 231.62,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "371-p3-b032",
+      "name": "execution.buyer1.date",
+      "page": 3,
+      "bbox": [
+        299.68,
+        318.14,
+        405.63,
+        326.14
+      ],
+      "baseline": 319.9,
+      "width": 105.95,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "371-p3-b033",
+      "name": "buyer.addressForService.tel",
+      "page": 3,
+      "bbox": [
+        415.48,
+        318.14,
+        570.72,
+        326.14
+      ],
+      "baseline": 319.9,
+      "width": 155.23,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "371-p3-b034",
+      "name": "execution.buyer2.signature",
+      "page": 3,
+      "bbox": [
+        40.5,
+        293.14,
+        272.12,
+        301.14
+      ],
+      "baseline": 294.9,
+      "width": 231.62,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "371-p3-b035",
+      "name": "execution.buyer2.date",
+      "page": 3,
+      "bbox": [
+        299.68,
+        293.14,
+        405.63,
+        301.14
+      ],
+      "baseline": 294.9,
+      "width": 105.95,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "371-p3-b036",
+      "name": "buyer2.tel",
+      "page": 3,
+      "bbox": [
+        415.48,
+        293.14,
+        570.72,
+        301.14
+      ],
+      "baseline": 294.9,
+      "width": 155.23,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "note": "The second buyer's line. Optional because a second buyer is not always there, and an absent one is not something the agent can go and fill in.",
+      "optional": true
+    },
+    {
+      "id": "371-p3-b037",
+      "name": "insuranceDeclaration.salesperson",
+      "page": 3,
+      "bbox": [
+        198.19,
+        244.13,
+        560.4,
+        252.13
+      ],
+      "baseline": 245.89,
+      "width": 362.21,
+      "fontSize": 8.0,
+      "label": "The Salesperson/Broker/Broker of Record",
+      "labelAfter": "",
+      "lineText": "The Salesperson/Broker/Broker of Record",
+      "kind": "data"
+    },
+    {
+      "id": "371-p3-b038",
+      "name": "insuranceDeclaration.signature",
+      "page": 3,
+      "bbox": [
+        134.13,
+        204.13,
+        560.4,
+        212.13
+      ],
+      "baseline": 205.89,
+      "width": 426.27,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "371-p3-b039",
+      "name": "acknowledgement.dateDay",
+      "page": 3,
+      "bbox": [
+        80.35,
+        142.13,
+        156.64,
+        150.13
+      ],
+      "baseline": 143.89,
+      "width": 76.3,
+      "fontSize": 8.0,
+      "label": "on the",
+      "labelAfter": "day of , 20",
+      "lineText": "on the day of . , 20",
+      "kind": "signingDate"
+    },
+    {
+      "id": "371-p3-b040",
+      "name": "acknowledgement.dateMonth",
+      "page": 3,
+      "bbox": [
+        207.59,
+        142.13,
+        249.2,
+        150.13
+      ],
+      "baseline": 143.89,
+      "width": 41.62,
+      "fontSize": 8.0,
+      "label": "on the day of",
+      "labelAfter": ", 20",
+      "lineText": "on the day of . , 20",
+      "kind": "signingDate"
+    },
+    {
+      "id": "371-p3-b041",
+      "name": "acknowledgement.dateMonth.cont1",
+      "page": 3,
+      "bbox": [
+        273.2,
+        142.13,
+        335.63,
+        150.13
+      ],
+      "baseline": 143.89,
+      "width": 62.42,
+      "fontSize": 8.0,
+      "label": "on the day of",
+      "labelAfter": ", 20",
+      "lineText": "on the day of . , 20",
+      "kind": "signingDate"
+    },
+    {
+      "id": "371-p3-b042",
+      "name": "acknowledgement.dateMonth.cont2",
+      "page": 3,
+      "bbox": [
+        377.94,
+        142.13,
+        421.87,
+        150.13
+      ],
+      "baseline": 143.89,
+      "width": 43.93,
+      "fontSize": 8.0,
+      "label": "on the day of",
+      "labelAfter": ", 20",
+      "lineText": "on the day of . , 20",
+      "kind": "signingDate"
+    },
+    {
+      "id": "371-p3-b043",
+      "name": "acknowledgement.dateYear",
+      "page": 3,
+      "bbox": [
+        478.05,
+        142.13,
+        540.48,
+        150.13
+      ],
+      "baseline": 143.89,
+      "width": 62.42,
+      "fontSize": 8.0,
+      "label": "on the day of , 20",
+      "labelAfter": "",
+      "lineText": "on the day of . , 20",
+      "kind": "signingDate"
+    },
+    {
+      "id": "371-p3-b044",
+      "name": "acknowledgement.buyer1.signature",
+      "page": 3,
+      "bbox": [
+        40.5,
+        121.13,
+        402.71,
+        129.13
+      ],
+      "baseline": 122.89,
+      "width": 362.21,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "371-p3-b045",
+      "name": "acknowledgement.buyer1.date",
+      "page": 3,
+      "bbox": [
+        408.88,
+        121.13,
+        571.5,
+        129.13
+      ],
+      "baseline": 122.89,
+      "width": 162.62,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "371-p3-b046",
+      "name": "acknowledgement.buyer2.signature",
+      "page": 3,
+      "bbox": [
+        40.5,
+        99.13,
+        402.71,
+        107.13
+      ],
+      "baseline": 100.89,
+      "width": 362.21,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "371-p3-b047",
+      "name": "acknowledgement.buyer2.date",
+      "page": 3,
+      "bbox": [
+        408.88,
+        99.13,
+        571.5,
+        107.13
+      ],
+      "baseline": 100.89,
+      "width": 162.62,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "371-p4-b048",
+      "name": "scheduleA.coopBrokerage.name",
+      "page": 4,
+      "bbox": [
+        93.94,
+        659.77,
+        554.97,
+        667.77
+      ],
+      "baseline": 661.53,
+      "width": 461.03,
+      "fontSize": 8.0,
+      "label": "BROKERAGE",
+      "labelAfter": ", and",
+      "lineText": "BROKERAGE: , and",
+      "kind": "data"
+    },
+    {
+      "id": "371-p4-b049",
+      "name": "scheduleA.buyer.fullLegalNames",
+      "page": 4,
+      "bbox": [
+        71.31,
+        636.77,
+        571.5,
+        644.77
+      ],
+      "baseline": 638.53,
+      "width": 500.19,
+      "fontSize": 8.0,
+      "label": "BUYER",
+      "labelAfter": "",
+      "lineText": "BUYER",
+      "kind": "data"
+    }
+  ]
+}

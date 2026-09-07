@@ -1,0 +1,87 @@
+{
+  "form": "371",
+  "revision": "2026",
+  "title": "Buyer Designated Representation Agreement",
+  "sourceSha256": "31b5ab95d9601aa556a0111c7e4fcd4a21cefc616bc61266f1ebb742703f1d39",
+  "requiredParties": ["BUYER"],
+  "note": "Curation for Form 371. One entry per blank id emitted by tools/extract_template.py. This is the only form in the library with one side: it is signed at onboarding, before a property and before there is a seller to have an agreement with, which is why it declares its own `requiredParties` rather than inheriting the transaction type's pair. The single brokerage on it is the buyer's own, so it reuses the `coopBrokerage.*` names Form 100 and Form 320 already use for that side rather than inventing a third set.",
+  "kinds": {
+    "data": "Filled before signing. The compliance gate checks these unless they are marked optional.",
+    "signature": "Drawn by a signer in the e-sign session. Never filled by us.",
+    "signingDate": "Dated by the signer at execution, not by the agent."
+  },
+  "sections": {
+    "brokerage": "The BETWEEN block's first half. Every blank is the signed-in agent's own brokerage, answered from the profile — the same five values Form 320 prints in its co-operating column.",
+    "buyer": "The BETWEEN block's second half, answered from the buyer Party. The form asks for the municipality and postal code on their own lines rather than as one address, so the mapper serves them as their own keys instead of reusing the joined `addressForService.line2`.",
+    "designatedRepresentative": "TRESA's designated representation model: the Brokerage provides services, a named individual provides representation. Two ruled lines because the heading is plural and a brokerage may designate more than one. Defaulted to the signed-in agent and overridable, rather than required of an agent who is almost always naming themselves.",
+    "term": "Commencement takes a time as well as a date — the form prints '(a.m./p.m.)' under it. Expiry takes no time: 11:59 p.m. is preprinted.",
+    "requirements": "What the buyer is looking for, in the buyer's own terms. Deliberately NOT `property.presentUse` and not the Property record: 371 is signed before any property exists, so binding these to one would make the form unfillable at the moment it is actually used.",
+    "commission": "OREA offers three mutually exclusive ways to express it — a percentage of the sale price, a free-text alternative, or a lease commission — and requiring any one makes the other two unusable. All three are optional for that reason, the same call Form 320's section 4 forced. The holdover period is not: every 371 has one and it is the term that outlives the agreement.",
+    "schedules": "'Schedule A, ......... attached hereto': the A is preprinted, so this blank lists the schedules BEYOND A. It is deliberately not `schedules.list`, which on Form 100 includes the A and would print it twice here.",
+    "execution": "Buyer lines use the `execution.buyer1`/`buyer2` prefixes placement.service.ts places against. The brokerage's own signature lines and the declaration of insurance do not — a brokerage is not a Party and has no signer to invite — so they are named for what they are and go unplaced, the same limitation Form 320 has.",
+    "acknowledgement": "Dated and signed by the buyer at execution, so nothing here is filled or gated, matching how Form 100 treats its acknowledgement block. The month of the acknowledgement date arrives as three ids rather than one: the preprinted line alternates ellipsis and period glyphs and the extractor splits a dot-leader run at the change. They are named as continuations of the same month so the ids stay accounted for and nothing is drawn into them."
+  },
+  "blanks": {
+    "371-p1-b001": { "name": "coopBrokerage.name", "kind": "data" },
+    "371-p1-b002": { "name": "coopBrokerage.address.line1", "kind": "data" },
+    "371-p1-b003": { "name": "coopBrokerage.address.line2", "kind": "data", "optional": true },
+    "371-p1-b004": { "name": "coopBrokerage.tel", "kind": "data" },
+    "371-p1-b005": { "name": "coopBrokerage.fax", "kind": "data", "optional": true },
+
+    "371-p1-b006": { "name": "buyer.fullLegalNames", "kind": "data" },
+    "371-p1-b007": { "name": "buyer.addressForService.line1", "kind": "data" },
+    "371-p1-b008": { "name": "buyer.municipality", "kind": "data" },
+    "371-p1-b009": { "name": "buyer.postalCode", "kind": "data" },
+
+    "371-p1-b010": { "name": "designatedRepresentatives.line1", "kind": "data", "flow": "designatedRepresentatives" },
+    "371-p1-b011": { "name": "designatedRepresentatives.line2", "kind": "data", "flow": "designatedRepresentatives" },
+
+    "371-p1-b012": { "name": "commencement.time", "kind": "data" },
+    "371-p1-b013": { "name": "commencement.dateDay", "kind": "data" },
+    "371-p1-b014": { "name": "commencement.dateMonth", "kind": "data" },
+    "371-p1-b015": { "name": "commencement.dateYear", "kind": "data" },
+    "371-p1-b016": { "name": "expiry.dateDay", "kind": "data" },
+    "371-p1-b017": { "name": "expiry.dateMonth", "kind": "data" },
+    "371-p1-b018": { "name": "expiry.dateYear", "kind": "data" },
+
+    "371-p1-b019": { "name": "buyerRequirements.propertyType.line1", "kind": "data", "flow": "buyerRequirements.propertyType" },
+    "371-p1-b020": { "name": "buyerRequirements.propertyType.line2", "kind": "data", "flow": "buyerRequirements.propertyType" },
+    "371-p1-b021": { "name": "buyerRequirements.geographicLocation.line1", "kind": "data", "flow": "buyerRequirements.geographicLocation" },
+    "371-p1-b022": { "name": "buyerRequirements.geographicLocation.line2", "kind": "data", "flow": "buyerRequirements.geographicLocation" },
+
+    "371-p1-b023": { "name": "additionalSchedules.list", "kind": "data", "optional": true },
+
+    "371-p1-b024": { "name": "commission.percent", "kind": "data", "optional": true, "note": "The form preprints '% of the sale price of the property' after it, so the value is the number alone." },
+    "371-p1-b025": { "name": "commission.alternative", "kind": "data", "optional": true },
+    "371-p1-b026": { "name": "commission.lease", "kind": "data", "optional": true },
+
+    "371-p2-b027": { "name": "holdoverPeriod.days", "kind": "data", "align": "center", "note": "Printed between 'within' and 'days after the expiration', so the value is the number alone." },
+
+    "371-p3-b028": { "name": "execution.brokerage.signature", "kind": "signature" },
+    "371-p3-b029": { "name": "execution.brokerage.date", "kind": "signingDate" },
+    "371-p3-b030": { "name": "coopBrokerage.salesperson", "kind": "data" },
+
+    "371-p3-b031": { "name": "execution.buyer1.signature", "kind": "signature" },
+    "371-p3-b032": { "name": "execution.buyer1.date", "kind": "signingDate" },
+    "371-p3-b033": { "name": "buyer.addressForService.tel", "kind": "data" },
+    "371-p3-b034": { "name": "execution.buyer2.signature", "kind": "signature" },
+    "371-p3-b035": { "name": "execution.buyer2.date", "kind": "signingDate" },
+    "371-p3-b036": { "name": "buyer2.tel", "kind": "data", "optional": true, "note": "The second buyer's line. Optional because a second buyer is not always there, and an absent one is not something the agent can go and fill in." },
+
+    "371-p3-b037": { "name": "insuranceDeclaration.salesperson", "kind": "data" },
+    "371-p3-b038": { "name": "insuranceDeclaration.signature", "kind": "signature" },
+
+    "371-p3-b039": { "name": "acknowledgement.dateDay", "kind": "signingDate" },
+    "371-p3-b040": { "name": "acknowledgement.dateMonth", "kind": "signingDate" },
+    "371-p3-b041": { "name": "acknowledgement.dateMonth.cont1", "kind": "signingDate" },
+    "371-p3-b042": { "name": "acknowledgement.dateMonth.cont2", "kind": "signingDate" },
+    "371-p3-b043": { "name": "acknowledgement.dateYear", "kind": "signingDate" },
+    "371-p3-b044": { "name": "acknowledgement.buyer1.signature", "kind": "signature" },
+    "371-p3-b045": { "name": "acknowledgement.buyer1.date", "kind": "signingDate" },
+    "371-p3-b046": { "name": "acknowledgement.buyer2.signature", "kind": "signature" },
+    "371-p3-b047": { "name": "acknowledgement.buyer2.date", "kind": "signingDate" },
+
+    "371-p4-b048": { "name": "scheduleA.coopBrokerage.name", "kind": "data" },
+    "371-p4-b049": { "name": "scheduleA.buyer.fullLegalNames", "kind": "data" }
+  }
+}

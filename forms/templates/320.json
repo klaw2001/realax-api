@@ -1,0 +1,719 @@
+{
+  "form": "320",
+  "revision": "2026",
+  "title": "Confirmation of Co-operation and Representation",
+  "source": "(Ontario) 320 - Confirmation of Co-operation and Representation.pdf",
+  "sourceSha256": "d6f07c5ea13c20d6935e7162b8206841d2c40c7f88ffe137c64d55827c92cdf8",
+  "fillSource": "decrypted/320.pdf",
+  "fillSourceSha256": "ed0d2cf8a19269bca766755cc40905f0ec865ee63db4ae7d910a456914037d62",
+  "generator": "tools/curate_template.py",
+  "coordinateSpace": "pdf-user-space-origin-bottom-left",
+  "units": "pt",
+  "extraction": {
+    "minRunLength": 4,
+    "leaderChars": ".\u2024\u00b7_",
+    "lineTolerance": 2.0,
+    "runBreakFactor": 2.5
+  },
+  "pageCount": 2,
+  "pages": [
+    {
+      "page": 1,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    },
+    {
+      "page": 2,
+      "width": 612.0,
+      "height": 792.0,
+      "rotate": 0,
+      "mediaBox": [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    }
+  ],
+  "blankCount": 36,
+  "blanks": [
+    {
+      "id": "320-p1-b001",
+      "name": "buyer.fullLegalNames",
+      "page": 1,
+      "bbox": [
+        72.9,
+        679.96,
+        570.63,
+        687.96
+      ],
+      "baseline": 681.72,
+      "width": 497.73,
+      "fontSize": 8.0,
+      "label": "BUYER",
+      "labelAfter": "",
+      "lineText": "BUYER",
+      "kind": "data"
+    },
+    {
+      "id": "320-p1-b002",
+      "name": "seller.fullLegalNames",
+      "page": 1,
+      "bbox": [
+        72.8,
+        662.96,
+        570.52,
+        670.96
+      ],
+      "baseline": 664.72,
+      "width": 497.73,
+      "fontSize": 8.0,
+      "label": "SELLER",
+      "labelAfter": "",
+      "lineText": "SELLER",
+      "kind": "data"
+    },
+    {
+      "id": "320-p1-b003",
+      "name": "property.address",
+      "page": 1,
+      "bbox": [
+        196.96,
+        645.96,
+        571.49,
+        653.96
+      ],
+      "baseline": 647.72,
+      "width": 374.53,
+      "fontSize": 8.0,
+      "label": "For the transaction on the property known as",
+      "labelAfter": "",
+      "lineText": "For the transaction on the property known as",
+      "kind": "data"
+    },
+    {
+      "id": "320-p1-b004",
+      "name": "sellerBrokerage.commentsSingle.line1",
+      "page": 1,
+      "bbox": [
+        58.5,
+        430.96,
+        571.01,
+        438.96
+      ],
+      "baseline": 432.72,
+      "width": 512.51,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "flow": "sellerBrokerage.commentsSingle",
+      "optional": true
+    },
+    {
+      "id": "320-p1-b005",
+      "name": "sellerBrokerage.commentsSingle.line2",
+      "page": 1,
+      "bbox": [
+        58.5,
+        417.96,
+        571.01,
+        425.96
+      ],
+      "baseline": 419.72,
+      "width": 512.51,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "flow": "sellerBrokerage.commentsSingle",
+      "optional": true
+    },
+    {
+      "id": "320-p1-b006",
+      "name": "sellerBrokerage.commentsMultiple.line1",
+      "page": 1,
+      "bbox": [
+        58.5,
+        350.46,
+        571.01,
+        358.46
+      ],
+      "baseline": 352.22,
+      "width": 512.51,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "flow": "sellerBrokerage.commentsMultiple",
+      "optional": true
+    },
+    {
+      "id": "320-p1-b007",
+      "name": "sellerBrokerage.commentsMultiple.line2",
+      "page": 1,
+      "bbox": [
+        58.5,
+        337.46,
+        571.01,
+        345.46
+      ],
+      "baseline": 339.22,
+      "width": 512.51,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "flow": "sellerBrokerage.commentsMultiple",
+      "optional": true
+    },
+    {
+      "id": "320-p1-b008",
+      "name": "coopCommission.amount",
+      "page": 1,
+      "bbox": [
+        271.19,
+        197.96,
+        335.25,
+        205.96
+      ],
+      "baseline": 199.72,
+      "width": 64.06,
+      "fontSize": 8.0,
+      "label": "in the amount of \u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026",
+      "labelAfter": "to be paid from the amount paid by the Seller to the Seller Brokerage",
+      "lineText": "in the amount of \u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026 to be paid from the amount paid by the Seller to the Seller Brokerage",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "320-p1-b009",
+      "name": "coopCommission.terms.line1",
+      "page": 1,
+      "bbox": [
+        135.0,
+        163.46,
+        571.13,
+        171.46
+      ],
+      "baseline": 165.22,
+      "width": 436.13,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "flow": "coopCommission.terms",
+      "optional": true
+    },
+    {
+      "id": "320-p1-b010",
+      "name": "coopCommission.terms.line2",
+      "page": 1,
+      "bbox": [
+        135.0,
+        150.46,
+        571.13,
+        158.46
+      ],
+      "baseline": 152.22,
+      "width": 436.13,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "flow": "coopCommission.terms",
+      "optional": true
+    },
+    {
+      "id": "320-p1-b011",
+      "name": "coopBrokerage.comments.line1",
+      "page": 1,
+      "bbox": [
+        58.5,
+        124.96,
+        571.01,
+        132.96
+      ],
+      "baseline": 126.72,
+      "width": 512.51,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "flow": "coopBrokerage.comments",
+      "optional": true
+    },
+    {
+      "id": "320-p1-b012",
+      "name": "coopBrokerage.comments.line2",
+      "page": 1,
+      "bbox": [
+        58.5,
+        111.96,
+        571.01,
+        119.96
+      ],
+      "baseline": 113.72,
+      "width": 512.51,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "flow": "coopBrokerage.comments",
+      "optional": true
+    },
+    {
+      "id": "320-p2-b013",
+      "name": "coopBrokerage.name",
+      "page": 2,
+      "bbox": [
+        40.5,
+        609.83,
+        296.76,
+        617.83
+      ],
+      "baseline": 611.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "320-p2-b014",
+      "name": "listingBrokerage.name",
+      "page": 2,
+      "bbox": [
+        309.4,
+        609.83,
+        565.66,
+        617.83
+      ],
+      "baseline": 611.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "320-p2-b015",
+      "name": "coopBrokerage.address.line1",
+      "page": 2,
+      "bbox": [
+        40.5,
+        585.83,
+        296.76,
+        593.83
+      ],
+      "baseline": 587.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "320-p2-b016",
+      "name": "listingBrokerage.address.line1",
+      "page": 2,
+      "bbox": [
+        309.4,
+        585.83,
+        565.66,
+        593.83
+      ],
+      "baseline": 587.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "320-p2-b017",
+      "name": "coopBrokerage.tel",
+      "page": 2,
+      "bbox": [
+        56.82,
+        564.83,
+        157.84,
+        572.83
+      ],
+      "baseline": 566.59,
+      "width": 101.02,
+      "fontSize": 8.0,
+      "label": "Tel",
+      "labelAfter": "Fax: Tel.: Fax",
+      "lineText": "Tel.: Fax: Tel.: Fax",
+      "kind": "data"
+    },
+    {
+      "id": "320-p2-b018",
+      "name": "coopBrokerage.fax",
+      "page": 2,
+      "bbox": [
+        177.66,
+        564.83,
+        295.93,
+        572.83
+      ],
+      "baseline": 566.59,
+      "width": 118.27,
+      "fontSize": 8.0,
+      "label": "Tel.: Fax",
+      "labelAfter": "Tel.: Fax",
+      "lineText": "Tel.: Fax: Tel.: Fax",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "320-p2-b019",
+      "name": "listingBrokerage.tel",
+      "page": 2,
+      "bbox": [
+        325.72,
+        564.83,
+        426.74,
+        572.83
+      ],
+      "baseline": 566.59,
+      "width": 101.02,
+      "fontSize": 8.0,
+      "label": "Tel.: Fax: Tel",
+      "labelAfter": "Fax",
+      "lineText": "Tel.: Fax: Tel.: Fax",
+      "kind": "data"
+    },
+    {
+      "id": "320-p2-b020",
+      "name": "listingBrokerage.fax",
+      "page": 2,
+      "bbox": [
+        446.56,
+        564.83,
+        564.83,
+        572.83
+      ],
+      "baseline": 566.59,
+      "width": 118.27,
+      "fontSize": 8.0,
+      "label": "Tel.: Fax: Tel.: Fax",
+      "labelAfter": "",
+      "lineText": "Tel.: Fax: Tel.: Fax",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "320-p2-b021",
+      "name": "coopBrokerage.address.line2",
+      "page": 2,
+      "bbox": [
+        40.5,
+        543.83,
+        296.76,
+        551.83
+      ],
+      "baseline": 545.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "320-p2-b022",
+      "name": "listingBrokerage.address.line2",
+      "page": 2,
+      "bbox": [
+        309.4,
+        543.83,
+        565.66,
+        551.83
+      ],
+      "baseline": 545.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data",
+      "optional": true
+    },
+    {
+      "id": "320-p2-b023",
+      "name": "execution.coopBrokerage.signature",
+      "page": 2,
+      "bbox": [
+        40.5,
+        522.83,
+        210.52,
+        530.83
+      ],
+      "baseline": 524.59,
+      "width": 170.02,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "320-p2-b024",
+      "name": "execution.coopBrokerage.date",
+      "page": 2,
+      "bbox": [
+        217.91,
+        522.83,
+        296.76,
+        530.83
+      ],
+      "baseline": 524.59,
+      "width": 78.85,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "320-p2-b025",
+      "name": "execution.listingBrokerage.signature",
+      "page": 2,
+      "bbox": [
+        309.4,
+        522.83,
+        479.42,
+        530.83
+      ],
+      "baseline": 524.59,
+      "width": 170.02,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "320-p2-b026",
+      "name": "execution.listingBrokerage.date",
+      "page": 2,
+      "bbox": [
+        486.81,
+        522.83,
+        565.66,
+        530.83
+      ],
+      "baseline": 524.59,
+      "width": 78.85,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "320-p2-b027",
+      "name": "coopBrokerage.salesperson",
+      "page": 2,
+      "bbox": [
+        40.5,
+        498.83,
+        296.76,
+        506.83
+      ],
+      "baseline": 500.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "320-p2-b028",
+      "name": "listingBrokerage.salesperson",
+      "page": 2,
+      "bbox": [
+        309.4,
+        498.83,
+        565.66,
+        506.83
+      ],
+      "baseline": 500.59,
+      "width": 256.26,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "data"
+    },
+    {
+      "id": "320-p2-b029",
+      "name": "execution.buyer1.signature",
+      "page": 2,
+      "bbox": [
+        40.5,
+        327.22,
+        180.95,
+        335.22
+      ],
+      "baseline": 328.98,
+      "width": 140.45,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "320-p2-b030",
+      "name": "execution.buyer1.date",
+      "page": 2,
+      "bbox": [
+        190.5,
+        327.22,
+        308.77,
+        335.22
+      ],
+      "baseline": 328.98,
+      "width": 118.27,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "320-p2-b031",
+      "name": "execution.seller1.signature",
+      "page": 2,
+      "bbox": [
+        333.5,
+        327.22,
+        459.16,
+        335.22
+      ],
+      "baseline": 328.98,
+      "width": 125.66,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "320-p2-b032",
+      "name": "execution.seller1.date",
+      "page": 2,
+      "bbox": [
+        473.5,
+        327.22,
+        569.6,
+        335.22
+      ],
+      "baseline": 328.98,
+      "width": 96.1,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "320-p2-b033",
+      "name": "execution.buyer2.signature",
+      "page": 2,
+      "bbox": [
+        40.5,
+        304.22,
+        180.95,
+        312.22
+      ],
+      "baseline": 305.98,
+      "width": 140.45,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "320-p2-b034",
+      "name": "execution.buyer2.date",
+      "page": 2,
+      "bbox": [
+        190.5,
+        304.22,
+        308.77,
+        312.22
+      ],
+      "baseline": 305.98,
+      "width": 118.27,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    },
+    {
+      "id": "320-p2-b035",
+      "name": "execution.seller2.signature",
+      "page": 2,
+      "bbox": [
+        333.5,
+        304.22,
+        459.16,
+        312.22
+      ],
+      "baseline": 305.98,
+      "width": 125.66,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signature"
+    },
+    {
+      "id": "320-p2-b036",
+      "name": "execution.seller2.date",
+      "page": 2,
+      "bbox": [
+        473.5,
+        304.22,
+        569.6,
+        312.22
+      ],
+      "baseline": 305.98,
+      "width": 96.1,
+      "fontSize": 8.0,
+      "label": "",
+      "labelAfter": "",
+      "lineText": "",
+      "kind": "signingDate"
+    }
+  ]
+}

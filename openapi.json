@@ -334,7 +334,7 @@
           "PURCHASE",
           "LEASE"
         ],
-        "example": "LISTING"
+        "example": "PURCHASE"
       },
       "TransactionStatus": {
         "type": "string",
@@ -578,10 +578,10 @@
           "type": {
             "type": "string",
             "enum": [
-              "LISTING"
+              "PURCHASE"
             ],
-            "description": "Only LISTING is wired. Purchase and Lease are shown in the picker and marked as coming next; the API refuses them.",
-            "example": "LISTING"
+            "description": "Only PURCHASE is wired — it is the flow every OREA form in the library belongs to. Listing and Lease are shown in the picker and marked as coming next; the API refuses them.",
+            "example": "PURCHASE"
           }
         },
         "required": [
@@ -1472,6 +1472,27 @@
             ],
             "example": "Single family residential"
           },
+          "listingBrokerageName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Harbourfront Realty Group Ltd., Brokerage"
+          },
+          "listingBrokerageTel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0148"
+          },
+          "listingBrokerageSalesperson": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Dana Whitfield"
+          },
           "coopBrokerageName": {
             "type": [
               "string",
@@ -1492,6 +1513,286 @@
               "null"
             ],
             "example": "Alan Prakash"
+          },
+          "coopBrokerageAddress": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "55 Yonge Street, Suite 400, Toronto, ON M5E 1J4"
+          },
+          "coopBrokerageAddress2": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Toronto, ON M5E 1J4"
+          },
+          "coopBrokerageFax": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0143"
+          },
+          "listingBrokerageAddress": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2900 Bayview Avenue, Unit 12, North York, ON M2K 1E6"
+          },
+          "listingBrokerageAddress2": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "North York, ON M2K 1E6"
+          },
+          "listingBrokerageFax": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "416-555-0174"
+          },
+          "coopCommissionAmount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2.5% of the sale price"
+          },
+          "coopCommissionTerms": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Paid from the deposit on closing."
+          },
+          "sellerBrokerageCommentsSingle": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": null
+          },
+          "sellerBrokerageCommentsMultiple": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": null
+          },
+          "coopBrokerageComments": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": null
+          },
+          "offerSubmittedHow": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "by email"
+          },
+          "offerSubmittedTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "4:15 p.m."
+          },
+          "offerSubmittedDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-09-02"
+          },
+          "counterOfferBuyerNames": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Priya Raghunathan"
+          },
+          "counterOfferSubmittedHow": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "by email"
+          },
+          "counterOfferSubmittedTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "9:30 a.m."
+          },
+          "counterOfferSubmittedDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-09-03"
+          },
+          "counterOfferIrrevocableTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "11:59 p.m."
+          },
+          "counterOfferIrrevocableDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-09-05"
+          },
+          "sellerContact": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "m.whitfield@example.test"
+          },
+          "offerReceivedHow": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "by email"
+          },
+          "offerReceivedTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "4:20 p.m."
+          },
+          "offerReceivedDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-09-02"
+          },
+          "offerPresentedHow": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "in person"
+          },
+          "offerPresentedTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "7:00 p.m."
+          },
+          "offerPresentedDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-09-02"
+          },
+          "offerComments": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Buyer flexible on closing."
+          },
+          "designatedRepresentatives": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Darren Fischer"
+          },
+          "commencementTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "9:00 a.m."
+          },
+          "commencementDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-09-01"
+          },
+          "expiryDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-12-01"
+          },
+          "buyerRequirementsPropertyType": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Detached or semi-detached residential, 3+ bedrooms"
+          },
+          "buyerRequirementsGeographicLocation": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "City of Toronto, north of Bloor Street"
+          },
+          "additionalSchedulesList": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": null
+          },
+          "commissionPercent": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2.5"
+          },
+          "commissionAlternative": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": null
+          },
+          "commissionLease": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": null
+          },
+          "holdoverPeriodDays": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 90
           },
           "sellerLawyerName": {
             "type": [
@@ -1591,9 +1892,51 @@
           "rentalItems",
           "hstTreatment",
           "propertyPresentUse",
+          "listingBrokerageName",
+          "listingBrokerageTel",
+          "listingBrokerageSalesperson",
           "coopBrokerageName",
           "coopBrokerageTel",
           "coopBrokerageSalesperson",
+          "coopBrokerageAddress",
+          "coopBrokerageAddress2",
+          "coopBrokerageFax",
+          "listingBrokerageAddress",
+          "listingBrokerageAddress2",
+          "listingBrokerageFax",
+          "coopCommissionAmount",
+          "coopCommissionTerms",
+          "sellerBrokerageCommentsSingle",
+          "sellerBrokerageCommentsMultiple",
+          "coopBrokerageComments",
+          "offerSubmittedHow",
+          "offerSubmittedTime",
+          "offerSubmittedDate",
+          "counterOfferBuyerNames",
+          "counterOfferSubmittedHow",
+          "counterOfferSubmittedTime",
+          "counterOfferSubmittedDate",
+          "counterOfferIrrevocableTime",
+          "counterOfferIrrevocableDate",
+          "sellerContact",
+          "offerReceivedHow",
+          "offerReceivedTime",
+          "offerReceivedDate",
+          "offerPresentedHow",
+          "offerPresentedTime",
+          "offerPresentedDate",
+          "offerComments",
+          "designatedRepresentatives",
+          "commencementTime",
+          "commencementDate",
+          "expiryDate",
+          "buyerRequirementsPropertyType",
+          "buyerRequirementsGeographicLocation",
+          "additionalSchedulesList",
+          "commissionPercent",
+          "commissionAlternative",
+          "commissionLease",
+          "holdoverPeriodDays",
           "sellerLawyerName",
           "sellerLawyerAddress",
           "sellerLawyerEmail",
@@ -1781,6 +2124,30 @@
             "minLength": 1,
             "maxLength": 200
           },
+          "listingBrokerageName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "listingBrokerageTel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "listingBrokerageSalesperson": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 120
+          },
           "coopBrokerageName": {
             "type": [
               "string",
@@ -1804,6 +2171,311 @@
             ],
             "minLength": 1,
             "maxLength": 120
+          },
+          "coopBrokerageAddress": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "coopBrokerageAddress2": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "coopBrokerageFax": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "listingBrokerageAddress": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "listingBrokerageAddress2": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "listingBrokerageFax": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "coopCommissionAmount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "coopCommissionTerms": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 400
+          },
+          "sellerBrokerageCommentsSingle": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 400
+          },
+          "sellerBrokerageCommentsMultiple": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 400
+          },
+          "coopBrokerageComments": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 400
+          },
+          "offerSubmittedHow": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "offerSubmittedTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "offerSubmittedDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "counterOfferBuyerNames": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "counterOfferSubmittedHow": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "counterOfferSubmittedTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "counterOfferSubmittedDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "counterOfferIrrevocableTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "counterOfferIrrevocableDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "sellerContact": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "offerReceivedHow": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "offerReceivedTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "offerReceivedDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "offerPresentedHow": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "offerPresentedTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "offerPresentedDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "offerComments": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "designatedRepresentatives": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "commencementTime": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "commencementDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "expiryDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "buyerRequirementsPropertyType": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 400
+          },
+          "buyerRequirementsGeographicLocation": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 400
+          },
+          "additionalSchedulesList": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "commissionPercent": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "commissionAlternative": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "commissionLease": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "holdoverPeriodDays": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 3650
           },
           "sellerLawyerName": {
             "type": [
@@ -2082,6 +2754,51 @@
           "url",
           "expiresInSeconds",
           "fileName"
+        ]
+      },
+      "FormCatalogueEntry": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "100"
+          },
+          "title": {
+            "type": "string",
+            "example": "Agreement of Purchase and Sale"
+          },
+          "revision": {
+            "type": "string",
+            "example": "May 2026"
+          },
+          "pageCount": {
+            "type": "integer",
+            "example": 6
+          },
+          "fieldCount": {
+            "type": "integer",
+            "example": 68
+          }
+        },
+        "required": [
+          "code",
+          "revision",
+          "pageCount",
+          "fieldCount"
+        ]
+      },
+      "FormCatalogueResponse": {
+        "type": "object",
+        "properties": {
+          "forms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FormCatalogueEntry"
+            }
+          }
+        },
+        "required": [
+          "forms"
         ]
       },
       "EnvelopeDelivery": {
@@ -3172,7 +3889,7 @@
             "sessionCookie": []
           }
         ],
-        "description": "Requires a session. Creates a DRAFT owned by the caller. Only LISTING is accepted in this phase — PURCHASE and LEASE are refused with 400.",
+        "description": "Requires a session. Creates a DRAFT owned by the caller. Only PURCHASE is accepted in this phase — LISTING and LEASE are refused with 400.",
         "tags": [
           "transactions"
         ],
@@ -4339,6 +5056,42 @@
           },
           "404": {
             "description": "No such transaction, or no curated template for that form",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/forms": {
+      "get": {
+        "summary": "The curated form library",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Requires a session. Every form the service can fill, ordered by code. The same for every agent and every transaction — a form is in the library or it is not — so it caches for the life of a page. A form with extracted geometry but no curation is not here: it has no field names and could not be filled.",
+        "tags": [
+          "forms"
+        ],
+        "responses": {
+          "200": {
+            "description": "The curated forms",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormCatalogueResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session",
             "content": {
               "application/json": {
                 "schema": {

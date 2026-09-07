@@ -138,12 +138,18 @@ async function seedRealax() {
     })
 
     // One transaction, owned by the agent.
+    //
+    // The type is in `update` as well as `create`. It is the one field here
+    // that changes what a filled form says — it picks which brokerage block the
+    // agent's own details print in — so a demo row left on an older type is a
+    // Form 100 with the agent on the wrong side of the deal. Everything else is
+    // left alone on a re-seed, which is what makes it safe to run repeatedly.
     const transaction = await prisma.transaction.upsert({
         where: { id: TRANSACTION_ID },
-        update: {},
+        update: { type: TransactionType.PURCHASE },
         create: {
             id: TRANSACTION_ID,
-            type: TransactionType.LISTING,
+            type: TransactionType.PURCHASE,
             status: TransactionStatus.DRAFT,
             agentId: agent.id,
             propertyId: property.id
@@ -275,9 +281,51 @@ async function seedRealax() {
 
         propertyPresentUse: 'Single family residential',
 
-        coopBrokerageName: 'Bayview Heights Real Estate Ltd., Brokerage',
-        coopBrokerageTel: '416-555-0173',
-        coopBrokerageSalesperson: 'Alan Prakash',
+        // The other side's block. On a purchase the agent's own profile fills
+        // the co-operating one, so this is the listing brokerage — known from
+        // the listing, typed in here.
+        listingBrokerageName: 'Bayview Heights Real Estate Ltd., Brokerage',
+        listingBrokerageTel: '416-555-0173',
+        listingBrokerageSalesperson: 'Alan Prakash',
+
+        // Explicitly nulled, not omitted. The upsert above updates the keys it
+        // is given and leaves the rest, so a field this seed stops setting keeps
+        // whatever an older run put there — and entries beat the profile in the
+        // merged object, so a stale value here prints the *other* side's
+        // brokerage in the box that is supposed to be the agent's own.
+        coopBrokerageName: null,
+        coopBrokerageTel: null,
+        coopBrokerageSalesperson: null,
+
+        // Form 320, the co-operation confirmation. Only the commission is filled
+        // in: the comment blocks are alternatives an agent uses when there is
+        // something to disclose, and a seeded deal with nothing to disclose
+        // should look like one.
+        coopCommissionAmount: '2.5% of the sale price',
+        listingBrokerageAddress: '2900 Bayview Avenue, Unit 12',
+        listingBrokerageAddress2: 'North York, ON M2K 1E6',
+        listingBrokerageFax: '416-555-0174',
+
+        // Form 801, the offer summary. Only the submitted block is required —
+        // the counter-offer and the listing brokerage's own timings are marked
+        // optional in the curation, and a seeded deal that was not countered
+        // should look like one.
+        offerSubmittedHow: 'by email',
+        offerSubmittedTime: '4:15 p.m.',
+        offerSubmittedDate: new Date('2026-09-02T00:00:00.000Z'),
+
+        // Form 371, the buyer representation agreement. Dated before the offer,
+        // because that is when it is signed — the buyer engages the brokerage
+        // and then goes looking. `designatedRepresentatives` is left unset on
+        // purpose: the mapper answers it with the signed-in agent, and seeding a
+        // name here would hide that it does.
+        commencementTime: '9:00 a.m.',
+        commencementDate: new Date('2026-08-03T00:00:00.000Z'),
+        expiryDate: new Date('2026-12-01T00:00:00.000Z'),
+        buyerRequirementsPropertyType: 'Detached or semi-detached residential, 3+ bedrooms',
+        buyerRequirementsGeographicLocation: 'City of Toronto, north of Bloor Street',
+        commissionPercent: '2.5',
+        holdoverPeriodDays: 90,
 
         sellerLawyerName: 'Hollis & Wren LLP',
         sellerLawyerAddress: '120 Adelaide Street West, Suite 900, Toronto, ON M5H 1T1',

@@ -1,0 +1,18 @@
+-- AlterTable
+ALTER TABLE "TransactionEntries" ADD COLUMN     "counterOfferBuyerNames" TEXT,
+ADD COLUMN     "counterOfferIrrevocableDate" DATE,
+ADD COLUMN     "counterOfferIrrevocableTime" TEXT,
+ADD COLUMN     "counterOfferSubmittedDate" DATE,
+ADD COLUMN     "counterOfferSubmittedHow" TEXT,
+ADD COLUMN     "counterOfferSubmittedTime" TEXT,
+ADD COLUMN     "offerComments" TEXT,
+ADD COLUMN     "offerPresentedDate" DATE,
+ADD COLUMN     "offerPresentedHow" TEXT,
+ADD COLUMN     "offerPresentedTime" TEXT,
+ADD COLUMN     "offerReceivedDate" DATE,
+ADD COLUMN     "offerReceivedHow" TEXT,
+ADD COLUMN     "offerReceivedTime" TEXT,
+ADD COLUMN     "offerSubmittedDate" DATE,
+ADD COLUMN     "offerSubmittedHow" TEXT,
+ADD COLUMN     "offerSubmittedTime" TEXT,
+ADD COLUMN     "sellerContact" TEXT;

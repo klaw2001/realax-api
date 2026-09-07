@@ -82,6 +82,22 @@ one unit of work.
   metrics are. It is curated rather than inferred from the `.lineN` names:
   an address block is printed on two lines too, but its second line is the
   city and postal code, not the overflow of the first.
+- **`optional` on a blank is how a form says the gate must not require it.**
+  Every `data` blank is required by default; the gate holds no opinion of its
+  own about which OREA blanks matter, so the exception is recorded in the
+  curation next to the name. Form 801 is why it exists — it prints the times
+  the *listing* brokerage received and presented the offer, and a co-operating
+  agent filling it has neither, so without the flag that form could never pass
+  for anyone. Marking one is a statement about the paper: have the PDF open.
+- **`requiredParties` on a template is how a form overrides the gate's idea of
+  who must be on the transaction.** The gate's table is keyed by transaction
+  type and says a purchase has a buyer and a seller. Form 371 is signed at
+  onboarding, before there is a seller to have an agreement with, so it declares
+  `["BUYER"]` and the gate follows the form. Every other curation says nothing
+  and keeps the type's answer. Consequence worth knowing: 371 is fillable and
+  downloadable, but not sendable on a transaction that already has a seller —
+  `placementsForParties` has no line for them and refuses rather than dropping a
+  signer.
 - **`kind` on a blank is not decoration.** `data` blanks are the agent's and
   the compliance gate checks them; `signature` and `signingDate` blanks are
   filled inside the e-sign session, and counting one as missing would block

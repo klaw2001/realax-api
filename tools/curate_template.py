@@ -22,6 +22,12 @@ title search blank.
 Refuses to write on: a hash disagreement between the two inputs, a blank the
 curation does not name, a name the extractor does not have a blank for, or a
 duplicated name. Stdlib only, same as the extractor.
+
+Read from the curation: `revision` (which lives only there — the extractor has
+no idea what revision it read), the optional `title`, the optional
+`requiredParties`, and `blanks`. Each blank
+entry needs a `name` and a `kind`, and may carry `align`, `maxLength`, `flow`,
+`note` or `optional`, all of which are passed straight through.
 """
 
 from __future__ import annotations
@@ -145,16 +151,25 @@ def curate(form: str, verify_source: bool) -> dict:
         merged = {key: value for key, value in blank.items() if key not in DIAGNOSTIC_KEYS}
         merged["name"] = entry["name"]
         merged["kind"] = entry["kind"]
-        # Optional per-blank fill hints. Absent for almost every blank; the fill
-        # engine's defaults are derived from the bounding box.
-        for optional in ("align", "maxLength", "flow", "note"):
-            if optional in entry:
-                merged[optional] = entry[optional]
+        # Optional per-blank hints. Absent for almost every blank; the fill
+        # engine's defaults are derived from the bounding box, and a blank with
+        # no `optional` flag is one the compliance gate requires.
+        for hint in ("align", "maxLength", "flow", "note", "optional"):
+            if hint in entry:
+                merged[hint] = entry[hint]
         blanks.append(merged)
 
     return {
         "form": raw["form"],
         "revision": curation["revision"],
+        # The form's printed name. Optional, so a curation written before this
+        # existed still merges rather than failing on a missing key.
+        **({"title": curation["title"]} if curation.get("title") else {}),
+        # Which parties the form itself needs, when the transaction type's table
+        # is the wrong answer. Only Form 371 says anything — see the note in
+        # `src/schemas/form.ts`. Absent for every other curation, which is how a
+        # form declares "the type's table is right for me".
+        **({"requiredParties": curation["requiredParties"]} if curation.get("requiredParties") else {}),
         "source": raw["source"],
         "sourceSha256": raw["sourceSha256"],
         "fillSource": f"decrypted/{form}.pdf",

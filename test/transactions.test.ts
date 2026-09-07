@@ -83,20 +83,26 @@ describe('the transactions module is behind the session guard', () => {
     })
 
     test('POST /api/transactions without a session is 401', async () => {
-        const response = await request(app).post('/api/transactions').send({ type: 'LISTING' })
+        const response = await request(app).post('/api/transactions').send({ type: 'PURCHASE' })
 
         expect(response.status).toEqual(401)
     })
 })
 
 describe('POST /api/transactions', () => {
-    test('selecting Listing creates a DRAFT owned by the caller', async () => {
+    // The type assertions here are the round trip, not decoration: the controller
+    // used to discard the parsed type and call a service that hardcoded one, so a
+    // request naming a type it did not store would have passed every other test in
+    // this file. The type decides which brokerage block the agent's own details
+    // print in, so storing the wrong one fills a contract with them on the wrong
+    // side of the deal.
+    test('selecting Purchase creates a DRAFT owned by the caller', async () => {
         const agent = await signIn()
 
-        const response = await agent.post('/api/transactions').send({ type: 'LISTING' })
+        const response = await agent.post('/api/transactions').send({ type: 'PURCHASE' })
 
         expect(response.status).toEqual(201)
-        expect(response.body.transaction.type).toEqual('LISTING')
+        expect(response.body.transaction.type).toEqual('PURCHASE')
         expect(response.body.transaction.status).toEqual('DRAFT')
         expect(response.body.transaction.agentId).toEqual(agentId)
 
@@ -108,7 +114,7 @@ describe('POST /api/transactions', () => {
         })
 
         expect(stored?.status).toEqual('DRAFT')
-        expect(stored?.type).toEqual('LISTING')
+        expect(stored?.type).toEqual('PURCHASE')
     })
 
     test('the status is not taken from the request', async () => {
@@ -116,7 +122,7 @@ describe('POST /api/transactions', () => {
 
         const response = await agent
             .post('/api/transactions')
-            .send({ type: 'LISTING', status: 'COMPLETED' })
+            .send({ type: 'PURCHASE', status: 'COMPLETED' })
 
         expect(response.status).toEqual(201)
         expect(response.body.transaction.status).toEqual('DRAFT')
@@ -127,16 +133,16 @@ describe('POST /api/transactions', () => {
 
         const response = await agent
             .post('/api/transactions')
-            .send({ type: 'LISTING', agentId: otherAgentId })
+            .send({ type: 'PURCHASE', agentId: otherAgentId })
 
         expect(response.status).toEqual(201)
         expect(response.body.transaction.agentId).toEqual(agentId)
     })
 
-    test('Purchase is refused, and says why rather than reading as a bad request', async () => {
+    test('Listing is refused, and says why rather than reading as a bad request', async () => {
         const agent = await signIn()
 
-        const response = await agent.post('/api/transactions').send({ type: 'PURCHASE' })
+        const response = await agent.post('/api/transactions').send({ type: 'LISTING' })
 
         expect(response.status).toEqual(400)
         expect(response.body.error).toEqual('transaction_type_unavailable')
@@ -169,6 +175,7 @@ describe('POST /api/transactions', () => {
 
         expect(missing.status).toEqual(400)
         expect(missing.body.error).toEqual('invalid_request')
+        expect(missing.body.message).toContain('PURCHASE')
 
         const nonsense = await agent.post('/api/transactions').send({ type: 'SUBLET' })
 
@@ -181,8 +188,8 @@ describe('GET /api/transactions', () => {
     test('returns the caller transactions, newest first', async () => {
         const agent = await signIn()
 
-        const first = await agent.post('/api/transactions').send({ type: 'LISTING' })
-        const second = await agent.post('/api/transactions').send({ type: 'LISTING' })
+        const first = await agent.post('/api/transactions').send({ type: 'PURCHASE' })
+        const second = await agent.post('/api/transactions').send({ type: 'PURCHASE' })
 
         const response = await agent.get('/api/transactions')
 

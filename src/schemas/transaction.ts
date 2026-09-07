@@ -5,12 +5,17 @@ import { errorContent } from '@/schemas/common'
  * The three transaction types the product covers.
  *
  * All three are named here because the picker shows all three — but only
- * `LISTING` is wired live (build plan 1.2). See `createTransactionRequestSchema`
- * for where that restriction is enforced.
+ * `PURCHASE` is wired live. See `createTransactionRequestSchema` for where that
+ * restriction is enforced.
+ *
+ * Purchase rather than Listing because that is where the forms are: every OREA
+ * form the library holds — 100, 320, 371 and 801 — belongs to a purchase, and
+ * Listing has none of its own. Reading an existing `LISTING` row stays legal;
+ * the enum is the shape of the column, not of what can be created.
  */
 export const transactionTypeSchema = registry.register(
     'TransactionType',
-    z.enum(['LISTING', 'PURCHASE', 'LEASE']).openapi({ example: 'LISTING' })
+    z.enum(['LISTING', 'PURCHASE', 'LEASE']).openapi({ example: 'PURCHASE' })
 )
 
 export type TransactionType = z.infer<typeof transactionTypeSchema>
@@ -202,19 +207,24 @@ export type TransactionListResponse = z.infer<typeof transactionListResponseSche
 /**
  * Create a transaction.
  *
- * `type` is a literal, not the `TransactionType` enum: Purchase and Lease are a
+ * `type` is a literal, not the `TransactionType` enum: Listing and Lease are a
  * deliberate scoping decision for this phase, and the contract is the honest
  * place to say so. Generating the frontend types from this makes sending
- * `PURCHASE` a compile error there rather than a runtime 400 — and when those
+ * `LISTING` a compile error there rather than a runtime 400 — and when those
  * flows are built, widening this literal is what turns them on.
+ *
+ * It stays a single literal rather than becoming a union for that reason. A
+ * union of one is the same runtime check but a weaker type: the frontend's
+ * `CreatableTransactionType` narrows to exactly what the API will take, and
+ * that narrowing is the whole point of generating the client from this file.
  */
 export const createTransactionRequestSchema = registry.register(
     'CreateTransactionRequest',
     z.object({
-        type: z.literal('LISTING').openapi({
+        type: z.literal('PURCHASE').openapi({
             description:
-                'Only LISTING is wired. Purchase and Lease are shown in the picker and marked as coming next; the API refuses them.',
-            example: 'LISTING'
+                'Only PURCHASE is wired — it is the flow every OREA form in the library belongs to. Listing and Lease are shown in the picker and marked as coming next; the API refuses them.',
+            example: 'PURCHASE'
         })
     })
 )
@@ -269,7 +279,7 @@ registry.registerPath({
     summary: 'Start a transaction',
     security: [{ sessionCookie: [] }],
     description:
-        'Requires a session. Creates a DRAFT owned by the caller. Only LISTING is accepted in this phase — PURCHASE and LEASE are refused with 400.',
+        'Requires a session. Creates a DRAFT owned by the caller. Only PURCHASE is accepted in this phase — LISTING and LEASE are refused with 400.',
     tags: ['transactions'],
     request: {
         body: {

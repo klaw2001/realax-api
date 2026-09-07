@@ -15,7 +15,7 @@ import type { FormTemplate } from '@/schemas/form'
 import type { Party, PartyRole } from '@/schemas/party'
 import type { TransactionType } from '@/schemas/transaction'
 import type { MergedValues, TransactionSnapshot } from '@/modules/forms/mapper.service'
-import { buildMergedValues } from '@/modules/forms/mapper.service'
+import { brokerageBlock, buildMergedValues } from '@/modules/forms/mapper.service'
 
 /**
  * The compliance gate (build plan 2.4).
@@ -63,9 +63,18 @@ const AREA_LABELS: Record<ComplianceArea, string> = {
  * thing, not the sentence it sits in.
  *
  * Keyed by the name the gate reports, which for a continuation block is the
- * block rather than its lines. Every reportable Form 100 data blank is here;
- * `describe` falls back to the blank name so a newly curated form is legible
- * before its labels are written rather than crashing or reporting nothing.
+ * block rather than its lines. Every reportable data blank on every curated
+ * form is here, including the ones marked optional — an optional blank is
+ * still one an agent may choose to fill, and it still needs a name when they
+ * do. `describeBlank` falls back to the blank name so a newly curated form is
+ * legible before its labels are written rather than crashing or reporting
+ * nothing; `test/form-coverage.test.ts` is what stops that fallback shipping.
+ *
+ * Flat, not keyed by form code. That is deliberate — a name shared between two
+ * forms is the same value in both, which is what makes the mapper answer it
+ * once — but it means reusing a name has to be a decision about the value and
+ * not a coincidence of wording. A blank that means something different on
+ * another form needs a different name there.
  */
 const BLANK_LABELS: Record<string, { label: string; area: ComplianceArea }> = {
     'agreement.dateDay': { label: 'Agreement date — day', area: 'entries' },
@@ -154,7 +163,142 @@ const BLANK_LABELS: Record<string, { label: string; area: ComplianceArea }> = {
     },
     'scheduleA.dateDay': { label: 'Schedule A date — day', area: 'entries' },
     'scheduleA.dateMonth': { label: 'Schedule A date — month', area: 'entries' },
-    'scheduleA.dateYear': { label: 'Schedule A date — year', area: 'entries' }
+    'scheduleA.dateYear': { label: 'Schedule A date — year', area: 'entries' },
+
+    // Form 320, the co-operation confirmation. The brokerage name, telephone
+    // and salesperson blanks are handled by `brokerageFieldLabel` above, which
+    // is what puts the agent's own side on their profile page; these are the
+    // rest of the block, which is always typed in.
+    'coopBrokerage.address.line1': { label: 'Co-operating brokerage — address', area: 'entries' },
+    'coopBrokerage.address.line2': {
+        label: 'Co-operating brokerage — city and postal code',
+        area: 'entries'
+    },
+    'coopBrokerage.fax': { label: 'Co-operating brokerage — fax', area: 'entries' },
+    'listingBrokerage.address.line1': { label: 'Listing brokerage — address', area: 'entries' },
+    'listingBrokerage.address.line2': {
+        label: 'Listing brokerage — city and postal code',
+        area: 'entries'
+    },
+    'listingBrokerage.fax': { label: 'Listing brokerage — fax', area: 'entries' },
+
+    'coopCommission.amount': { label: 'Co-operating brokerage commission', area: 'entries' },
+    'coopCommission.terms': { label: 'How the co-operating brokerage is paid', area: 'entries' },
+
+    'sellerBrokerage.commentsSingle': {
+        label: 'Seller brokerage comments — single representation',
+        area: 'entries'
+    },
+    'sellerBrokerage.commentsMultiple': {
+        label: 'Seller brokerage comments — multiple representation',
+        area: 'entries'
+    },
+    'coopBrokerage.comments': { label: 'Co-operating brokerage comments', area: 'entries' },
+
+    // Form 801, the offer summary. Labels say which of the form's four
+    // time-and-date blocks a blank belongs to, because the page prints the
+    // same "at … on the … day of …" four times and "Time" alone would name
+    // any of them.
+    'offerSubmitted.how': { label: 'Offer submitted — how', area: 'entries' },
+    'offerSubmitted.time': { label: 'Offer submitted — time', area: 'entries' },
+    'offerSubmitted.dateDay': { label: 'Offer submitted — day', area: 'entries' },
+    'offerSubmitted.dateMonth': { label: 'Offer submitted — month', area: 'entries' },
+    'offerSubmitted.dateYear': { label: 'Offer submitted — year', area: 'entries' },
+
+    'counterOffer.buyer.fullLegalNames': {
+        label: 'Counter offer — buyer names',
+        area: 'entries'
+    },
+    'counterOfferSubmitted.how': { label: 'Counter offer submitted — how', area: 'entries' },
+    'counterOfferSubmitted.time': { label: 'Counter offer submitted — time', area: 'entries' },
+    'counterOfferSubmitted.dateDay': { label: 'Counter offer submitted — day', area: 'entries' },
+    'counterOfferSubmitted.dateMonth': {
+        label: 'Counter offer submitted — month',
+        area: 'entries'
+    },
+    'counterOfferSubmitted.dateYear': { label: 'Counter offer submitted — year', area: 'entries' },
+    'counterOfferIrrevocable.time': { label: 'Counter offer irrevocable until — time', area: 'entries' },
+    'counterOfferIrrevocable.dateDay': {
+        label: 'Counter offer irrevocable until — day',
+        area: 'entries'
+    },
+    'counterOfferIrrevocable.dateMonth': {
+        label: 'Counter offer irrevocable until — month',
+        area: 'entries'
+    },
+    'counterOfferIrrevocable.dateYear': {
+        label: 'Counter offer irrevocable until — year',
+        area: 'entries'
+    },
+
+    // The seller's own phone or email, which is why this is a parties blank
+    // and not an entries one — the fix is on the party, not the agreement.
+    'seller.contact': { label: "Seller's contact details", area: 'parties' },
+
+    'offerReceived.how': { label: 'Offer received by listing brokerage — how', area: 'entries' },
+    'offerReceived.time': { label: 'Offer received by listing brokerage — time', area: 'entries' },
+    'offerReceived.dateDay': { label: 'Offer received by listing brokerage — day', area: 'entries' },
+    'offerReceived.dateMonth': {
+        label: 'Offer received by listing brokerage — month',
+        area: 'entries'
+    },
+    'offerReceived.dateYear': {
+        label: 'Offer received by listing brokerage — year',
+        area: 'entries'
+    },
+
+    'offerPresented.how': { label: 'Offer presented to seller — how', area: 'entries' },
+    'offerPresented.time': { label: 'Offer presented to seller — time', area: 'entries' },
+    'offerPresented.dateDay': { label: 'Offer presented to seller — day', area: 'entries' },
+    'offerPresented.dateMonth': { label: 'Offer presented to seller — month', area: 'entries' },
+    'offerPresented.dateYear': { label: 'Offer presented to seller — year', area: 'entries' },
+
+    'offer.comments': { label: 'Comments', area: 'entries' },
+
+    // Form 371, the buyer representation agreement. It is the one form signed
+    // before there is a property or a seller, so its blanks are about the buyer
+    // and the mandate rather than about a deal.
+    'buyer.municipality': { label: "Buyer's municipality", area: 'parties' },
+    'buyer.postalCode': { label: "Buyer's postal code", area: 'parties' },
+
+    // The second buyer's own line, and a parties fix rather than an entries one
+    // for the same reason the address-for-service blanks are.
+    'buyer2.tel': { label: "Second buyer's telephone", area: 'parties' },
+
+    // Both of these are the signed-in agent under two of the form's headings.
+    // Filed under the profile because that is where the name comes from — the
+    // entries column exists to name somebody else, not to supply the default.
+    designatedRepresentatives: { label: 'Designated representative(s)', area: 'profile' },
+    'insuranceDeclaration.salesperson': {
+        label: 'Declaration of insurance — salesperson name',
+        area: 'profile'
+    },
+
+    'commencement.time': { label: 'Authority commences — time', area: 'entries' },
+    'commencement.dateDay': { label: 'Authority commences — day', area: 'entries' },
+    'commencement.dateMonth': { label: 'Authority commences — month', area: 'entries' },
+    'commencement.dateYear': { label: 'Authority commences — year', area: 'entries' },
+    'expiry.dateDay': { label: 'Authority expires — day', area: 'entries' },
+    'expiry.dateMonth': { label: 'Authority expires — month', area: 'entries' },
+    'expiry.dateYear': { label: 'Authority expires — year', area: 'entries' },
+
+    'buyerRequirements.propertyType': {
+        label: 'Property type the buyer is looking for',
+        area: 'entries'
+    },
+    'buyerRequirements.geographicLocation': {
+        label: 'Geographic location the buyer is looking in',
+        area: 'entries'
+    },
+
+    // Not `schedules.list`: the form preprints the A, so this names the ones
+    // after it.
+    'additionalSchedules.list': { label: 'Schedules attached after Schedule A', area: 'entries' },
+
+    'commission.percent': { label: 'Commission — percentage of the sale price', area: 'entries' },
+    'commission.alternative': { label: 'Commission — alternative to a percentage', area: 'entries' },
+    'commission.lease': { label: 'Commission on a lease', area: 'entries' },
+    'holdoverPeriod.days': { label: 'Holdover period, in days', area: 'entries' }
 }
 
 /**
@@ -163,8 +307,8 @@ const BLANK_LABELS: Record<string, { label: string; area: ComplianceArea }> = {
  *
  * The agent's own block comes from their profile and the other side's is typed
  * in, so the same blank name is fixed on a different page depending on the
- * transaction type. This follows `brokerageBlock` in the mapper rather than
- * assuming a listing — filling the wrong one puts the seller's agent in the
+ * transaction type. This calls `brokerageBlock` in the mapper rather than
+ * restating the rule — filling the wrong one puts the seller's agent in the
  * buyer's box, and pointing an agent at the wrong page to fix it is the same
  * mistake one step later.
  */
@@ -178,26 +322,40 @@ const brokerageFieldLabel = (
     field: string,
     type: TransactionType
 ): { label: string; area: ComplianceArea } | null => {
-    const match = /^(listingBrokerage|coopBrokerage)\.(name|tel|salesperson)$/.exec(field)
+    // The optional `scheduleA.` prefix is Form 371, whose schedule repeats the
+    // brokerage line from the front page. Same block, same side of the deal,
+    // so the same answer about where it is fixed — matching it here beats a
+    // second copy of the rule in the label table.
+    const match = /^(?:(scheduleA)\.)?(listingBrokerage|coopBrokerage)\.(name|tel|salesperson)$/.exec(
+        field
+    )
 
     if (!match) {
         return null
     }
 
-    const [, block, part] = match
-    const own = type === 'PURCHASE' ? 'coopBrokerage' : 'listingBrokerage'
+    const [, schedule, block, part] = match
+    const own = brokerageBlock(type)
     const side = block === 'listingBrokerage' ? 'Listing brokerage' : 'Co-operating brokerage'
+    const prefix = schedule === undefined ? '' : 'Schedule A — '
 
     return {
-        label: `${side} — ${BROKERAGE_LABELS[part].toLowerCase()}`,
+        label: `${prefix}${side} — ${BROKERAGE_LABELS[part].toLowerCase()}`,
         // The agent's own block is their profile; the other side's is typed in
         // with the rest of the agreement.
         area: block === own ? 'profile' : 'entries'
     }
 }
 
-/** What to show for a blank, falling back to its name when it has no curated label. */
-const describe = (
+/**
+ * What to show for a blank, falling back to its name when it has no curated label.
+ *
+ * Exported so a test can assert the fallback never fires for a blank any curated
+ * form actually reports. The fallback exists to keep a newly curated form legible
+ * before its labels are written, not to be shipped — an agent told to fix
+ * `offer2.irrevocableTime` has been handed our internal name for their problem.
+ */
+export const describeBlank = (
     field: string,
     type: TransactionType
 ): { label: string; area: ComplianceArea } =>
@@ -235,30 +393,61 @@ const hasValue = (template: FormTemplate, merged: MergedValues, name: string): b
 }
 
 /**
+ * The blank names this form's curation marks optional.
+ *
+ * Keyed by the reportable name — the `flow` base where there is one — so it
+ * lines up with what `reportableBlankNames` returns. A block is optional when
+ * its lines are, which is the only way to mark one: the lines are the blanks.
+ */
+const optionalBlankNames = (template: FormTemplate): Set<string> =>
+    new Set(
+        template.blanks
+            .filter(blank => blank.optional === true)
+            .map(blank => blank.flow ?? blank.name)
+    )
+
+/**
  * Every required blank on the form has a value.
  *
- * "Required" is every `data` blank. That is the build plan's own answer — the
- * fill engine's `missing` array *is* the check — and it is not this service's
- * call to decide that an OREA blank is optional. If a fax line may legitimately
- * be left empty, that is a decision about the form, and the place to record it
- * is the curation that names the blanks, not a list of exceptions here.
+ * "Required" is every `data` blank the curation has not marked optional. That
+ * is still the build plan's answer — the fill engine's `missing` array *is* the
+ * check — and it is still not this service's call to decide that an OREA blank
+ * may be left empty. The exception lives in the curation that names the blanks
+ * rather than in a list here, so deciding it means having the form in front of
+ * you: Form 801 prints the times the listing brokerage received and presented
+ * the offer, and the co-operating agent filling it cannot know either.
+ *
+ * The filter is here rather than in `reportableBlankNames` on purpose. That
+ * function answers "what could an agent fill on this form", which an optional
+ * blank still is; this one answers "what must be filled before we draw it".
  */
 const missingBlanks = (
     template: FormTemplate,
     merged: MergedValues,
     type: TransactionType,
     excused: Set<string>
-): ComplianceFailure[] =>
-    reportableBlankNames(template)
-        .filter(name => !excused.has(name) && !hasValue(template, merged, name))
+): ComplianceFailure[] => {
+    const optional = optionalBlankNames(template)
+
+    return reportableBlankNames(template)
+        .filter(
+            name => !optional.has(name) && !excused.has(name) && !hasValue(template, merged, name)
+        )
         .map(name => {
-            const { label, area } = describe(name, type)
+            const { label, area } = describeBlank(name, type)
 
             return failure(name, label, area, 'missing')
         })
+}
 
 /**
- * The roles a transaction of each type must have somebody in.
+ * The roles a transaction of each type must have somebody in, when the form
+ * does not say for itself.
+ *
+ * A curated template may carry its own `requiredParties` and override this —
+ * see `missingParties`. This stays exhaustive over `TransactionType` so that
+ * adding an enum member is still a compile error rather than a form that
+ * quietly requires nobody.
  *
  * Form 100 is an Agreement of Purchase and Sale: it names both sides, and one
  * with nobody on one of them is not an incomplete agreement, it is not an
@@ -297,7 +486,13 @@ const blanksFromRole = (role: PartyRole): string[] => {
         `notices.${side}Email`,
         `${side}.addressForService.line1`,
         `${side}.addressForService.line2`,
-        `${side}.addressForService.tel`
+        `${side}.addressForService.tel`,
+
+        // Form 371 asks for the municipality and postal code on their own
+        // lines rather than as one joined address, so they belong to the same
+        // party and go quiet for the same reason.
+        `${side}.municipality`,
+        `${side}.postalCode`
     ]
 }
 
@@ -309,13 +504,19 @@ const blanksFromRole = (role: PartyRole): string[] => {
  * twice in two vocabularies.
  */
 const missingParties = (
+    template: FormTemplate,
     type: TransactionType,
     parties: Party[]
 ): { failures: ComplianceFailure[]; excused: Set<string> } => {
     const failures: ComplianceFailure[] = []
     const excused = new Set<string>()
 
-    for (const role of REQUIRED_ROLES[type]) {
+    // The form's own answer wins where it has one. `REQUIRED_ROLES` is keyed by
+    // transaction type and is right for the forms that document a deal between
+    // two sides; a buyer representation agreement is signed before there is a
+    // second side, and asking its filler for a seller is an instruction with
+    // nothing behind it.
+    for (const role of template.requiredParties ?? REQUIRED_ROLES[type]) {
         if (parties.some(party => party.role === role)) {
             continue
         }
@@ -410,7 +611,7 @@ export const evaluateCompliance = (
     const type = snapshot.transaction.type
     const merged = buildMergedValues(snapshot)
 
-    const parties = missingParties(type, snapshot.parties ?? [])
+    const parties = missingParties(template, type, snapshot.parties ?? [])
 
     const failures = [
         ...incompleteProfile(snapshot.agent),

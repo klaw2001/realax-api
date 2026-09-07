@@ -1,0 +1,62 @@
+{
+  "form": "320",
+  "revision": "2026",
+  "title": "Confirmation of Co-operation and Representation",
+  "sourceSha256": "d6f07c5ea13c20d6935e7162b8206841d2c40c7f88ffe137c64d55827c92cdf8",
+  "note": "Curation for Form 320. One entry per blank id emitted by tools/extract_template.py. The form calls the listing side the 'Seller Brokerage'; it is the same party Form 100 calls the listing brokerage, so the blanks reuse those names rather than inventing a second set for one value.",
+  "kinds": {
+    "data": "Filled before signing. The compliance gate checks these unless they are marked optional.",
+    "signature": "Drawn by a signer in the e-sign session. Never filled by us.",
+    "signingDate": "Dated by the signer at execution, not by the agent."
+  },
+  "sections": {
+    "required": "The two brokerages and the deal they are confirming. All nine come from the domain model or the agent's profile — 320 asks for almost nothing that Form 100 has not already been told.",
+    "declarations": "Sections 1 to 4 are numbered alternatives with tick boxes the extractor cannot see, and their comment lines are alternatives to each other: section 4b) offers either the MLS commission amount OR a free-text description of how the co-operating brokerage is paid. Requiring either would make the other unfillable, so the whole block is optional.",
+    "addresses": "The two unlabelled lines under each brokerage's name. The form prints no caption for them and the second sits below the Tel/Fax row, so they are treated as an address block rather than guessed at more precisely — and left optional for the same reason. Deliberately no `flow`: a second address line is a city and postal code, not the overflow of the first."
+  },
+  "blanks": {
+    "320-p1-b001": { "name": "buyer.fullLegalNames",                      "kind": "data" },
+    "320-p1-b002": { "name": "seller.fullLegalNames",                     "kind": "data" },
+    "320-p1-b003": { "name": "property.address",                          "kind": "data" },
+
+    "320-p1-b004": { "name": "sellerBrokerage.commentsSingle.line1",      "kind": "data", "optional": true, "flow": "sellerBrokerage.commentsSingle" },
+    "320-p1-b005": { "name": "sellerBrokerage.commentsSingle.line2",      "kind": "data", "optional": true, "flow": "sellerBrokerage.commentsSingle" },
+    "320-p1-b006": { "name": "sellerBrokerage.commentsMultiple.line1",    "kind": "data", "optional": true, "flow": "sellerBrokerage.commentsMultiple" },
+    "320-p1-b007": { "name": "sellerBrokerage.commentsMultiple.line2",    "kind": "data", "optional": true, "flow": "sellerBrokerage.commentsMultiple" },
+
+    "320-p1-b008": { "name": "coopCommission.amount",                     "kind": "data", "optional": true },
+    "320-p1-b009": { "name": "coopCommission.terms.line1",                "kind": "data", "optional": true, "flow": "coopCommission.terms" },
+    "320-p1-b010": { "name": "coopCommission.terms.line2",                "kind": "data", "optional": true, "flow": "coopCommission.terms" },
+
+    "320-p1-b011": { "name": "coopBrokerage.comments.line1",              "kind": "data", "optional": true, "flow": "coopBrokerage.comments" },
+    "320-p1-b012": { "name": "coopBrokerage.comments.line2",              "kind": "data", "optional": true, "flow": "coopBrokerage.comments" },
+
+    "320-p2-b013": { "name": "coopBrokerage.name",                        "kind": "data" },
+    "320-p2-b014": { "name": "listingBrokerage.name",                     "kind": "data" },
+    "320-p2-b015": { "name": "coopBrokerage.address.line1",               "kind": "data", "optional": true },
+    "320-p2-b016": { "name": "listingBrokerage.address.line1",            "kind": "data", "optional": true },
+    "320-p2-b017": { "name": "coopBrokerage.tel",                         "kind": "data" },
+    "320-p2-b018": { "name": "coopBrokerage.fax",                         "kind": "data", "optional": true },
+    "320-p2-b019": { "name": "listingBrokerage.tel",                      "kind": "data" },
+    "320-p2-b020": { "name": "listingBrokerage.fax",                      "kind": "data", "optional": true },
+    "320-p2-b021": { "name": "coopBrokerage.address.line2",               "kind": "data", "optional": true },
+    "320-p2-b022": { "name": "listingBrokerage.address.line2",            "kind": "data", "optional": true },
+
+    "320-p2-b023": { "name": "execution.coopBrokerage.signature",         "kind": "signature" },
+    "320-p2-b024": { "name": "execution.coopBrokerage.date",              "kind": "signingDate" },
+    "320-p2-b025": { "name": "execution.listingBrokerage.signature",      "kind": "signature" },
+    "320-p2-b026": { "name": "execution.listingBrokerage.date",           "kind": "signingDate" },
+
+    "320-p2-b027": { "name": "coopBrokerage.salesperson",                 "kind": "data" },
+    "320-p2-b028": { "name": "listingBrokerage.salesperson",              "kind": "data" },
+
+    "320-p2-b029": { "name": "execution.buyer1.signature",                "kind": "signature" },
+    "320-p2-b030": { "name": "execution.buyer1.date",                     "kind": "signingDate" },
+    "320-p2-b031": { "name": "execution.seller1.signature",               "kind": "signature" },
+    "320-p2-b032": { "name": "execution.seller1.date",                    "kind": "signingDate" },
+    "320-p2-b033": { "name": "execution.buyer2.signature",                "kind": "signature" },
+    "320-p2-b034": { "name": "execution.buyer2.date",                     "kind": "signingDate" },
+    "320-p2-b035": { "name": "execution.seller2.signature",               "kind": "signature" },
+    "320-p2-b036": { "name": "execution.seller2.date",                    "kind": "signingDate" }
+  }
+}

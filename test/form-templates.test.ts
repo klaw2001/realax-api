@@ -98,11 +98,143 @@ describe('the curated Form 100 template', () => {
     test('only curated forms are loadable — raw extractor output is not', async () => {
         const codes = await listTemplateCodes()
 
-        expect(codes).toEqual([FORM])
+        // Exhaustive and sorted rather than `arrayContaining`: the point is to
+        // notice a form appearing or disappearing, which a containment check
+        // would not. `listTemplateCodes` returns directory order, hence sorting
+        // here rather than asserting on it.
+        expect([...codes].sort()).toEqual(['100', '320', '371', '801'])
 
-        // 320, 371 and 801 have geometry in forms/templates/*.raw.json and no
-        // names. A template row for one of them would be unfillable.
-        await expect(loadTemplate('320')).rejects.toThrow(TemplateNotFoundError)
+        // Every form in the library is curated now, so the probe is a code we
+        // have never seen rather than the next one waiting to be curated. That
+        // keeps the guard alive permanently: the property being defended is
+        // that an unknown form is refused, not guessed at.
+        await expect(loadTemplate('999')).rejects.toThrow(TemplateNotFoundError)
+    })
+
+    test('the curated Form 801 template is what it claims to be', async () => {
+        const template = await loadTemplate('801')
+
+        expect(template.form).toEqual('801')
+        expect(template.revision).toEqual('2024')
+        expect(template.title).toEqual('Offer Summary Document')
+        expect(template.pageCount).toEqual(1)
+        expect(template.blankCount).toEqual(49)
+
+        const kinds = template.blanks.reduce<Record<string, number>>((counts, blank) => {
+            counts[blank.kind] = (counts[blank.kind] ?? 0) + 1
+
+            return counts
+        }, {})
+
+        // Four signature lines and four dates: two buyers on the offer, the
+        // same two again on the counter offer below it.
+        expect(kinds).toEqual({ data: 41, signature: 4, signingDate: 4 })
+
+        // The counter-offer block and the listing brokerage's own timings are
+        // optional; the offer the agent is submitting is not. If this count
+        // drifts, the gate has either started demanding something the filling
+        // side cannot know or stopped demanding something it can.
+        expect(template.blanks.filter(blank => blank.optional === true)).toHaveLength(22)
+
+        const byName = blanksByName(template)
+
+        // The page prints the same "at … on the … day of …" four times. Left to
+        // right within each row, so a swap here would put the submitted time in
+        // the irrevocable blank and report nothing wrong.
+        expect(byName.get('offerSubmitted.time')!.bbox[0]).toBeLessThan(
+            byName.get('offerSubmitted.dateDay')!.bbox[0]
+        )
+        expect(byName.get('irrevocability.time')!.bbox[0]).toBeLessThan(
+            byName.get('irrevocability.dateDay')!.bbox[0]
+        )
+
+        // The counter-offer block sits below the offer it answers.
+        expect(byName.get('counterOfferSubmitted.how')!.baseline).toBeLessThan(
+            byName.get('offerSubmitted.how')!.baseline
+        )
+    })
+
+    test('the curated Form 320 template is what it claims to be', async () => {
+        const template = await loadTemplate('320')
+
+        expect(template.form).toEqual('320')
+        expect(template.revision).toEqual('2026')
+        expect(template.title).toEqual('Confirmation of Co-operation and Representation')
+        expect(template.pageCount).toEqual(2)
+        expect(template.blankCount).toEqual(36)
+
+        const kinds = template.blanks.reduce<Record<string, number>>((counts, blank) => {
+            counts[blank.kind] = (counts[blank.kind] ?? 0) + 1
+
+            return counts
+        }, {})
+
+        // Six signatures: two brokerages, two buyers, two sellers.
+        expect(kinds).toEqual({ data: 24, signature: 6, signingDate: 6 })
+
+        const byName = blanksByName(template)
+
+        // The execution block is two columns and getting them the wrong way
+        // round would have each brokerage sign the other's undertaking.
+        expect(byName.get('coopBrokerage.name')!.bbox[0]).toBeLessThan(
+            byName.get('listingBrokerage.name')!.bbox[0]
+        )
+        expect(byName.get('execution.coopBrokerage.signature')!.bbox[0]).toBeLessThan(
+            byName.get('execution.listingBrokerage.signature')!.bbox[0]
+        )
+        expect(byName.get('coopBrokerage.tel')!.bbox[0]).toBeLessThan(
+            byName.get('coopBrokerage.fax')!.bbox[0]
+        )
+
+        // Buyers on the left of the acknowledgement, sellers on the right.
+        expect(byName.get('execution.buyer1.signature')!.bbox[0]).toBeLessThan(
+            byName.get('execution.seller1.signature')!.bbox[0]
+        )
+    })
+
+    test('the curated Form 371 template is what it claims to be', async () => {
+        const template = await loadTemplate('371')
+
+        expect(template.form).toEqual('371')
+        expect(template.revision).toEqual('2026')
+        expect(template.title).toEqual('Buyer Designated Representation Agreement')
+        expect(template.pageCount).toEqual(4)
+        expect(template.blankCount).toEqual(49)
+
+        const kinds = template.blanks.reduce<Record<string, number>>((counts, blank) => {
+            counts[blank.kind] = (counts[blank.kind] ?? 0) + 1
+
+            return counts
+        }, {})
+
+        // Six signatures: the brokerage's, the declaration of insurance, and
+        // two buyers signing twice — once under seal, once acknowledging
+        // receipt.
+        expect(kinds).toEqual({ data: 33, signature: 6, signingDate: 10 })
+
+        // The one form in the library that names who must be on the
+        // transaction. Without it the gate would ask a buyer representation
+        // agreement for a seller.
+        expect(template.requiredParties).toEqual(['BUYER'])
+
+        const byName = blanksByName(template)
+
+        // The term runs commencement then expiry, printed on consecutive lines
+        // and reversing them would date the authority to expire before it
+        // starts.
+        expect(byName.get('commencement.dateDay')!.bbox[1]).toBeGreaterThan(
+            byName.get('expiry.dateDay')!.bbox[1]
+        )
+
+        // Buyer 1's execution line sits above buyer 2's, which is the order
+        // `placementsForParties` assigns signers in.
+        expect(byName.get('execution.buyer1.signature')!.bbox[1]).toBeGreaterThan(
+            byName.get('execution.buyer2.signature')!.bbox[1]
+        )
+
+        // Schedule A is the last page and repeats the front page's two names.
+        expect(byName.get('scheduleA.buyer.fullLegalNames')!.page).toEqual(4)
+        expect(byName.get('scheduleA.coopBrokerage.name')!.page).toEqual(4)
     })
 
     test('a form code is never treated as a path', async () => {

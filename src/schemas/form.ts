@@ -1,6 +1,7 @@
 import { registry, z } from '@/openapi/registry'
 import { errorContent } from '@/schemas/common'
 import { complianceResultSchema } from '@/schemas/compliance'
+import { partyRoleSchema } from '@/schemas/party'
 
 /**
  * The curated form template — `forms/templates/<code>.json`.
@@ -90,6 +91,22 @@ export const templateBlankSchema = z.object({
      */
     flow: z.string().min(1).optional(),
 
+    /**
+     * A blank the compliance gate does not require.
+     *
+     * Absent — the normal case — a `data` blank must have a value before the
+     * form can be filled. The gate deliberately holds no opinion about which
+     * OREA blanks matter, so the exception is recorded in the curation that
+     * names the blanks rather than in a list inside the service.
+     *
+     * It exists because some forms carry blanks the filling side cannot know.
+     * Form 801 prints the times the *listing* brokerage received and presented
+     * the offer, and a co-operating agent filling it has neither; without this
+     * the form could never pass the gate for anybody. Marking one optional is
+     * a statement about the paper, so it needs the form in front of you.
+     */
+    optional: z.boolean().optional(),
+
     note: z.string().optional()
 })
 
@@ -110,6 +127,35 @@ export const formTemplateSchema = z
 
         /** The revision line at the foot of the form — "May 2026". */
         revision: z.string().min(1),
+
+        /**
+         * The form's printed name, without the number — "Agreement of Purchase
+         * and Sale".
+         *
+         * Optional so an older curation still loads. It lives here because the
+         * alternative is the same string typed into every screen that shows a
+         * form, which is how three views came to disagree about what Form 100
+         * is called.
+         */
+        title: z.string().min(1).optional(),
+
+        /**
+         * The party roles this form needs somebody in, overriding the table the
+         * compliance gate keys by transaction type.
+         *
+         * Almost every form wants both sides and says nothing here. Form 371 is
+         * the exception: a buyer representation agreement is signed at
+         * onboarding, before there is a seller to have an agreement with, so a
+         * gate demanding one would report an absent party against a form that
+         * has no line for them — an instruction the agent cannot act on.
+         *
+         * Curated rather than inferred from whether the template happens to
+         * carry a `seller.*` blank, for the same reason `flow` and `kind` are:
+         * inference is subtly wrong at the edges, and here it is one OREA
+         * revision away from being silently wrong about who must sign a
+         * contract.
+         */
+        requiredParties: z.array(partyRoleSchema).optional(),
 
         /** File name under `forms/sources/`. */
         source: z.string().min(1),
@@ -394,5 +440,66 @@ registry.registerPath({
         },
         401: errorContent('No session'),
         404: errorContent('No such transaction, or no curated template for that form')
+    }
+})
+
+// ---------------------------------------------------------------------------
+// The form catalogue
+// ---------------------------------------------------------------------------
+
+/**
+ * One form in the library, as a screen needs to know it.
+ *
+ * Deliberately not per-transaction: nothing here changes when a transaction
+ * does. Whether *this* deal has filled it is
+ * `GET /api/transactions/{id}/forms/{code}`, and whether it may be filled is
+ * `.../compliance` — folding either in would turn a static list into a fan-out
+ * over every form on every load of the page.
+ *
+ * `title` is optional because it is optional on the template: a curation
+ * written before the key existed still loads, and a screen falls back to the
+ * code. Filling it in is a two-line change to that form's `.names.json`.
+ */
+export const formCatalogueEntrySchema = registry.register(
+    'FormCatalogueEntry',
+    z.object({
+        code: z.string().openapi({ example: '100' }),
+        title: z.string().optional().openapi({ example: 'Agreement of Purchase and Sale' }),
+        revision: z.string().openapi({ example: 'May 2026' }),
+        pageCount: z.number().int().openapi({ example: 6 }),
+
+        /**
+         * Blanks an agent could fill — continuation blocks counted once, and
+         * signature blanks not counted at all. The same number the per-form
+         * status endpoint measures `filledCount` against, so a screen can show
+         * "19 of 30" without asking twice what the denominator is.
+         */
+        fieldCount: z.number().int().openapi({ example: 68 })
+    })
+)
+
+export type FormCatalogueEntry = z.infer<typeof formCatalogueEntrySchema>
+
+export const formCatalogueResponseSchema = registry.register(
+    'FormCatalogueResponse',
+    z.object({ forms: z.array(formCatalogueEntrySchema) })
+)
+
+export type FormCatalogueResponse = z.infer<typeof formCatalogueResponseSchema>
+
+registry.registerPath({
+    method: 'get',
+    path: '/api/forms',
+    summary: 'The curated form library',
+    security: [{ sessionCookie: [] }],
+    description:
+        'Requires a session. Every form the service can fill, ordered by code. The same for every agent and every transaction — a form is in the library or it is not — so it caches for the life of a page. A form with extracted geometry but no curation is not here: it has no field names and could not be filled.',
+    tags: ['forms'],
+    responses: {
+        200: {
+            description: 'The curated forms',
+            content: { 'application/json': { schema: formCatalogueResponseSchema } }
+        },
+        401: errorContent('No session')
     }
 })

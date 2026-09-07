@@ -74,9 +74,9 @@ const completeEntries = {
     rentalItems: ['Hot water tank'],
     hstTreatment: 'included in',
     propertyPresentUse: 'Single family residential',
-    coopBrokerageName: 'Bayview Heights Real Estate Ltd., Brokerage',
-    coopBrokerageTel: '416-555-0173',
-    coopBrokerageSalesperson: 'Alan Prakash',
+    listingBrokerageName: 'Bayview Heights Real Estate Ltd., Brokerage',
+    listingBrokerageTel: '416-555-0173',
+    listingBrokerageSalesperson: 'Alan Prakash',
     sellerLawyerName: 'Hollis & Wren LLP',
     sellerLawyerAddress: '120 Adelaide Street West, Suite 900, Toronto, ON M5H 1T1',
     sellerLawyerEmail: 'conveyancing@holliswren.example.test',
@@ -230,7 +230,7 @@ beforeAll(async () => {
 
     const transaction = await prisma.transaction.create({
         data: {
-            type: 'LISTING',
+            type: 'PURCHASE',
             agent: { connect: { id: agentId } },
             property: {
                 create: {
@@ -283,7 +283,7 @@ beforeAll(async () => {
         include: { parties: true }
     })
 
-    const theirs = await prisma.transaction.create({ data: { type: 'LISTING', agentId: otherAgentId } })
+    const theirs = await prisma.transaction.create({ data: { type: 'PURCHASE', agentId: otherAgentId } })
 
     transactionId = transaction.id
     otherTransactionId = theirs.id
