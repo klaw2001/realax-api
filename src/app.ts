@@ -91,6 +91,11 @@ app.use(
             // name. See `crossSiteCookies` in `config/env.ts`.
             secure: crossSiteCookies,
             sameSite: crossSiteCookies ? 'none' : 'lax',
+            // Host-only unless a parent domain is named. The app's route guard
+            // runs on the frontend's own server and can only read cookies the
+            // browser sent *there*, so a two-host deploy has to name the domain
+            // both hosts share. See `COOKIE_DOMAIN` in `config/env.ts`.
+            domain: env.COOKIE_DOMAIN,
             maxAge: 12 * 60 * 60 * 1000
         },
         // Postgres-backed via Prisma. Sessions survive a restart, and Phase 0.5

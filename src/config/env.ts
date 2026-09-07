@@ -48,6 +48,25 @@ const envSchema = z.object({
     // breaks sessions rather than fixing them.
     COOKIE_CROSS_SITE: z.stringbool().optional(),
 
+    // The `Domain` on the session cookie, when the app and the API are separate
+    // hosts under one parent — `.example.com` for `app.example.com` and
+    // `api.example.com`.
+    //
+    // Unset, the cookie is host-only: the browser returns it to the API and to
+    // nowhere else. That is the tighter scope and the right default, but it
+    // does not survive this app's route guard, which runs on the *frontend's*
+    // server and reads the cookies the browser sent to the frontend host. A
+    // host-only API cookie is not among them, so every protected page decides
+    // nobody is signed in and redirects to the login it just came from.
+    //
+    // Local development never hit this: `localhost:4000` and `localhost:3005`
+    // differ only by port, and cookies are not scoped by port.
+    //
+    // Widen this no further than necessary. The cookie is sent to every
+    // subdomain of whatever is named here, so it must be a domain whose
+    // subdomains are all ours.
+    COOKIE_DOMAIN: z.string().min(1).optional(),
+
     // Storage. The bucket is Canadian-resident on purpose: identity documents
     // are FINTRAC material and do not leave `ca-central-1`.
     AWS_REGION: z.string().min(1).default('ca-central-1'),
